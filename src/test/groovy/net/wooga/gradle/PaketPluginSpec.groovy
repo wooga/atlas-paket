@@ -13,35 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */plugins {
-    id 'groovy'
-    id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '0.9.7'
-}
+ */
 
-group 'net.wooga.gradle'
-description = 'Paket plugin for Gradle.'
+package net.wooga.gradle
 
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Specification
 
-version '0.1.0-SNAPSHOT'
+class PaketPluginSpec extends Specification {
+    Project project = ProjectBuilder.builder().build()
 
-repositories {
-    jcenter()
-}
+    def 'create bootstrap task'() {
+        given:
+        project.plugins.apply('net.wooga.paket')
 
-dependencies {
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
-        exclude module: 'groovy-all'
-    }
-
-    compile gradleApi()
-    compile localGroovy()
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
+        expect:
+        project.tasks.findByName("paketBootstrap")
     }
 }

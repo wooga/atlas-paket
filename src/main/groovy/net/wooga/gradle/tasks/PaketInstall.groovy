@@ -28,13 +28,8 @@ class PaketInstall extends PaketTask {
 
     @TaskAction
     void install() {
-        checkPaket()
-        def command = "${runtime}.paket/paket.exe install"
-        println command
-        println command.execute().text
-
-        command = "${runtime}.paket/paket.unity3d.exe install"
-        println command
-        println command.execute().text
+        performPaketCommand { cmd ->
+            cmd << "install"
+        }
     }
 }

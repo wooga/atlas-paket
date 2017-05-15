@@ -15,7 +15,21 @@
  *
  */
 
-package net.wooga.gradle
+package net.wooga.gradle.tasks
 
-class PaketExtension {
+import org.gradle.api.tasks.TaskAction
+
+class PaketInit extends PaketTask {
+
+    PaketInit() {
+        super()
+        description "Creates an empty paket.dependencies file in the working directory."
+    }
+
+    @TaskAction
+    void performInit() {
+        performPaketCommand { cmd ->
+            cmd << "init"
+        }
+    }
 }
