@@ -17,37 +17,20 @@
 
 package net.wooga.gradle.tasks
 
-import org.gradle.api.file.FileTree
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 
-class PaketPush extends PaketTask {
+class PaketRestore extends PaketTask {
 
-    @InputDirectory
-    def FileTree inputFiles
-
-    def inputFiles(FileTree files) {
-        inputFiles = files
-    }
-
-    @Input
-    def url
-
-    PaketPush() {
+    PaketRestore() {
         super()
-        this.description = "Pushes the given .nupkg file."
+        description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
     }
 
     @TaskAction
-    void push(IncrementalTaskInputs inputs) {
-        checkPaket()
-        inputs.outOfDate { change ->
-            println "out of date: ${change.file}"
-            def command = "${runtime}.paket/paket.exe push url ${url} file ${change.file}"
-            println command
-            println command.execute().text
+    void performRestore() {
+        performPaketCommand { cmd ->
+            cmd << "restore"
         }
     }
+
 }

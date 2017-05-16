@@ -17,10 +17,7 @@
 
 package net.wooga.gradle
 
-import net.wooga.gradle.tasks.PaketBootstrap
-import net.wooga.gradle.tasks.PaketBootstrapDownload
-import net.wooga.gradle.tasks.PaketInit
-import net.wooga.gradle.tasks.PaketInstall
+import net.wooga.gradle.tasks.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -41,22 +38,27 @@ class PaketPlugin implements Plugin<Project> {
         def paketExtension = project.extensions.create(WOOGA_PAKET_EXTENSION_NAME, PaketPluginExtension, false)
         def paketUnityExtension = project.extensions.create(WOOGA_PAKET_UNITY_EXTENSION_NAME, PaketPluginExtension, true)
 
-        def paketBootstrap = createPaketBootstrapTasks("paket", paketExtension)
-        def paketUnityBootstrap = createPaketBootstrapTasks("paketUnity",paketUnityExtension)
+        def paketBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
+        def paketUnityBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_UNITY_EXTENSION_NAME,paketUnityExtension)
 
         def init = project.tasks.create(name:'init', type:PaketInit, dependsOn: paketBootstrap)
         init.paketExtension = paketExtension
-
         init.onlyIf { !project.file("${project.projectDir}/paket.dependencies").exists()}
 
-        def paketInstall = createPaketInstallTask("paket", paketExtension)
+        def paketInstall = createPaketInstallTask(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
         paketInstall.dependsOn init
 
-        def paketUnityInstall = createPaketInstallTask("paketUnity", paketUnityExtension)
+        def paketUnityInstall = createPaketInstallTask(WOOGA_PAKET_UNITY_EXTENSION_NAME, paketUnityExtension)
         paketUnityInstall.dependsOn paketUnityBootstrap
         paketUnityInstall.mustRunAfter paketInstall
 
-        project.tasks.create(name: 'install', dependsOn: [paketInstall, paketUnityInstall], group: GROUP)
+        def install = project.tasks.create(name: 'install', dependsOn: [paketInstall, paketUnityInstall], group: GROUP, description: paketInstall.description)
+        def update = project.tasks.create(name: 'update', dependsOn: init, group: GROUP, type:PaketUpdate)
+        def restore = project.tasks.create(name: 'restore', dependsOn: init, group: GROUP, type:PaketRestore)
+
+        [update, restore].each {
+            it.paketExtension = paketExtension
+        }
     }
 
     private Task createPaketInstallTask(String taskPrefix, PaketPluginExtension extension) {

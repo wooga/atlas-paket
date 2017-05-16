@@ -85,6 +85,7 @@ class PaketBootstrap extends DefaultTask {
             logger.info("requesting paket version: {}", paketVersion )
 
             bootstrapCommandline << paketVersion
+            bootstrapCommandline << "--prefer-nuget"
             bootstrapCommandline << "-s"
 
             logger.debug("Execute command {}", bootstrapCommandline.join(" "))

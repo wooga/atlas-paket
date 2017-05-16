@@ -33,19 +33,6 @@ abstract class PaketTask extends DefaultTask {
     @Internal
     PaketPluginExtension paketExtension
 
-    void performBase() {
-        String osName = System.getProperty("os.name").toLowerCase()
-        logger.info("Detected operationg system: {}.", osName)
-
-        if (!osName.contains("windows")) {
-
-            paketCommandline << paketExtension.monoExecutable
-            logger.info("Use mono: {}.", true)
-        }
-
-        paketCommandline << paketExtension.paketExecuteablePath
-    }
-
     void performPaketCommand(cl) {
         String osName = System.getProperty("os.name").toLowerCase()
         logger.info("Detected operationg system: {}.", osName)
@@ -62,9 +49,12 @@ abstract class PaketTask extends DefaultTask {
 
         logger.debug("Execute command {}", paketCommandline.join(" "))
 
-        project.exec {
+        def outputStream = new ByteArrayOutputStream()
+        def commandOut = project.exec {
             commandLine = paketCommandline
-            standardOutput = new ByteArrayOutputStream()
+            standardOutput = outputStream
         }
+
+        logger.info(outputStream.toString())
     }
 }
