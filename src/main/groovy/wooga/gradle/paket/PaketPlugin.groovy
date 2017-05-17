@@ -95,7 +95,7 @@ class PaketPlugin implements Plugin<Project> {
             def templateReader = new PaketTemplateReader(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./,'')
-            PaketPack packTask = tasks.create(name: 'paketPack' + packageName, group: PAKET_GROUP, type: PaketPack)
+            PaketPack packTask = tasks.create(name: 'paketPack-' + packageName, group: BasePlugin.BUILD_GROUP, type: PaketPack)
             packTask.templateFile = file
             packTask.outputDir = {"$project.buildDir/outputs"}
             packTask.outputs.file {"$packTask.outputDir/${packageID}.${project.version}.nupkg"}
@@ -105,7 +105,7 @@ class PaketPlugin implements Plugin<Project> {
 
             tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 
-            project.artifacts.add(PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), builtBy: packTask])
+            project.artifacts.add(PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
 
         }
     }
