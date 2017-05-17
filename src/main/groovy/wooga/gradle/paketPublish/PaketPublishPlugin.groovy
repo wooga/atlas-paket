@@ -23,11 +23,14 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.PaketPlugin
+import wooga.gradle.paketPublish.tasks.PaketPush
 
 class PaketPublishPlugin implements Plugin<Project> {
 
     Project project
     TaskContainer tasks
+
+    static final String WOOGA_PAKET_PUBLISH_EXTENSION_NAME = 'paketPublish'
 
     @Override
     void apply(Project project) {
@@ -37,13 +40,18 @@ class PaketPublishPlugin implements Plugin<Project> {
         project.pluginManager.apply(PublishingPlugin.class)
         project.pluginManager.apply(PaketPlugin.class)
 
+        def extension = project.extensions.create(WOOGA_PAKET_PUBLISH_EXTENSION_NAME, PaketPushPluginExtension, project)
+
         def publishLifecycleTask = tasks[PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME]
 
         Configuration nupkg = project.configurations.getByName(PaketPlugin.PAKET_CONFIGURATION)
         nupkg.allArtifacts.each { artifact ->
             def packageName = artifact.name.replaceAll(/\./,'')
             def publishTaskName = "paketPush-$packageName"
-            def pushTask = tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP)
+            PaketPush pushTask = tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketPush)
+            pushTask.url = { extension.getPublishURL() }
+            pushTask.apiKey = { extension.getApiKey() }
+            pushTask.inputFile = artifact.file
             pushTask.dependsOn artifact
             pushTask.doLast {
                 println "push ME"
