@@ -15,10 +15,9 @@
  *
  */
 
-package net.wooga.gradle.tasks
+package wooga.gradle.paket.tasks
 
-import net.wooga.gradle.PaketPluginExtension
-import org.gradle.api.DefaultTask
+import wooga.gradle.paket.PaketPluginExtension
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
@@ -27,7 +26,7 @@ import org.gradle.api.tasks.TaskAction
 
 import java.util.concurrent.Callable
 
-class PaketBootstrapDownload extends DefaultTask {
+class PaketBootstrapDownload extends PaketTask {
 
     static Logger logger = Logging.getLogger(PaketBootstrapDownload)
 

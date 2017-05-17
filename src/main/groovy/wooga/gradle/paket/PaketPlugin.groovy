@@ -15,12 +15,12 @@
  *
  */
 
-package net.wooga.gradle
+package wooga.gradle.paket
 
-import net.wooga.gradle.tasks.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import wooga.gradle.paket.tasks.*
 
 class PaketPlugin implements Plugin<Project> {
 
@@ -29,48 +29,68 @@ class PaketPlugin implements Plugin<Project> {
     static final String WOOGA_PAKET_EXTENSION_NAME = 'paket'
     static final String WOOGA_PAKET_UNITY_EXTENSION_NAME = 'paketUnity'
 
-    static final String GROUP = "Paket"
+    static final String PAKET_GROUP = "Paket"
+
+    static final String DEPENDENCIES_FILE_NAME = "paket.dependencies"
+
+    static final String RESTORE_TASK_NAME = "paketRestore"
+    static final String UPDATE_TASK_NAME = "paketUpdate"
+    static final String INSTALL_ALL_TASK_NAME = "paketInstallAll"
 
     @Override
     void apply(Project project) {
         this.project = project
 
+        project.apply plugin: 'base'
+
+        //bootstrap
         def paketExtension = project.extensions.create(WOOGA_PAKET_EXTENSION_NAME, PaketPluginExtension, false)
         def paketUnityExtension = project.extensions.create(WOOGA_PAKET_UNITY_EXTENSION_NAME, PaketPluginExtension, true)
 
         def paketBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
-        def paketUnityBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_UNITY_EXTENSION_NAME,paketUnityExtension)
+        def paketUnityBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_UNITY_EXTENSION_NAME, paketUnityExtension)
 
-        def init = project.tasks.create(name:'init', type:PaketInit, dependsOn: paketBootstrap)
-        init.paketExtension = paketExtension
-        init.onlyIf { !project.file("${project.projectDir}/paket.dependencies").exists()}
+        //init task
+        project.tasks.create(name: 'paketInit', type: PaketInit, group: PAKET_GROUP)
 
+        //install
         def paketInstall = createPaketInstallTask(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
-        paketInstall.dependsOn init
+        paketInstall.dependsOn paketBootstrap
+
+        def paketUpdate = project.tasks.create(name: UPDATE_TASK_NAME, dependsOn: paketBootstrap, group: PAKET_GROUP, type: PaketUpdate)
+        def paketRestore = project.tasks.create(name: RESTORE_TASK_NAME, dependsOn: paketBootstrap, group: PAKET_GROUP, type: PaketRestore)
 
         def paketUnityInstall = createPaketInstallTask(WOOGA_PAKET_UNITY_EXTENSION_NAME, paketUnityExtension)
         paketUnityInstall.dependsOn paketUnityBootstrap
-        paketUnityInstall.mustRunAfter paketInstall
 
-        def install = project.tasks.create(name: 'install', dependsOn: [paketInstall, paketUnityInstall], group: GROUP, description: paketInstall.description)
-        def update = project.tasks.create(name: 'update', dependsOn: init, group: GROUP, type:PaketUpdate)
-        def restore = project.tasks.create(name: 'restore', dependsOn: init, group: GROUP, type:PaketRestore)
+        [paketInstall, paketUpdate, paketRestore].each { Task task ->
+            task.finalizedBy paketUnityInstall
+        }
 
-        [update, restore].each {
-            it.paketExtension = paketExtension
+        project.tasks.matching({it.name.startsWith("paketUnity")}).each { PaketTask task ->
+            task.paketDependencies = {
+                project.fileTree(project.projectDir).include("**/paket.unity3d.references")
+            }
+
+            task.paketExtension = paketUnityExtension
+
+            task.onlyIf {
+                project.file("$project.projectDir/${PaketPlugin.DEPENDENCIES_FILE_NAME}").exists()
+            }
         }
     }
 
-    private Task createPaketInstallTask(String taskPrefix, PaketPluginExtension extension) {
+    private PaketTask createPaketInstallTask(String taskPrefix, PaketPluginExtension extension) {
         def installName = taskPrefix + 'Install'
         def install = project.tasks.create(name: installName, type: PaketInstall) {
             paketExtension = extension
+            group PAKET_GROUP
         }
 
         return install
     }
 
-    private Task createPaketBootstrapTasks(String taskPrefix, PaketPluginExtension extension) {
+    private PaketTask createPaketBootstrapTasks(String taskPrefix, PaketPluginExtension extension) {
         def bootstrapDownloadName = taskPrefix + 'BootstrapDownload'
         def bootstrapDownload = project.tasks.create(name: bootstrapDownloadName, type: PaketBootstrapDownload) {
             outputDir = { "$project.projectDir/${extension.paketDirectory}" }

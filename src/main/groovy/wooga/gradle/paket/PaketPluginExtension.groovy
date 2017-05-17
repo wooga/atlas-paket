@@ -15,7 +15,7 @@
  *
  */
 
-package net.wooga.gradle
+package wooga.gradle.paket
 
 class PaketPluginExtension {
 

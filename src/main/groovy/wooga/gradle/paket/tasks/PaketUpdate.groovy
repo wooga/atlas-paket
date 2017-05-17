@@ -15,20 +15,20 @@
  *
  */
 
-package net.wooga.gradle
+package wooga.gradle.paket.tasks
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
-import spock.lang.Specification
+import org.gradle.api.tasks.TaskAction
 
-class PaketPluginSpec extends Specification {
-    Project project = ProjectBuilder.builder().build()
+class PaketUpdate extends PaketTask {
+    PaketUpdate() {
+        super()
+        description = 'Update one or all dependencies to their latest version and update projects.'
+    }
 
-    def 'create bootstrap task'() {
-        given:
-        project.plugins.apply('net.wooga.paket')
-
-        expect:
-        project.tasks.findByName("paketBootstrap")
+    @TaskAction
+    void performUpdate() {
+        performPaketCommand { cmd ->
+            cmd << "update"
+        }
     }
 }

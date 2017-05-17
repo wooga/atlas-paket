@@ -15,35 +15,57 @@
  *
  */
 
-package net.wooga.gradle.tasks
+package wooga.gradle.paket.tasks
 
-import net.wooga.gradle.PaketPluginExtension
+import wooga.gradle.paket.PaketPlugin
+import wooga.gradle.paket.PaketPluginExtension
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.SkipWhenEmpty
 
 abstract class PaketTask extends DefaultTask {
 
     static Logger logger = Logging.getLogger(PaketTask)
 
+    @SkipWhenEmpty
+    @InputFiles
+    def paketDependencies = { project.projectDir.listFiles().findAll {it.name == "paket.dependencies"} }
+
+    FileCollection getPaketDependencies() {
+        project.files(paketDependencies)
+    }
+
     @Internal
-    def paketCommandline = []
+    def paketCommandline
 
     @Internal
     PaketPluginExtension paketExtension
+
+    PaketPluginExtension getPaketExtension() {
+        if(!paketExtension) {
+            paketExtension = project.extensions.findByName(PaketPlugin.WOOGA_PAKET_EXTENSION_NAME)
+        }
+
+        return paketExtension
+    }
 
     void performPaketCommand(cl) {
         String osName = System.getProperty("os.name").toLowerCase()
         logger.info("Detected operationg system: {}.", osName)
 
+        paketCommandline = []
+
         if (!osName.contains("windows")) {
 
-            paketCommandline << paketExtension.monoExecutable
+            paketCommandline << getPaketExtension().monoExecutable
             logger.info("Use mono: {}.", true)
         }
 
-        paketCommandline << paketExtension.paketExecuteablePath
+        paketCommandline << getExecuteable()
 
         cl(paketCommandline)
 
@@ -56,5 +78,10 @@ abstract class PaketTask extends DefaultTask {
         }
 
         logger.info(outputStream.toString())
+    }
+
+    @Internal
+    String getExecuteable() {
+        getPaketExtension().paketExecuteablePath
     }
 }

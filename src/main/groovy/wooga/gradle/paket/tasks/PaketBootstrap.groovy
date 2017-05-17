@@ -15,23 +15,16 @@
  *
  */
 
-package net.wooga.gradle.tasks
+package wooga.gradle.paket.tasks
 
-import net.wooga.gradle.PaketPluginExtension
-import org.gradle.api.DefaultTask
-import org.gradle.api.Task
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 
 import java.util.concurrent.Callable
 
-class PaketBootstrap extends DefaultTask {
+class PaketBootstrap extends PaketTask {
 
     static Logger logger = Logging.getLogger(PaketBootstrap)
 
@@ -61,38 +54,24 @@ class PaketBootstrap extends DefaultTask {
         }
     }
 
-    PaketPluginExtension paketExtension
+    @Override
+    String getExecuteable() {
+        getPaketBootstrapper()
+    }
 
     @TaskAction
-    void exec(IncrementalTaskInputs inputs) {
+    void performBootstrap(IncrementalTaskInputs inputs) {
         if (!inputs.incremental) {
             project.delete(paketFile)
         }
 
         inputs.outOfDate { change ->
-            def bootstrapCommandline = []
-            String osName = System.getProperty("os.name").toLowerCase()
-            logger.info("Detected operationg system: {}.", osName)
 
-            if (!osName.contains("windows")) {
-
-                bootstrapCommandline << paketExtension.monoExecutable
-                logger.info("Use mono: {}.", true)
-            }
-
-            bootstrapCommandline << paketBootstrapper.path
-
-            logger.info("requesting paket version: {}", paketVersion )
-
-            bootstrapCommandline << paketVersion
-            bootstrapCommandline << "--prefer-nuget"
-            bootstrapCommandline << "-s"
-
-            logger.debug("Execute command {}", bootstrapCommandline.join(" "))
-
-            project.exec {
-                commandLine = bootstrapCommandline
-                standardOutput = new ByteArrayOutputStream()
+            performPaketCommand() {cmd ->
+                logger.info("requesting paket version: {}", paketVersion )
+                cmd << paketVersion
+                cmd << "--prefer-nuget"
+                cmd << "-s"
             }
         }
     }

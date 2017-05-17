@@ -15,7 +15,7 @@
  *
  */
 
-package net.wooga.gradle.tasks
+package wooga.gradle.paket.tasks
 
 import org.gradle.api.tasks.TaskAction
 

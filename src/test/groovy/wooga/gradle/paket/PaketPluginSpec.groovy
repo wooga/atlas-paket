@@ -15,21 +15,20 @@
  *
  */
 
-package net.wooga.gradle.tasks
+package wooga.gradle.paket
 
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Specification
 
-class PaketInit extends PaketTask {
+class PaketPluginSpec extends Specification {
+    Project project = ProjectBuilder.builder().build()
 
-    PaketInit() {
-        super()
-        description "Creates an empty paket.dependencies file in the working directory."
-    }
+    def 'create bootstrap task'() {
+        given:
+        project.plugins.apply('net.wooga.paket')
 
-    @TaskAction
-    void performInit() {
-        performPaketCommand { cmd ->
-            cmd << "init"
-        }
+        expect:
+        project.tasks.findByName("paketBootstrap")
     }
 }
