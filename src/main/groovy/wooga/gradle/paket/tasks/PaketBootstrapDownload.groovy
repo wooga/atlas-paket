@@ -17,6 +17,8 @@
 
 package wooga.gradle.paket.tasks
 
+import org.gradle.api.tasks.StopActionException
+import org.gradle.internal.impldep.org.testng.SkipException
 import wooga.gradle.paket.PaketPluginExtension
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -64,6 +66,12 @@ class PaketBootstrapDownload extends PaketTask {
     @TaskAction
     void downloadBootstrapper() {
         def paketBootstrapperFile = project.file("${getOutputDir()}/${getPaketBootstrapperFileName()}")
+
+        if(paketBootstrapperFile.exists())
+        {
+            throw new StopActionException()
+        }
+
         new URL("${getBootstrapURL()}").withInputStream { i ->
             paketBootstrapperFile.withOutputStream {
                 it << i

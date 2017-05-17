@@ -33,7 +33,7 @@ abstract class PaketTask extends DefaultTask {
 
     @SkipWhenEmpty
     @InputFiles
-    def paketDependencies = { project.projectDir.listFiles().findAll {it.name == "paket.dependencies"} }
+    def paketDependencies = { project.projectDir.listFiles().find {it.path == "$project.projectDir/paket.dependencies"} }
 
     FileCollection getPaketDependencies() {
         project.files(paketDependencies)

@@ -35,7 +35,6 @@ class PaketPlugin implements Plugin<Project> {
 
     static final String RESTORE_TASK_NAME = "paketRestore"
     static final String UPDATE_TASK_NAME = "paketUpdate"
-    static final String INSTALL_ALL_TASK_NAME = "paketInstallAll"
 
     @Override
     void apply(Project project) {
