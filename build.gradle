@@ -25,6 +25,25 @@ description = 'Paket plugin for Gradle.'
 
 version '0.1.0-SNAPSHOT'
 
+pluginBundle {
+    website = 'https://github.com/wooga/atlas-paket'
+    vcsUrl = 'https://github.com/wooga/atlas-paket'
+    description = 'This plugin provides tasks for retrieving and publishing [Paket] (https://fsprojects.github.io/Paket/) packages'
+    tags = ['Paket', 'c#', 'nuget']
+
+    plugins {
+        paketPlugin {
+            id = 'net.wooga.paket'
+            displayName = 'Gradle Paket plugin'
+        }
+
+        paketPublishPlugin {
+            id = 'net.wooga.paket-publish'
+            displayName = 'Gradle Paket publishing plugin'
+        }
+    }
+}
+
 repositories {
     jcenter()
 }
