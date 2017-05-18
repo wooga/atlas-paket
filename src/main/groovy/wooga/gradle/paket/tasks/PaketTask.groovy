@@ -17,15 +17,16 @@
 
 package wooga.gradle.paket.tasks
 
-import wooga.gradle.paket.PaketPlugin
-import wooga.gradle.paket.PaketPluginExtension
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.SkipWhenEmpty
+import wooga.gradle.paket.PaketPlugin
+import wooga.gradle.paket.PaketPluginExtension
 
 abstract class PaketTask extends DefaultTask {
 
@@ -71,13 +72,23 @@ abstract class PaketTask extends DefaultTask {
 
         logger.debug("Execute command {}", paketCommandline.join(" "))
 
-        def outputStream = new ByteArrayOutputStream()
+        def stdOut = new ByteArrayOutputStream()
+        def stdErr = new ByteArrayOutputStream()
+
         def commandOut = project.exec {
             commandLine = paketCommandline
-            standardOutput = outputStream
+            standardOutput = stdOut
+            errorOutput = stdErr
+            ignoreExitValue = true
         }
 
-        logger.info(outputStream.toString())
+        if(commandOut.exitValue != 0)
+        {
+            logger.error(stdErr.toString())
+            throw new GradleException("Paket task ${name} failed")
+        }
+
+        logger.info(stdOut.toString())
     }
 
     @Internal
