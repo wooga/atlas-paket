@@ -22,4 +22,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'wooga-paket'
+rootProject.name = 'atlas-paket'
