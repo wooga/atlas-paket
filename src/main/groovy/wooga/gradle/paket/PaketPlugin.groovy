@@ -89,24 +89,25 @@ class PaketPlugin implements Plugin<Project> {
             transitive = false
         }
 
-        def templateFiles = project.fileTree(project.projectDir)
-        templateFiles.include"**/paket.template"
-        templateFiles.each { File file ->
-            def templateReader = new PaketTemplateReader(file)
-            def packageID = templateReader.getPackageId()
-            def packageName = packageID.replaceAll(/\./,'')
-            PaketPack packTask = tasks.create(name: 'paketPack-' + packageName, group: BasePlugin.BUILD_GROUP, type: PaketPack)
-            packTask.templateFile = file
-            packTask.outputDir = {"$project.buildDir/outputs"}
-            packTask.outputs.file {"$packTask.outputDir/${packageID}.${project.version}.nupkg"}
-            packTask.version = {project.version}
-            packTask.description = "Pack package ${templateReader.getPackageId()}"
-            packTask.dependsOn paketInstall
+        project.afterEvaluate {
+            def templateFiles = project.fileTree(project.projectDir)
+            templateFiles.include "**/paket.template"
+            templateFiles.each { File file ->
+                def templateReader = new PaketTemplateReader(file)
+                def packageID = templateReader.getPackageId()
+                def packageName = packageID.replaceAll(/\./, '')
+                PaketPack packTask = tasks.create(name: 'paketPack-' + packageName, group: BasePlugin.BUILD_GROUP, type: PaketPack)
+                packTask.templateFile = file
+                packTask.outputDir = { "$project.buildDir/outputs" }
+                packTask.outputs.file { "$packTask.outputDir/${packageID}.${project.version}.nupkg" }
+                packTask.version = { project.version }
+                packTask.description = "Pack package ${templateReader.getPackageId()}"
+                packTask.dependsOn paketInstall
 
-            tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
+                tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 
-            project.artifacts.add(PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
-
+                project.artifacts.add(PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
+            }
         }
     }
 
