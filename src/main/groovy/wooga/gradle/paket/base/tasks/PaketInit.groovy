@@ -26,7 +26,6 @@ import wooga.gradle.paket.PaketPlugin
 
 class PaketInit extends DefaultTask {
 
-
     static Logger logger = Logging.getLogger(PaketInit)
 
     @OutputFile
@@ -38,7 +37,7 @@ class PaketInit extends DefaultTask {
 
     PaketInit() {
         super()
-        description "Creates an empty paket.dependencies file in the working directory."
+        description = "Creates an empty paket.dependencies file in the working directory."
 
         onlyIf {
             !getDependenciesFile().exists()

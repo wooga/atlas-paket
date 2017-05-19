@@ -15,23 +15,28 @@
  *
  */
 
-package wooga.gradle.paket.base
+package wooga.gradle.paket.unity.tasks
 
-trait PaketPluginExtension {
-    String paketDirectory = ".paket"
+import wooga.gradle.paket.base.tasks.PaketBootstrap
 
-    String paketExecuteableName
-    String paketBootstrapperFileName
-    String paketBootstrapperDownloadURL
+class PaketUnityBootstrap extends PaketBootstrap {
 
-    String version = ""
-    String monoExecutable = "mono"
-
-    String getPaketExecuteablePath() {
-        "$paketDirectory/$paketExecuteableName"
+    def paketDependencies = {
+        project.fileTree(project.projectDir).include("**/paket.unity3d.references")
     }
 
-    String getPaketBootstrapperPath() {
-        "$paketDirectory/$paketBootstrapperFileName"
+    PaketUnityBootstrap() {
+        super(PaketUnityBootstrap.class)
+    }
+
+    @Override
+    protected void exec() {
+        def packArguments = []
+        logger.info("requesting paket version: {}", paketVersion)
+
+        packArguments << paketVersion
+
+        setArgs(packArguments)
+        super.exec()
     }
 }

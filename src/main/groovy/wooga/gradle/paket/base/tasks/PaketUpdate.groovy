@@ -17,18 +17,18 @@
 
 package wooga.gradle.paket.base.tasks
 
-import org.gradle.api.tasks.TaskAction
-
-class PaketUpdate extends PaketTask {
+class PaketUpdate extends AbstractPaketTask {
     PaketUpdate() {
-        super()
+        super(PaketUpdate.class)
         description = 'Update one or all dependencies to their latest version and update projects.'
     }
 
-    @TaskAction
-    void performUpdate() {
-        performPaketCommand { cmd ->
-            cmd << "update"
-        }
+    @Override
+    protected void exec() {
+        def packArguments = []
+        packArguments << "update"
+        setArgs(packArguments)
+
+        super.exec()
     }
 }

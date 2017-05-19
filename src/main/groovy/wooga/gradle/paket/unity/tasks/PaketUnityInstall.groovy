@@ -15,23 +15,21 @@
  *
  */
 
-package wooga.gradle.paket.base
+package wooga.gradle.paket.unity.tasks
 
-trait PaketPluginExtension {
-    String paketDirectory = ".paket"
+import wooga.gradle.paket.PaketUnityPlugin
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
-    String paketExecuteableName
-    String paketBootstrapperFileName
-    String paketBootstrapperDownloadURL
+class PaketUnityInstall extends AbstractPaketTask {
 
-    String version = ""
-    String monoExecutable = "mono"
-
-    String getPaketExecuteablePath() {
-        "$paketDirectory/$paketExecuteableName"
+    def paketDependencies = {
+        project.fileTree(project.projectDir).include("**/paket.unity3d.references")
     }
 
-    String getPaketBootstrapperPath() {
-        "$paketDirectory/$paketBootstrapperFileName"
+    PaketUnityInstall() {
+        super(PaketUnityInstall.class)
+        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
+        group = PaketUnityPlugin.GROUP
+        args = [ "install" ]
     }
 }

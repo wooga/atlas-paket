@@ -17,21 +17,14 @@
 
 package wooga.gradle.paket.base
 
-trait PaketPluginExtension {
+class DefaultPaketPluginExtension implements PaketPluginExtension{
+
     String paketDirectory = ".paket"
 
-    String paketExecuteableName
-    String paketBootstrapperFileName
-    String paketBootstrapperDownloadURL
+    String paketExecuteableName = "paket.exe"
+    String paketBootstrapperFileName = "paket.bootstrapper.exe"
+    String paketBootstrapperDownloadURL = "https://github.com/fsprojects/Paket/releases/download/4.8.5/paket.bootstrapper.exe"
 
     String version = ""
     String monoExecutable = "mono"
-
-    String getPaketExecuteablePath() {
-        "$paketDirectory/$paketExecuteableName"
-    }
-
-    String getPaketBootstrapperPath() {
-        "$paketDirectory/$paketBootstrapperFileName"
-    }
 }

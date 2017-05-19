@@ -21,11 +21,12 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketTask
 
 import java.util.concurrent.Callable
 
-class PaketPush extends PaketTask {
+class PaketPush extends AbstractPaketTask {
 
     @Input
     def url
@@ -66,22 +67,25 @@ class PaketPush extends PaketTask {
     }
 
     PaketPush() {
-        super()
+        super(PaketPush.class)
         description = "Pushes the given .nupkg file."
     }
 
-    @TaskAction
-    void performRestore() {
-        performPaketCommand { cmd ->
-            cmd << "push"
-            cmd << "url" << getUrl()
+    @Override
+    protected void exec() {
+        def packArguments = []
 
-            if(getApiKey() != null)
-            {
-                cmd << "apikey" << getApiKey()
-            }
+        packArguments << "push"
+        packArguments << "url" << getUrl()
 
-            cmd << "file" << getinputFile().path
+        if(getApiKey() != null)
+        {
+            packArguments << "apikey" << getApiKey()
         }
+
+        packArguments << "file" << getinputFile().path
+
+        setArgs(packArguments)
+        super.exec()
     }
 }

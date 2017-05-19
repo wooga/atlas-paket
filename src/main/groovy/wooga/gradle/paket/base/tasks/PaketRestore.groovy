@@ -17,20 +17,11 @@
 
 package wooga.gradle.paket.base.tasks
 
-import org.gradle.api.tasks.TaskAction
-
-class PaketRestore extends PaketTask {
+class PaketRestore extends AbstractPaketTask {
 
     PaketRestore() {
-        super()
+        super(PaketRestore.class)
         description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
+        args = ["restore"]
     }
-
-    @TaskAction
-    void performRestore() {
-        performPaketCommand { cmd ->
-            cmd << "restore"
-        }
-    }
-
 }

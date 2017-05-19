@@ -15,13 +15,14 @@
  *
  */
 
-package wooga.gradle.paket.base.tasks
+package wooga.gradle.paket.pack.tasks
 
 import org.gradle.api.tasks.*
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 import java.util.concurrent.Callable
 
-class PaketPack extends PaketTask {
+class PaketPack extends AbstractPaketTask {
 
     @Optional
     @Input
@@ -54,20 +55,26 @@ class PaketPack extends PaketTask {
         project.file outputDir
     }
 
-    @TaskAction
-    void performPack() {
+    PaketPack() {
+        super(PaketPack.class)
+    }
 
-        performPaketCommand() { cmd ->
-            cmd << "pack"
-            cmd << "output" << getOutputDir()
+    @Override
+    protected void exec() {
+        def packArguments = []
+        packArguments << "pack"
+        packArguments << "output" << getOutputDir()
 
-            if (getVersion() != null) {
-                cmd << "version" << getVersion()
-            }
-
-            if (getTemplateFile() != null) {
-                cmd << "templatefile" << getTemplateFile()
-            }
+        if (getVersion() != null) {
+            packArguments << "version" << getVersion()
         }
+
+        if (getTemplateFile() != null) {
+            packArguments << "templatefile" << getTemplateFile()
+        }
+
+        setArgs(packArguments)
+
+        super.exec()
     }
 }

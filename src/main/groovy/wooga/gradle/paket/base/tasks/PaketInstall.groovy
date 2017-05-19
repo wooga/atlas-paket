@@ -17,19 +17,11 @@
 
 package wooga.gradle.paket.base.tasks
 
-import org.gradle.api.tasks.TaskAction
-
-class PaketInstall extends PaketTask {
+class PaketInstall extends AbstractPaketTask {
     
     PaketInstall() {
-        super()
+        super(PaketInstall.class)
         description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
-    }
-
-    @TaskAction
-    void performInstall() {
-        performPaketCommand { cmd ->
-            cmd << "install"
-        }
+        args = [ "install" ]
     }
 }

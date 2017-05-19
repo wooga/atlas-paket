@@ -17,73 +17,67 @@
 
 package wooga.gradle.paket.base.tasks
 
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.AbstractExecTask
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.SkipWhenEmpty
-import wooga.gradle.paket.PaketPlugin
+import org.gradle.model.Finalize
 import wooga.gradle.paket.base.PaketPluginExtension
 
-abstract class PaketTask extends DefaultTask {
-
-    static Logger logger = Logging.getLogger(PaketTask)
+abstract class AbstractPaketTask<T extends AbstractExecTask> extends AbstractExecTask {
+    static Logger logger = Logging.getLogger(AbstractPaketTask)
 
     @SkipWhenEmpty
     @InputFiles
     def paketDependencies = { project.projectDir.listFiles().find {it.path == "$project.projectDir/paket.dependencies"} }
 
-    FileCollection getPaketDependencies() {
+    def getPaketDependencies() {
         project.files(paketDependencies)
     }
 
     @Internal
-    def paketCommandline
+    def stdOut = new ByteArrayOutputStream()
+
+    @Internal
+    def stdErr = new ByteArrayOutputStream()
 
     @Internal
     PaketPluginExtension paketExtension
 
-    PaketPluginExtension getPaketExtension() {
-        if(!paketExtension) {
-            paketExtension = project.extensions.findByName(PaketPlugin.EXTENSION_NAME)
-        }
+    AbstractPaketTask(Class<T> taskType) {
+        super(taskType)
 
-        return paketExtension
+        super.setStandardOutput(stdOut)
+        super.setErrorOutput(stdErr)
     }
 
-    void performPaketCommand(cl) {
+    String executable = paketExtension.paketExecuteablePath
+
+    @Override
+    protected void exec() {
         String osName = System.getProperty("os.name").toLowerCase()
         logger.info("Detected operationg system: {}.", osName)
 
-        paketCommandline = []
+        def paketArgs = []
+        def execArgs = args
 
         if (!osName.contains("windows")) {
-
-
-            paketCommandline << getPaketExtension().monoExecutable
             logger.info("Use mono: {}.", true)
+            paketExtension << paketExtension.monoExecutable
         }
 
-        paketCommandline << getExecuteable()
+        paketArgs << executable
+        paketArgs += execArgs
 
-        cl(paketCommandline)
+        logger.debug("Execute command {}", paketArgs.join(" "))
+        args = paketArgs
 
-        logger.debug("Execute command {}", paketCommandline.join(" "))
+        super.exec()
 
-        def stdOut = new ByteArrayOutputStream()
-        def stdErr = new ByteArrayOutputStream()
-
-        def commandOut = project.exec {
-            commandLine = paketCommandline
-            standardOutput = stdOut
-            errorOutput = stdErr
-            ignoreExitValue = true
-        }
-
-        if(commandOut.exitValue != 0)
+        if(execResult.exitValue != 0)
         {
             logger.error(stdErr.toString())
             throw new GradleException("Paket task ${name} failed")
@@ -92,8 +86,21 @@ abstract class PaketTask extends DefaultTask {
         logger.info(stdOut.toString())
     }
 
-    @Internal
-    String getExecuteable() {
-        getPaketExtension().paketExecuteablePath
+    @Override
+    @Finalize
+    AbstractExecTask setIgnoreExitValue(boolean ignoreExitValue) {
+        return this
+    }
+
+    @Override
+    @Finalize
+    AbstractExecTask setStandardOutput(OutputStream outputStream) {
+        return this
+    }
+
+    @Override
+    @Finalize
+    AbstractExecTask setErrorOutput(OutputStream errorStream) {
+        return this
     }
 }

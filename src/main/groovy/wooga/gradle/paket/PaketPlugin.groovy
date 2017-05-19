@@ -22,7 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.tasks.*
 
 class PaketPlugin implements Plugin<Project> {
@@ -30,15 +30,16 @@ class PaketPlugin implements Plugin<Project> {
     Project project
     TaskContainer tasks
 
-    static final String WOOGA_PAKET_EXTENSION_NAME = 'paket'
-    static final String WOOGA_PAKET_UNITY_EXTENSION_NAME = 'paketUnity'
-
-    static final String PAKET_GROUP = "Paket"
+    static final String EXTENSION_NAME = 'paket'
+    static final String GROUP = "Paket"
 
     static final String DEPENDENCIES_FILE_NAME = "paket.dependencies"
 
+    static final String BOOTSTRAP_TASK_NAME = "paketBootstrap"
+    static final String INSTALL_TASK_NAME = "paketInstall"
     static final String RESTORE_TASK_NAME = "paketRestore"
     static final String UPDATE_TASK_NAME = "paketUpdate"
+
     static final String PAKET_CONFIGURATION = "nupkg"
 
     @Override
@@ -48,41 +49,32 @@ class PaketPlugin implements Plugin<Project> {
 
         project.pluginManager.apply(BasePlugin.class)
 
+        def extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension, false)
+
         //bootstrap
-        def paketExtension = project.extensions.create(WOOGA_PAKET_EXTENSION_NAME, PaketPluginExtension, false)
-        def paketUnityExtension = project.extensions.create(WOOGA_PAKET_UNITY_EXTENSION_NAME, PaketPluginExtension, true)
+        def paketBootstrap = tasks.create(BOOTSTRAP_TASK_NAME, PaketBootstrap.class)
+        paketBootstrap.outputDir = { "$project.projectDir/${extension.paketDirectory}" }
+        paketBootstrap.paketBootstrapperFileName = { extension.paketBootstrapperFileName }
+        paketBootstrap.bootstrapURL = { extension.paketBootstrapperDownloadURL }
+        paketBootstrap.paketExtension = extension
+        paketBootstrap.paketVersion = { extension.version }
 
-        def paketBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
-        def paketUnityBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_UNITY_EXTENSION_NAME, paketUnityExtension)
-        paketUnityBootstrap.unity = true
+        paketBootstrap.paketBootstrapper = {"${paketBootstrap.outputDir.path}/${extension.paketBootstrapperFileName}"}
+        paketBootstrap.paketFile = { "${paketBootstrap.outputDir.path}/${extension.paketExecuteableName}" }
 
-        //init task
-        tasks.create(name: 'paketInit', type: PaketInit, group: PAKET_GROUP)
+        //init
+        def init = tasks.create(name: 'paketInit', type: PaketInit, group: GROUP)
+        init.finalizedBy paketBootstrap
 
         //install
-        def paketInstall = createPaketInstallTask(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
-        paketInstall.dependsOn paketBootstrap
-
-        def paketUpdate = tasks.create(name: UPDATE_TASK_NAME, dependsOn: paketBootstrap, group: PAKET_GROUP, type: PaketUpdate)
-        def paketRestore = tasks.create(name: RESTORE_TASK_NAME, dependsOn: paketBootstrap, group: PAKET_GROUP, type: PaketRestore)
-
-        def paketUnityInstall = createPaketInstallTask(WOOGA_PAKET_UNITY_EXTENSION_NAME, paketUnityExtension)
-        paketUnityInstall.dependsOn paketUnityBootstrap
+        def paketInstall = tasks.create(INSTALL_TASK_NAME, PaketInstall.class)
+        def paketUpdate = tasks.create(UPDATE_TASK_NAME, PaketUpdate.class)
+        def paketRestore = tasks.create(RESTORE_TASK_NAME, PaketRestore.class)
 
         [paketInstall, paketUpdate, paketRestore].each { Task task ->
-            task.finalizedBy paketUnityInstall
-        }
-
-        tasks.matching({it.name.startsWith("paketUnity")}).each { PaketTask task ->
-            task.paketDependencies = {
-                project.fileTree(project.projectDir).include("**/paket.unity3d.references")
-            }
-
-            task.paketExtension = paketUnityExtension
-
-            task.onlyIf {
-                project.file("$project.projectDir/${PaketPlugin.DEPENDENCIES_FILE_NAME}").exists()
-            }
+            task.paketExtension = extension
+            task.group = GROUP
+            task.dependsOn paketBootstrap
         }
 
         def configurations = project.configurations
@@ -90,86 +82,5 @@ class PaketPlugin implements Plugin<Project> {
             description = "paket nupkg archive"
             transitive = false
         }
-
-        project.afterEvaluate {
-            def templateFiles = project.fileTree(project.projectDir)
-            templateFiles.include "**/paket.template"
-            templateFiles.each { File file ->
-                def templateReader = new PaketTemplateReader(file)
-                def packageID = templateReader.getPackageId()
-                def packageName = packageID.replaceAll(/\./, '')
-                PaketPack packTask = tasks.create(name: 'paketPack-' + packageName, group: BasePlugin.BUILD_GROUP, type: PaketPack)
-                packTask.templateFile = file
-                packTask.outputDir = { "$project.buildDir/outputs" }
-                packTask.outputs.file { "$packTask.outputDir/${packageID}.${project.version}.nupkg" }
-                packTask.version = { project.version }
-                packTask.description = "Pack package ${templateReader.getPackageId()}"
-                packTask.dependsOn paketInstall
-
-                tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
-
-                project.artifacts.add(PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
-            }
-        }
-    }
-
-    private class PaketTemplateReader {
-
-        private def content
-
-        PaketTemplateReader(File templateFile) {
-            content = [:]
-            templateFile.eachLine { line ->
-                def matcher
-                if ((matcher = line =~ /^(\w+)( |\n[ ]{4})(((\n[ ]{4})?.*)+)/)) {
-                    content[matcher[0][1]] = matcher[0][3]
-                }
-            }
-        }
-
-        String getPackageId() {
-            content['id']
-        }
-    }
-
-    private PaketTask createPaketInstallTask(String taskPrefix, PaketPluginExtension extension) {
-        def installName = taskPrefix + 'Install'
-        def install = tasks.create(name: installName, type: PaketInstall) {
-            paketExtension = extension
-            group PAKET_GROUP
-        }
-
-        return install
-    }
-
-    private PaketBootstrap createPaketBootstrapTasks(String taskPrefix, PaketPluginExtension extension) {
-        def bootstrapDownloadName = taskPrefix + 'BootstrapDownload'
-        def bootstrapDownload = tasks.create(name: bootstrapDownloadName, type: PaketBootstrapDownload) {
-            outputDir = { "$project.projectDir/${extension.paketDirectory}" }
-            paketBootstrapperFileName = {
-                extension.paketBootstrapperFileName
-            }
-            bootstrapURL = {
-                extension.paketBootstrapperDownloadURL
-            }
-
-            paketExtension = extension
-        }
-
-        def bootstrapName = taskPrefix + 'Bootstrap'
-        def bootstrap = tasks.create(name: bootstrapName, type: PaketBootstrap) {
-            dependsOn bootstrapDownload
-            paketExtension = extension
-
-            paketVersion = { extension.version }
-            paketBootstrapper = {
-                "${bootstrapDownload.outputDir.path}/${extension.paketBootstrapperFileName}"
-            }
-            paketFile = {
-                "${bootstrapDownload.outputDir.path}/${extension.paketExecuteableName}"
-            }
-        }
-
-        return bootstrap
     }
 }
