@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */plugins {
+ */
+
+plugins {
     id 'groovy'
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.9.7'
@@ -66,4 +68,10 @@ publishing {
 
 project.tasks.releaseCheck.dependsOn project.tasks.check
 project.tasks.release.dependsOn project.tasks.assemble
-project.tasks.postRelease.dependsOn project.tasks.publishPlugins
+
+project.tasks.final.dependsOn project.tasks.publishPlugins
+project.tasks.publishPlugins.mustRunAfter project.tasks.postRelease
+
+project.tasks.snapshot.dependsOn project.tasks.publishToMavenLocal
+
+project.tasks.publishToMavenLocal.mustRunAfter project.tasks.postRelease
