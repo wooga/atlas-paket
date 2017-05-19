@@ -15,20 +15,15 @@
  *
  */
 
-package wooga.gradle.paket
+package wooga.gradle.paket.get.tasks
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
-import spock.lang.Specification
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
-class PaketPluginSpec extends Specification {
-    Project project = ProjectBuilder.builder().build()
+class PaketRestore extends AbstractPaketTask {
 
-    def 'create bootstrap task'() {
-        given:
-        project.plugins.apply('net.wooga.paket')
-
-        expect:
-        project.tasks.findByName("paketBootstrap")
+    PaketRestore() {
+        super(PaketRestore.class)
+        description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
+        args = ["restore"]
     }
 }

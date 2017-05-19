@@ -15,13 +15,14 @@
  *
  */
 
-package wooga.gradle.paket
+package wooga.gradle.paket.publish
 
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.PublishArtifactSet
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
@@ -29,8 +30,9 @@ import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
+import wooga.gradle.paket.base.DefaultPaketPluginExtension
+import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.publish.repository.DefaultNugetRepositoryHandlerConvention
-import wooga.gradle.paket.publish.DefaultPaketPushPluginExtension
 import wooga.gradle.paket.publish.repository.NugetRepository
 import wooga.gradle.paket.publish.tasks.PaketPush
 
@@ -45,9 +47,9 @@ class PaketPublishPlugin implements Plugin<Project> {
         this.tasks = project.tasks
 
         project.pluginManager.apply(PublishingPlugin.class)
-        project.pluginManager.apply(PaketPlugin.class)
+        project.pluginManager.apply(PaketBasePlugin.class)
 
-        def extension = project.extensions.create(DefaultPaketPushPluginExtension.NAME, DefaultPaketPushPluginExtension, project)
+        def pushExtension = project.extensions.create(DefaultPaketPushPluginExtension.NAME, DefaultPaketPushPluginExtension, project)
         def publishLifecycleTask = tasks[PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME]
 
         project.getExtensions().configure(PublishingExtension.class, new Action<PublishingExtension>() {
@@ -63,23 +65,15 @@ class PaketPublishPlugin implements Plugin<Project> {
         project.afterEvaluate {
             PublishingExtension publishingExtension = project.extensions.getByType(PublishingExtension)
 
-            Configuration nupkg = project.configurations.getByName(PaketPlugin.PAKET_CONFIGURATION)
-
-            String publishRepositoryName = extension.publishRepositoryName
+            Configuration nupkg = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
+            String publishRepositoryName = pushExtension.publishRepositoryName
 
             try {
                 publishingExtension.repositories.withType(NugetRepository).getByName(publishRepositoryName) { NugetRepository repository ->
                     nupkg.allArtifacts.each { artifact ->
                         def packageName = artifact.name.replaceAll(/\./, '')
                         def publishTaskName = "publish-$packageName"
-                        PaketPush pushTask = (PaketPush) tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketPush)
-
-                        pushTask.url = { repository.url }
-                        pushTask.apiKey = { repository.apiKey }
-                        pushTask.inputFile = artifact.file
-                        pushTask.description = "Publishes ${artifact.file.name} to ${repository.url}"
-                        pushTask.dependsOn artifact
-                        publishLifecycleTask.dependsOn pushTask
+                        createPublishTask(publishTaskName, artifact, publishLifecycleTask,repository )
                     }
                 }
             }
@@ -103,14 +97,22 @@ class PaketPublishPlugin implements Plugin<Project> {
         artifacts.each { artifact ->
             def packageName = artifact.name.replaceAll(/\./, '')
             def publishTaskName = "$baseTaskName-$packageName"
-            PaketPush pushTask = (PaketPush) tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketPush)
-            pushTask.url = repository.url
-            pushTask.apiKey = repository.apiKey
-            pushTask.inputFile = artifact.file
-            pushTask.description = "Publishes ${artifact.file.name} to ${repository.url}"
-            pushTask.dependsOn artifact
-
-            repoLifecycle.dependsOn pushTask
+            createPublishTask(publishTaskName, artifact, repoLifecycle, repository)
         }
+    }
+
+    private PaketPush createPublishTask(String publishTaskName, PublishArtifact artifact, Task lifecycle, NugetRepository repository ) {
+        PaketPush pushTask = (PaketPush) tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketPush)
+        pushTask.url = repository.url
+        pushTask.apiKey = repository.apiKey
+        pushTask.inputFile = artifact.file
+        pushTask.description = "Publishes ${artifact.file.name} to ${repository.url}"
+        pushTask.paketExtension = project.extensions.getByType(DefaultPaketPluginExtension)
+
+        pushTask.dependsOn artifact
+        pushTask.dependsOn tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
+
+        lifecycle.dependsOn pushTask
+        pushTask
     }
 }

@@ -15,13 +15,15 @@
  *
  */
 
-package wooga.gradle.paket.base.tasks
+package wooga.gradle.paket.get.tasks
 
-class PaketRestore extends AbstractPaketTask {
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
-    PaketRestore() {
-        super(PaketRestore.class)
-        description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
-        args = ["restore"]
+class PaketInstall extends AbstractPaketTask {
+    
+    PaketInstall() {
+        super(PaketInstall.class)
+        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
+        args = [ "install" ]
     }
 }

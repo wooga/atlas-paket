@@ -31,16 +31,34 @@ pluginBundle {
     tags = ['Paket', 'c-sharp', 'nuget']
 
     plugins {
-        paketPlugin {
+        paket {
             id = 'net.wooga.paket'
             displayName = 'Gradle Paket plugin'
-            description = 'This plugin provides tasks for retrieving Paket packages'
+            description = 'This plugin provides tasks for retrieving,packing and publishing Nuget packages via Paket'
         }
 
-        paketPublishPlugin {
+        paketGet {
+            id = 'net.wooga.paket-get'
+            displayName = 'Gradle Paket plugin'
+            description = 'This plugin provides tasks for retrieving Nuget packages via Paket'
+        }
+
+        paketPack {
+            id = 'net.wooga.paket-pack'
+            displayName = 'Gradle Paket plugin'
+            description = 'This plugin provides tasks for packing Nuget packages via Paket'
+        }
+
+        paketPublish {
             id = 'net.wooga.paket-publish'
-            displayName = 'Gradle Paket publishing plugin'
-            description = 'This plugin provides tasks for retrieving and pushing Paket packages'
+            displayName = 'Gradle Paket plugin'
+            description = 'This plugin provides tasks for publishing Nuget packages via Paket'
+        }
+
+        paketUnity {
+            id = 'net.wooga.paket-unity'
+            displayName = 'Gradle Paket Unity3D plugin'
+            description = 'This plugin provides tasks to apply the Paket.Unity3D extension'
         }
     }
 }

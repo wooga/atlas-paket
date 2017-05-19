@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import wooga.gradle.paket.PaketUnityPlugin
+import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketUnityInstall extends AbstractPaketTask {
