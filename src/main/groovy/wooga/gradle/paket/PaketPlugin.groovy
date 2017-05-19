@@ -53,6 +53,7 @@ class PaketPlugin implements Plugin<Project> {
 
         def paketBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_EXTENSION_NAME, paketExtension)
         def paketUnityBootstrap = createPaketBootstrapTasks(WOOGA_PAKET_UNITY_EXTENSION_NAME, paketUnityExtension)
+        paketUnityBootstrap.unity = true
 
         //init task
         tasks.create(name: 'paketInit', type: PaketInit, group: PAKET_GROUP)
@@ -140,7 +141,7 @@ class PaketPlugin implements Plugin<Project> {
         return install
     }
 
-    private PaketTask createPaketBootstrapTasks(String taskPrefix, PaketPluginExtension extension) {
+    private PaketBootstrap createPaketBootstrapTasks(String taskPrefix, PaketPluginExtension extension) {
         def bootstrapDownloadName = taskPrefix + 'BootstrapDownload'
         def bootstrapDownload = tasks.create(name: bootstrapDownloadName, type: PaketBootstrapDownload) {
             outputDir = { "$project.projectDir/${extension.paketDirectory}" }

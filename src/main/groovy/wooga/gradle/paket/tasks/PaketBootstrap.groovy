@@ -46,6 +46,10 @@ class PaketBootstrap extends PaketTask {
     @Input
     def paketVersion
 
+    @Optional
+    @Input
+    boolean unity = false
+
     String getPaketVersion() {
         if (paketVersion instanceof Callable) {
             paketVersion.call()
@@ -67,11 +71,13 @@ class PaketBootstrap extends PaketTask {
 
         inputs.outOfDate { change ->
 
-            performPaketCommand() {cmd ->
-                logger.info("requesting paket version: {}", paketVersion )
+            performPaketCommand() { cmd ->
+                logger.info("requesting paket version: {}", paketVersion)
                 cmd << paketVersion
-                cmd << "--prefer-nuget"
-                cmd << "-s"
+                if (!unity) {
+                    cmd << "--prefer-nuget"
+                    cmd << "-s"
+                }
             }
         }
     }
