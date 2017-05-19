@@ -21,8 +21,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.PaketPlugin
-import wooga.gradle.paket.base.tasks.PaketInstall
+import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
 class PaketPackPlugin implements Plugin<Project> {
@@ -39,6 +38,9 @@ class PaketPackPlugin implements Plugin<Project> {
         this.project = project
         this.tasks = project.tasks
 
+        project.pluginManager.apply(BasePlugin.class)
+        project.pluginManager.apply(PaketBasePlugin.class)
+
         project.afterEvaluate {
             def templateFiles = project.fileTree(project.projectDir)
             templateFiles.include PAKET_TEMPLATE_PATTERN
@@ -54,11 +56,11 @@ class PaketPackPlugin implements Plugin<Project> {
                 packTask.version = { project.version }
                 packTask.description = "Pack package ${templateReader.getPackageId()}"
 
-                packTask.dependsOn tasks[PaketPlugin.INSTALL_TASK_NAME]
+                packTask.dependsOn tasks[PaketBasePlugin.INSTALL_TASK_NAME]
 
                 tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 
-                project.artifacts.add(PaketPlugin.PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
+                project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
             }
 
             configurePaketInstallIfPresent()
@@ -66,9 +68,9 @@ class PaketPackPlugin implements Plugin<Project> {
     }
 
     void configurePaketInstallIfPresent() {
-        project.plugins.withType(PaketPlugin) {
+        project.plugins.withType(PaketBasePlugin) {
             project.tasks.withType(PaketPack) { task ->
-                task.dependsOn project.tasks[PaketPlugin.INSTALL_TASK_NAME]
+                task.dependsOn project.tasks[PaketBasePlugin.INSTALL_TASK_NAME]
             }
         }
     }

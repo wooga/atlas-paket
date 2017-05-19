@@ -15,20 +15,15 @@
  *
  */
 
-package wooga.gradle.paket.base.tasks
+package wooga.gradle.paket.get.tasks
 
-class PaketUpdate extends AbstractPaketTask {
-    PaketUpdate() {
-        super(PaketUpdate.class)
-        description = 'Update one or all dependencies to their latest version and update projects.'
-    }
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
-    @Override
-    protected void exec() {
-        def packArguments = []
-        packArguments << "update"
-        setArgs(packArguments)
-
-        super.exec()
+class PaketInstall extends AbstractPaketTask {
+    
+    PaketInstall() {
+        super(PaketInstall.class)
+        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
+        args = [ "install" ]
     }
 }

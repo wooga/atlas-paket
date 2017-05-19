@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket
+package wooga.gradle.paket.publish
 
 import org.gradle.api.Action
 import org.gradle.api.Plugin
@@ -29,8 +29,8 @@ import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
+import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.publish.repository.DefaultNugetRepositoryHandlerConvention
-import wooga.gradle.paket.publish.DefaultPaketPushPluginExtension
 import wooga.gradle.paket.publish.repository.NugetRepository
 import wooga.gradle.paket.publish.tasks.PaketPush
 
@@ -45,7 +45,7 @@ class PaketPublishPlugin implements Plugin<Project> {
         this.tasks = project.tasks
 
         project.pluginManager.apply(PublishingPlugin.class)
-        project.pluginManager.apply(PaketPlugin.class)
+        project.pluginManager.apply(PaketBasePlugin.class)
 
         def extension = project.extensions.create(DefaultPaketPushPluginExtension.NAME, DefaultPaketPushPluginExtension, project)
         def publishLifecycleTask = tasks[PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME]
@@ -63,7 +63,7 @@ class PaketPublishPlugin implements Plugin<Project> {
         project.afterEvaluate {
             PublishingExtension publishingExtension = project.extensions.getByType(PublishingExtension)
 
-            Configuration nupkg = project.configurations.getByName(PaketPlugin.PAKET_CONFIGURATION)
+            Configuration nupkg = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
 
             String publishRepositoryName = extension.publishRepositoryName
 

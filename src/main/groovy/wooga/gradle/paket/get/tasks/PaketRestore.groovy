@@ -15,7 +15,9 @@
  *
  */
 
-package wooga.gradle.paket.base.tasks
+package wooga.gradle.paket.get.tasks
+
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketRestore extends AbstractPaketTask {
 

@@ -15,13 +15,14 @@
  *
  */
 
-package wooga.gradle.paket
+package wooga.gradle.paket.unity
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.unity.DefaultPaketUnityPluginExtension
+import wooga.gradle.paket.base.PaketBasePlugin
+import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.tasks.PaketUnityBootstrap
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
@@ -60,7 +61,7 @@ class PaketUnityPlugin implements Plugin<Project> {
 
         tasks.matching({ it.name.startsWith("paketUnity") }).each { task ->
             task.onlyIf {
-                project.file("$project.projectDir/${PaketPlugin.DEPENDENCIES_FILE_NAME}").exists()
+                project.file("$project.projectDir/${PaketBasePlugin.DEPENDENCIES_FILE_NAME}").exists()
             }
         }
 
@@ -68,10 +69,10 @@ class PaketUnityPlugin implements Plugin<Project> {
     }
 
     void configurePaketDependencyInstallIfPresent() {
-        project.plugins.withType(PaketPlugin) {
-            def paketInstall = project.tasks[PaketPlugin.INSTALL_TASK_NAME]
-            def paketUpdate = project.tasks[PaketPlugin.UPDATE_TASK_NAME]
-            def paketRestore = project.tasks[PaketPlugin.RESTORE_TASK_NAME]
+        project.plugins.withType(PaketGetPlugin) {
+            def paketInstall = project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]
+            def paketUpdate = project.tasks[PaketGetPlugin.UPDATE_TASK_NAME]
+            def paketRestore = project.tasks[PaketGetPlugin.RESTORE_TASK_NAME]
 
             [paketInstall, paketUpdate, paketRestore].each { Task task ->
                 task.finalizedBy tasks[INSTALL_TASK_NAME]

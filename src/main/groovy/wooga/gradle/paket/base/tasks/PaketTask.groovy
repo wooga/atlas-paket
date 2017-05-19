@@ -25,7 +25,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.SkipWhenEmpty
-import wooga.gradle.paket.PaketPlugin
+import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
 
 abstract class PaketTask extends DefaultTask {
@@ -48,7 +48,7 @@ abstract class PaketTask extends DefaultTask {
 
     PaketPluginExtension getPaketExtension() {
         if(!paketExtension) {
-            paketExtension = project.extensions.findByName(PaketPlugin.EXTENSION_NAME)
+            paketExtension = project.extensions.findByName(PaketBasePlugin.EXTENSION_NAME)
         }
 
         return paketExtension
