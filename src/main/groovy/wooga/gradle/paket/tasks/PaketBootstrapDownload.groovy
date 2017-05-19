@@ -17,14 +17,14 @@
 
 package wooga.gradle.paket.tasks
 
-import org.gradle.api.tasks.StopActionException
-import org.gradle.internal.impldep.org.testng.SkipException
-import wooga.gradle.paket.PaketPluginExtension
+import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.StopActionException
 import org.gradle.api.tasks.TaskAction
+import wooga.gradle.paket.PaketPluginExtension
 
 import java.util.concurrent.Callable
 
@@ -69,6 +69,7 @@ class PaketBootstrapDownload extends PaketTask {
 
         if(paketBootstrapperFile.exists())
         {
+            logger.info("Bootstrap file {} already exists", paketBootstrapperFile.path)
             throw new StopActionException()
         }
 
@@ -78,5 +79,9 @@ class PaketBootstrapDownload extends PaketTask {
             }
         }
 
+        if(!paketBootstrapperFile.exists())
+        {
+            throw new GradleException("Failed to download bootstrapper from ${paketBootstrapperFile.path}")
+        }
     }
 }
