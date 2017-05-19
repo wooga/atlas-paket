@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.tasks
+package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -26,7 +26,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.SkipWhenEmpty
 import wooga.gradle.paket.PaketPlugin
-import wooga.gradle.paket.PaketPluginExtension
+import wooga.gradle.paket.base.PaketPluginExtension
 
 abstract class PaketTask extends DefaultTask {
 

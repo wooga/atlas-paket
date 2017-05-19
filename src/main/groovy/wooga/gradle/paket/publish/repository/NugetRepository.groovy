@@ -15,8 +15,23 @@
  *
  */
 
-package wooga.gradle.paketPublish
+package wooga.gradle.paket.publish.repository
 
-interface NugetRepositoryHandlerConvention extends NugetRepositoryHandler {
+class NugetRepository implements NugetArtifactRepository {
 
+    String apiKey
+    String url
+    String name
+
+    def name(String name) {
+        setName(name)
+    }
+
+    def url(String url) {
+        setUrl(url)
+    }
+
+    def apiKey(String apiKey) {
+        setApiKey(apiKey)
+    }
 }

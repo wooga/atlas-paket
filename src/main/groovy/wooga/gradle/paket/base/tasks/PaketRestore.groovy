@@ -15,21 +15,22 @@
  *
  */
 
-package wooga.gradle.paket.tasks
+package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.tasks.TaskAction
 
-class PaketInstall extends PaketTask {
-    
-    PaketInstall() {
+class PaketRestore extends PaketTask {
+
+    PaketRestore() {
         super()
-        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
+        description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
     }
 
     @TaskAction
-    void performInstall() {
+    void performRestore() {
         performPaketCommand { cmd ->
-            cmd << "install"
+            cmd << "restore"
         }
     }
+
 }

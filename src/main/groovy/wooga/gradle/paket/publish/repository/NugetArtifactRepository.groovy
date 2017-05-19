@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paketPublish
+package wooga.gradle.paket.publish.repository
 
 import org.gradle.api.artifacts.repositories.ArtifactRepository
 

@@ -15,33 +15,28 @@
  *
  */
 
-package wooga.gradle.paketPublish
+package wooga.gradle.paket.publish.repository
 
 import org.gradle.api.Action
-import org.gradle.api.internal.artifacts.DefaultArtifactRepositoryContainer
-import org.gradle.internal.reflect.Instantiator
+import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.util.ConfigureUtil
 
-class DefaultNugetRepositoryHandler extends DefaultArtifactRepositoryContainer implements NugetRepositoryHandler {
+class DefaultNugetRepositoryHandlerConvention implements NugetRepositoryHandlerConvention {
 
-    static String NUGET_REPO_DEFAULT_NAME = "nuget"
+    RepositoryHandler handler
 
-    DefaultNugetRepositoryHandler(Instantiator instantiator) {
-        super(instantiator)
-    }
-
-    NugetArtifactRepository createRepo() {
-        return new NugetRepository()
+    DefaultNugetRepositoryHandlerConvention(RepositoryHandler handler) {
+        this.handler = handler
     }
 
     @Override
     NugetArtifactRepository nuget() {
-        return addRepository(new NugetRepository(), NUGET_REPO_DEFAULT_NAME)
+        return handler.addRepository(new NugetRepository(), NUGET_REPO_DEFAULT_NAME)
     }
 
     @Override
     NugetArtifactRepository nuget(Action<? super NugetArtifactRepository> action) {
-        return addRepository(createRepo(), NUGET_REPO_DEFAULT_NAME, action)
+        return handler.addRepository(new NugetRepository(), NUGET_REPO_DEFAULT_NAME, action)
     }
 
     @Override

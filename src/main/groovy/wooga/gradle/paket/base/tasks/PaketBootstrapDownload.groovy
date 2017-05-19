@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.tasks
+package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
@@ -24,7 +24,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.StopActionException
 import org.gradle.api.tasks.TaskAction
-import wooga.gradle.paket.PaketPluginExtension
+import wooga.gradle.paket.base.PaketPluginExtension
 
 import java.util.concurrent.Callable
 

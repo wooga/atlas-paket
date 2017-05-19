@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.tasks
+package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger

@@ -15,23 +15,21 @@
  *
  */
 
-package wooga.gradle.paketPublish
+package wooga.gradle.paket.base.tasks
 
-class NugetRepository implements NugetArtifactRepository {
+import org.gradle.api.tasks.TaskAction
 
-    String apiKey
-    String url
-    String name
-
-    def name(String name) {
-        setName(name)
+class PaketInstall extends PaketTask {
+    
+    PaketInstall() {
+        super()
+        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
     }
 
-    def url(String url) {
-        setUrl(url)
-    }
-
-    def apiKey(String apiKey) {
-        setApiKey(apiKey)
+    @TaskAction
+    void performInstall() {
+        performPaketCommand { cmd ->
+            cmd << "install"
+        }
     }
 }

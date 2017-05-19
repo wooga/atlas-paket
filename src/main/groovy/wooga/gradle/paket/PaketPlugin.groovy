@@ -22,7 +22,8 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.tasks.*
+import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.base.tasks.*
 
 class PaketPlugin implements Plugin<Project> {
 

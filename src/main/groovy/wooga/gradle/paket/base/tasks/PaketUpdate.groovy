@@ -15,14 +15,20 @@
  *
  */
 
-package wooga.gradle.paketPublish
+package wooga.gradle.paket.base.tasks
 
-import org.gradle.api.Action
+import org.gradle.api.tasks.TaskAction
 
-interface NugetRepositoryHandler {
-    static final String NUGET_REPO_DEFAULT_NAME = "nuget"
+class PaketUpdate extends PaketTask {
+    PaketUpdate() {
+        super()
+        description = 'Update one or all dependencies to their latest version and update projects.'
+    }
 
-    def NugetArtifactRepository nuget()
-    def NugetArtifactRepository nuget(Action<? super NugetArtifactRepository> action)
-    def NugetArtifactRepository nuget(Closure configureClosure)
+    @TaskAction
+    void performUpdate() {
+        performPaketCommand { cmd ->
+            cmd << "update"
+        }
+    }
 }

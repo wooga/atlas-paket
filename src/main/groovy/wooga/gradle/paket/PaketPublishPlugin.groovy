@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paketPublish
+package wooga.gradle.paket
 
 import org.gradle.api.Action
 import org.gradle.api.Plugin
@@ -29,8 +29,10 @@ import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.PaketPlugin
-import wooga.gradle.paketPublish.tasks.PaketPush
+import wooga.gradle.paket.publish.repository.DefaultNugetRepositoryHandlerConvention
+import wooga.gradle.paket.publish.DefaultPaketPushPluginExtension
+import wooga.gradle.paket.publish.repository.NugetRepository
+import wooga.gradle.paket.publish.tasks.PaketPush
 
 class PaketPublishPlugin implements Plugin<Project> {
 
