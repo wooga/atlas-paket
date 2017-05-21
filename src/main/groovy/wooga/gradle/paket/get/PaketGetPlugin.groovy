@@ -23,7 +23,6 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.get.tasks.PaketInit
 import wooga.gradle.paket.get.tasks.PaketInstall
 import wooga.gradle.paket.get.tasks.PaketRestore
 import wooga.gradle.paket.get.tasks.PaketUpdate
@@ -48,11 +47,6 @@ class PaketGetPlugin implements Plugin<Project> {
         def paketBootstrap = tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
         def extension = project.extensions.getByType(DefaultPaketPluginExtension)
 
-        //init
-        def init = tasks.create(name: 'paketInit', type: PaketInit, group: GROUP)
-        init.finalizedBy paketBootstrap
-
-        //install
         def paketInstall = tasks.create(INSTALL_TASK_NAME, PaketInstall.class)
         def paketUpdate = tasks.create(UPDATE_TASK_NAME, PaketUpdate.class)
         def paketRestore = tasks.create(RESTORE_TASK_NAME, PaketRestore.class)

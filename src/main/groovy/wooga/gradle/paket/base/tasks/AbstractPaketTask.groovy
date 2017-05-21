@@ -54,7 +54,11 @@ abstract class AbstractPaketTask<T extends AbstractExecTask> extends AbstractExe
         super.setErrorOutput(stdErr)
     }
 
-    String executable = paketExtension.paketExecuteablePath
+    String executable
+
+    String getExecutable() {
+        paketExtension.paketExecuteablePath
+    }
 
     @Override
     protected void exec() {

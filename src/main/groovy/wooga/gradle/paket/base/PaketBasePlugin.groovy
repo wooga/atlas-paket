@@ -19,9 +19,10 @@ package wooga.gradle.paket.base
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.buildinit.tasks.internal.TaskConfiguration
 import wooga.gradle.paket.base.tasks.PaketBootstrap
+import wooga.gradle.paket.get.tasks.PaketInit
 
 class PaketBasePlugin implements Plugin<Project> {
 
@@ -31,6 +32,7 @@ class PaketBasePlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'paket'
     static final String DEPENDENCIES_FILE_NAME = "paket.dependencies"
     static final String BOOTSTRAP_TASK_NAME = "paketBootstrap"
+    static final String INIT_TASK_NAME = "paketInit"
     static final String PAKET_CONFIGURATION = "nupkg"
 
     @Override
@@ -38,10 +40,10 @@ class PaketBasePlugin implements Plugin<Project> {
         this.project = project
         this.tasks = project.tasks
 
-        def extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension, false)
+        def extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension)
 
         //bootstrap
-        def paketBootstrap = tasks.create(BOOTSTRAP_TASK_NAME, PaketBootstrap.class)
+        def paketBootstrap = tasks.create(name:BOOTSTRAP_TASK_NAME, type:PaketBootstrap)
         paketBootstrap.outputDir = { "$project.projectDir/${extension.paketDirectory}" }
         paketBootstrap.paketBootstrapperFileName = { extension.paketBootstrapperFileName }
         paketBootstrap.bootstrapURL = { extension.paketBootstrapperDownloadURL }
@@ -50,6 +52,10 @@ class PaketBasePlugin implements Plugin<Project> {
 
         paketBootstrap.paketBootstrapper = {"${paketBootstrap.outputDir.path}/${extension.paketBootstrapperFileName}"}
         paketBootstrap.paketFile = { "${paketBootstrap.outputDir.path}/${extension.paketExecuteableName}" }
+
+        //init
+        def init = tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TaskConfiguration.GROUP)
+        init.finalizedBy paketBootstrap
 
         def configurations = project.configurations
         configurations.create(PAKET_CONFIGURATION) {

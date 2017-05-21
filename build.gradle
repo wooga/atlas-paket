@@ -72,6 +72,8 @@ dependencies {
         exclude module: 'groovy-all'
     }
 
+    testCompile 'com.netflix.nebula:nebula-test:latest.release'
+
     compile gradleApi()
     compile localGroovy()
 }

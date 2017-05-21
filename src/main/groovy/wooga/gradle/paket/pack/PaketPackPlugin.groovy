@@ -65,7 +65,7 @@ class PaketPackPlugin implements Plugin<Project> {
 
                 tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 
-                project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageID}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
+                project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageName}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
             }
 
             configurePaketInstallIfPresent()

@@ -75,7 +75,7 @@ class PaketUnityPlugin implements Plugin<Project> {
             def paketRestore = project.tasks[PaketGetPlugin.RESTORE_TASK_NAME]
 
             [paketInstall, paketUpdate, paketRestore].each { Task task ->
-                task.finalizedBy tasks[INSTALL_TASK_NAME]
+                task.finalizedBy tasks[PaketUnityPlugin.INSTALL_TASK_NAME]
             }
         }
     }

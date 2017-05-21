@@ -23,11 +23,13 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
 
 class PaketBootstrap extends AbstractPaketTask {
     static Logger logger = Logging.getLogger(PaketBootstrap)
 
+    @Inject
     PaketBootstrap() {
         super(PaketBootstrap.class)
     }
