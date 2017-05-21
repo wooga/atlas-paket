@@ -70,7 +70,7 @@ abstract class AbstractPaketTask<T extends AbstractExecTask> extends AbstractExe
 
         if (!osName.contains("windows")) {
             logger.info("Use mono: {}.", true)
-            paketExtension << paketExtension.monoExecutable
+            paketArgs << paketExtension.monoExecutable
         }
 
         paketArgs << executable
