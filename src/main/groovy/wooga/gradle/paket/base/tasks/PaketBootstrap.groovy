@@ -18,6 +18,7 @@
 package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.GradleException
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
@@ -45,15 +46,18 @@ class PaketBootstrap extends AbstractPaketTask {
         (File) project.file(outputDir)
     }
 
+    @OutputFiles
+    FileCollection getOutputFiles()
+    {
+        return project.files(paketFile, paketBootstrapper)
+    }
 
+    @Input
     def paketFile
 
     def getPaketFile() {
         (File) project.file(paketFile)
     }
-
-    @OutputFiles
-    def outputFiles = project.files(paketFile, paketBootstrapper)
 
     @Input
     def paketBootstrapper
