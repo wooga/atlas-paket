@@ -28,6 +28,8 @@ import java.util.concurrent.Callable
 
 class PaketPush extends AbstractPaketTask {
 
+    static String COMMAND = "push"
+
     @Input
     def url
 
@@ -69,23 +71,20 @@ class PaketPush extends AbstractPaketTask {
     PaketPush() {
         super(PaketPush.class)
         description = "Pushes the given .nupkg file."
+        paketCommand = COMMAND
     }
 
     @Override
     protected void exec() {
-        def packArguments = []
-
-        packArguments << "push"
-        packArguments << "url" << getUrl()
+        args << "url" << getUrl()
 
         if(getApiKey() != null)
         {
-            packArguments << "apikey" << getApiKey()
+            args << "apikey" << getApiKey()
         }
 
-        packArguments << "file" << getinputFile().path
+        args << "file" << getinputFile().path
 
-        setArgs(packArguments)
         super.exec()
     }
 }

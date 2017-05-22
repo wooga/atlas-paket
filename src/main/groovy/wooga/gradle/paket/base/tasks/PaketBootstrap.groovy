@@ -52,18 +52,20 @@ class PaketBootstrap extends AbstractPaketTask {
         return project.files(paketFile, paketBootstrapper)
     }
 
-    @Input
+
     def paketFile
 
+    @Input
     def getPaketFile() {
         (File) project.file(paketFile)
     }
+
 
     @Input
     def paketBootstrapper
 
     def getPaketBootstrapper() {
-        (File) project.file(paketBootstrapper)
+        return (File) project.file(paketBootstrapper)
     }
 
     @Input
@@ -113,7 +115,7 @@ class PaketBootstrap extends AbstractPaketTask {
 
     @Override
     String getExecutable() {
-        getPaketBootstrapper()
+        this.getPaketBootstrapper()
     }
 
     @TaskAction
@@ -131,33 +133,32 @@ class PaketBootstrap extends AbstractPaketTask {
 
     @Override
     protected void exec() {
-        def packArguments = []
-        logger.info("requesting paket version: {}", paketVersion)
+        logger.info("requesting paket version: {}", getPaketVersion())
 
-        packArguments << paketVersion
-        packArguments << "--prefer-nuget"
-        packArguments << "-s"
+        args << getPaketVersion()
+        args << "--prefer-nuget"
+        args << "-v"
 
-        setArgs(packArguments)
         super.exec()
     }
 
     def checkBootstrapper() {
-        if(paketBootstrapper.exists())
+        File f = getPaketBootstrapper()
+        if(f.exists())
         {
-            logger.info("Bootstrap file {} already exists", paketBootstrapper.path)
+            logger.info("Bootstrap file {} already exists", f.path)
             return
         }
 
         new URL("${getBootstrapURL()}").withInputStream { i ->
-            paketBootstrapper.withOutputStream {
+            f.withOutputStream {
                 it << i
             }
         }
 
-        if(!paketBootstrapper.exists())
+        if(!f.exists())
         {
-            throw new GradleException("Failed to download bootstrapper from ${paketBootstrapper.path}")
+            throw new GradleException("Failed to download bootstrapper from ${f.path}")
         }
     }
 }

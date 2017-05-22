@@ -17,18 +17,23 @@
 
 package wooga.gradle.paket.base.tasks
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.AbstractExecTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.SkipWhenEmpty
-import org.gradle.model.Finalize
 import wooga.gradle.paket.base.PaketPluginExtension
 
-abstract class AbstractPaketTask<T extends AbstractExecTask> extends AbstractExecTask {
+import java.util.concurrent.Callable
+
+abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTask {
     static Logger logger = Logging.getLogger(AbstractPaketTask)
+
+    private final Class<T> taskType;
 
     @SkipWhenEmpty
     @InputFiles
@@ -48,38 +53,58 @@ abstract class AbstractPaketTask<T extends AbstractExecTask> extends AbstractExe
     PaketPluginExtension paketExtension
 
     AbstractPaketTask(Class<T> taskType) {
-        super(taskType)
-
-        super.setStandardOutput(stdOut)
-        super.setErrorOutput(stdErr)
+        super()
+        this.taskType = taskType
     }
 
     String executable
 
     String getExecutable() {
-        paketExtension.paketExecuteablePath
+        if(executable == null)
+        {
+            null
+        }
+        else if (executable instanceof Callable) {
+            (String) executable.call()
+        } else {
+            executable.toString()
+        }
     }
 
-    @Override
+    @Optional
+    @Input
+    String paketCommand
+
+    @Input
+    Collection<String> args = []
+
     protected void exec() {
         String osName = System.getProperty("os.name").toLowerCase()
         logger.info("Detected operationg system: {}.", osName)
 
         def paketArgs = []
-        def execArgs = args
 
         if (!osName.contains("windows")) {
             logger.info("Use mono: {}.", true)
             paketArgs << paketExtension.monoExecutable
         }
 
-        paketArgs << executable
-        paketArgs += execArgs
+        paketArgs << getExecutable()
+
+        if(paketCommand) {
+            paketArgs << paketCommand
+        }
+
+        paketArgs += args
 
         logger.debug("Execute command {}", paketArgs.join(" "))
-        args = paketArgs
 
-        super.exec()
+        def execResult = project.exec {
+            commandLine = paketArgs
+            standardOutput = stdOut
+            errorOutput = stdErr
+            ignoreExitValue = true
+        }
 
         if(execResult.exitValue != 0)
         {
@@ -88,23 +113,5 @@ abstract class AbstractPaketTask<T extends AbstractExecTask> extends AbstractExe
         }
 
         logger.info(stdOut.toString())
-    }
-
-    @Override
-    @Finalize
-    AbstractExecTask setIgnoreExitValue(boolean ignoreExitValue) {
-        return this
-    }
-
-    @Override
-    @Finalize
-    AbstractExecTask setStandardOutput(OutputStream outputStream) {
-        return this
-    }
-
-    @Override
-    @Finalize
-    AbstractExecTask setErrorOutput(OutputStream errorStream) {
-        return this
     }
 }

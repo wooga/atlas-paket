@@ -31,12 +31,10 @@ class PaketUnityBootstrap extends PaketBootstrap {
 
     @Override
     protected void exec() {
-        def packArguments = []
         logger.info("requesting paket version: {}", paketVersion)
 
-        packArguments << paketVersion
+        args << paketVersion
 
-        setArgs(packArguments)
         super.exec()
     }
 }

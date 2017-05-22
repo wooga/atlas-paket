@@ -24,6 +24,8 @@ import java.util.concurrent.Callable
 
 class PaketPack extends AbstractPaketTask {
 
+    static String COMMAND = "pack"
+
     @Optional
     @Input
     def version
@@ -57,23 +59,20 @@ class PaketPack extends AbstractPaketTask {
 
     PaketPack() {
         super(PaketPack.class)
+        paketCommand = COMMAND
     }
 
     @Override
     protected void exec() {
-        def packArguments = []
-        packArguments << "pack"
-        packArguments << "output" << getOutputDir()
+        args << "output" << getOutputDir()
 
         if (getVersion() != null) {
-            packArguments << "version" << getVersion()
+            args << "version" << getVersion()
         }
 
         if (getTemplateFile() != null) {
-            packArguments << "templatefile" << getTemplateFile()
+            args << "templatefile" << getTemplateFile()
         }
-
-        setArgs(packArguments)
 
         super.exec()
     }

@@ -22,6 +22,8 @@ import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketUnityInstall extends AbstractPaketTask {
 
+    static String COMMAND = "install"
+
     def paketDependencies = {
         project.fileTree(project.projectDir).include("**/paket.unity3d.references")
     }
@@ -30,6 +32,6 @@ class PaketUnityInstall extends AbstractPaketTask {
         super(PaketUnityInstall.class)
         description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
         group = PaketUnityPlugin.GROUP
-        args = [ "install" ]
+        paketCommand = COMMAND
     }
 }

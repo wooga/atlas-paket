@@ -20,17 +20,12 @@ package wooga.gradle.paket.get.tasks
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketUpdate extends AbstractPaketTask {
+
+    static String COMMAND = "update"
+
     PaketUpdate() {
         super(PaketUpdate.class)
         description = 'Update one or all dependencies to their latest version and update projects.'
-    }
-
-    @Override
-    protected void exec() {
-        def packArguments = []
-        packArguments << "update"
-        setArgs(packArguments)
-
-        super.exec()
+        paketCommand = COMMAND
     }
 }

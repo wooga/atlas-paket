@@ -21,9 +21,11 @@ import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketRestore extends AbstractPaketTask {
 
+    static String COMMAND = "restore"
+
     PaketRestore() {
         super(PaketRestore.class)
         description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
-        args = ["restore"]
+        paketCommand = COMMAND
     }
 }
