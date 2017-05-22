@@ -35,31 +35,6 @@ class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
     }
 
     @Unroll
-    def "calls paketBootstrap when running #taskToRun"(String taskToRun) {
-        given: "an empty paket dependency file\""
-        createFile("paket.dependencies")
-
-        and: "future paket directories with files"
-        def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.bootstrapper.exe')
-        def paket = new File(paketDir, 'paket.exe')
-
-        assert !paketDir.exists()
-
-        when:
-        def result = runTasksSuccessfully(taskToRun)
-
-        then:
-        result.wasExecuted("paketBootstrap")
-        paketDir.exists()
-        paketBootstrap.exists()
-        paket.exists()
-
-        where:
-        taskToRun << bootstrapTestCases
-    }
-
-    @Unroll
     def "installs dependencies when running #taskToRun"(String taskToRun) {
         given: "A small test nuget package"
         def nuget = "Mini"

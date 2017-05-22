@@ -39,7 +39,6 @@ class PaketBootstrap extends AbstractPaketTask {
         super(taskType)
     }
 
-    @OutputDirectory
     def outputDir
 
     def getOutputDir() {
@@ -47,19 +46,16 @@ class PaketBootstrap extends AbstractPaketTask {
     }
 
     @OutputFiles
-    FileCollection getOutputFiles()
-    {
-        return project.files(paketFile, paketBootstrapper)
+    FileCollection getOutputFiles() {
+        return project.files(getPaketFile(), getPaketBootstrapper())
     }
 
-
+    @Input
     def paketFile
 
-    @Input
     def getPaketFile() {
         (File) project.file(paketFile)
     }
-
 
     @Input
     def paketBootstrapper
@@ -72,11 +68,9 @@ class PaketBootstrap extends AbstractPaketTask {
     def paketBootstrapperFileName
 
     def getPaketBootstrapperFileName() {
-        if(paketBootstrapperFileName == null)
-        {
+        if (paketBootstrapperFileName == null) {
             null
-        }
-        else if (paketBootstrapperFileName instanceof Callable) {
+        } else if (paketBootstrapperFileName instanceof Callable) {
             (String) paketBootstrapperFileName.call()
         } else {
             paketBootstrapperFileName.toString()
@@ -87,11 +81,9 @@ class PaketBootstrap extends AbstractPaketTask {
     def bootstrapURL
 
     def getBootstrapURL() {
-        if(bootstrapURL == null)
-        {
+        if (bootstrapURL == null) {
             null
-        }
-        else if (bootstrapURL instanceof Callable) {
+        } else if (bootstrapURL instanceof Callable) {
             bootstrapURL.call()
         } else {
             bootstrapURL.toString()
@@ -105,8 +97,7 @@ class PaketBootstrap extends AbstractPaketTask {
     def getPaketVersion() {
         if (paketVersion == null) {
             null
-        }
-        else if (paketVersion instanceof Callable) {
+        } else if (paketVersion instanceof Callable) {
             (String) paketVersion.call()
         } else {
             paketVersion.toString()
@@ -118,8 +109,8 @@ class PaketBootstrap extends AbstractPaketTask {
         this.getPaketBootstrapper()
     }
 
-    @TaskAction
-    void performBootstrap(IncrementalTaskInputs inputs) {
+    @Override
+    protected void performPaketCommand(IncrementalTaskInputs inputs) {
         checkBootstrapper()
 
         if (!inputs.incremental) {
@@ -127,25 +118,23 @@ class PaketBootstrap extends AbstractPaketTask {
         }
 
         inputs.outOfDate { change ->
-            exec()
+            super.performPaketCommand(inputs)
         }
     }
 
     @Override
-    protected void exec() {
+    protected void configureArguments() {
+        super.configureArguments()
         logger.info("requesting paket version: {}", getPaketVersion())
 
         args << getPaketVersion()
         args << "--prefer-nuget"
         args << "-v"
-
-        super.exec()
     }
 
     def checkBootstrapper() {
         File f = getPaketBootstrapper()
-        if(f.exists())
-        {
+        if (f.exists()) {
             logger.info("Bootstrap file {} already exists", f.path)
             return
         }
@@ -156,8 +145,7 @@ class PaketBootstrap extends AbstractPaketTask {
             }
         }
 
-        if(!f.exists())
-        {
+        if (!f.exists()) {
             throw new GradleException("Failed to download bootstrapper from ${f.path}")
         }
     }

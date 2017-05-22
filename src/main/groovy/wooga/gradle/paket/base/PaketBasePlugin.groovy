@@ -43,7 +43,7 @@ class PaketBasePlugin implements Plugin<Project> {
         def extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension)
 
         //bootstrap
-        def paketBootstrap = tasks.create(name:BOOTSTRAP_TASK_NAME, type:PaketBootstrap)
+        PaketBootstrap paketBootstrap = tasks.create(name:BOOTSTRAP_TASK_NAME, type:PaketBootstrap)
         paketBootstrap.outputDir = { "$project.projectDir/${extension.paketDirectory}" }
         paketBootstrap.paketBootstrapperFileName = { extension.paketBootstrapperFileName }
         paketBootstrap.bootstrapURL = { extension.paketBootstrapperDownloadURL }

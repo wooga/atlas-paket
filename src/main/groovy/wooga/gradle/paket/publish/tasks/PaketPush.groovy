@@ -20,9 +20,7 @@ package wooga.gradle.paket.publish.tasks
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
-import wooga.gradle.paket.base.tasks.PaketTask
 
 import java.util.concurrent.Callable
 
@@ -75,7 +73,9 @@ class PaketPush extends AbstractPaketTask {
     }
 
     @Override
-    protected void exec() {
+    protected void configureArguments() {
+        super.configureArguments()
+
         args << "url" << getUrl()
 
         if(getApiKey() != null)
@@ -84,7 +84,5 @@ class PaketPush extends AbstractPaketTask {
         }
 
         args << "file" << getinputFile().path
-
-        super.exec()
     }
 }

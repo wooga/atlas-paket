@@ -15,28 +15,36 @@
  *
  */
 
-package wooga.gradle.paket
+package wooga.gradle.paket.unity
 
 import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
 
-abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
+class PaketUnityIntegrationSpec extends IntegrationSpec {
+
+    def setup() {
+        buildFile << """
+            group = 'test'
+            ${applyPlugin(PaketUnityPlugin)}
+        """.stripIndent()
+    }
 
     @Shared
-    def bootstrapTestCases
+    def bootstrapTestCases = [PaketUnityPlugin.INSTALL_TASK_NAME]
 
     @Unroll
     def "calls paketBootstrap when running #taskToRun"(String taskToRun) {
         given: "an empty paket dependency and lock file"
         createFile("paket.dependencies")
+        createFile("paket.unity3d.references")
         createFile("paket.lock")
 
         and: "future paket directories with files"
         def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.bootstrapper.exe')
-        def paket = new File(paketDir, 'paket.exe')
+        def paketBootstrap = new File(paketDir, 'paket.unity3d.bootstrapper.exe')
+        def paket = new File(paketDir, 'paket.unity3d.exe')
 
         assert !paketDir.exists()
 
@@ -44,7 +52,7 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
         def result = runTasksSuccessfully(taskToRun)
 
         then:
-        result.wasExecuted("paketBootstrap")
+        result.wasExecuted("paketUnityBootstrap")
         paketDir.exists()
         paketBootstrap.exists()
         paket.exists()
@@ -54,17 +62,33 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
     }
 
     @Unroll
-    def "skips paket call with [NO-SOURCE] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
-        given: "no dependency file"
-        def dependenciesFile = new File(projectDir, 'paket.dependencies')
-        assert !dependenciesFile.exists()
+    def "skips paket call with [NO-SOURCE] when no [paket.unity3d.references] file is present when running #taskToRun"(String taskToRun) {
+        given: "an empty paket dependency and lock file"
+        createFile("paket.dependencies")
+        createFile("paket.lock")
 
         when:
         def result = runTasksSuccessfully(taskToRun)
 
         then:
-        hasNoSource(result, "paketBootstrap")
+        hasNoSource(result, "paketUnityBootstrap")
         hasNoSource(result,taskToRun)
+
+        where:
+        taskToRun << bootstrapTestCases
+    }
+
+    @Unroll
+    def "skips paket call with [only-if] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
+        given: "an empty paket dependency and lock file"
+        createFile("paket.lock")
+        createFile("paket.unity3d.references")
+
+        when:
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        result.wasSkipped("paketUnityBootstrap")
 
         where:
         taskToRun << bootstrapTestCases
@@ -77,26 +101,28 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
 
         and: "a empty lock file"
         createFile("paket.lock")
+        directory("unitySub")
+        createFile("unitySub/paket.unity3d.references")
 
         and: "a first run of #taskToRun"
         runTasksSuccessfully(taskToRun)
 
         when: "running a second time without changes"
-        def result = runTasksSuccessfully(taskToRun)
+        def result1 = runTasksSuccessfully(taskToRun)
 
         then: "bootstrap task was [UP-TO-DATE]"
-        result.wasUpToDate("paketBootstrap")
+        result1.wasUpToDate("paketUnityBootstrap")
 
         when:"delete bootstrapper"
         def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.bootstrapper.exe')
+        def paketBootstrap = new File(paketDir, 'paket.unity3d.bootstrapper.exe')
         paketBootstrap.delete()
 
         and:"run the task again"
         def result2 = runTasksSuccessfully(taskToRun)
 
         then:
-        !result2.wasUpToDate("paketBootstrap")
+        !result2.wasUpToDate("paketUnityBootstrap")
 
         where:
         taskToRun << bootstrapTestCases

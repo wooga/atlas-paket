@@ -62,8 +62,9 @@ class PaketPack extends AbstractPaketTask {
         paketCommand = COMMAND
     }
 
-    @TaskAction
-    protected void perform() {
+    @Override
+    protected void configureArguments() {
+        super.configureArguments()
         args << "output" << getOutputDir()
 
         if (getVersion() != null) {
@@ -73,7 +74,5 @@ class PaketPack extends AbstractPaketTask {
         if (getTemplateFile() != null) {
             args << "templatefile" << getTemplateFile()
         }
-
-        exec()
     }
 }

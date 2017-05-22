@@ -22,6 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.PaketBasePlugin
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.tasks.PaketUnityBootstrap
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall

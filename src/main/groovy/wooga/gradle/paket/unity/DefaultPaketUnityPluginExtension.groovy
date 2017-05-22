@@ -20,7 +20,10 @@ package wooga.gradle.paket.unity
 import wooga.gradle.paket.base.PaketPluginExtension
 
 class DefaultPaketUnityPluginExtension implements PaketPluginExtension {
-    String paketExecuteableName = "paket.unity3d.exe"
-    String paketBootstrapperFileName = "paket.unity3d.bootstrapper.exe"
-    String paketBootstrapperDownloadURL = "https://github.com/wooga/Paket.Unity3D/releases/download/0.2.1/paket.unity3d.bootstrapper.exe"
+
+    DefaultPaketUnityPluginExtension() {
+        paketExecuteableName = "paket.unity3d.exe"
+        paketBootstrapperFileName = "paket.unity3d.bootstrapper.exe"
+        paketBootstrapperDownloadURL = "https://github.com/wooga/Paket.Unity3D/releases/download/0.2.1/paket.unity3d.bootstrapper.exe"
+    }
 }

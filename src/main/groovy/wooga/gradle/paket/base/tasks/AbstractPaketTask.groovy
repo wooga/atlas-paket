@@ -19,9 +19,11 @@ package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import wooga.gradle.paket.base.PaketPluginExtension
 
 import java.util.concurrent.Callable
@@ -33,11 +35,16 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
 
     @SkipWhenEmpty
     @InputFiles
-    def paketDependencies = { project.projectDir.listFiles().find {it.path == "$project.projectDir/paket.dependencies"} }
+    FileCollection paketDependencies = project.fileTree(dir: project.projectDir, include: "paket.dependencies")
 
-    def getPaketDependencies() {
-        project.files(paketDependencies)
-    }
+
+//            {
+//        project.projectDir.listFiles().find { it.path == "$project.projectDir/paket.dependencies" }
+//    }
+
+//    def getPaketDependencies() {
+//        project.files(paketDependencies)
+//    }
 
     @Internal
     def stdOut = new ByteArrayOutputStream()
@@ -56,15 +63,13 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
     String executable
 
     String getExecutable() {
-        if(executable == null){
+        if (executable == null) {
             executable = paketExtension.paketExecuteablePath
         }
 
-        if(executable == null)
-        {
+        if (executable == null) {
             null
-        }
-        else if (executable instanceof Callable) {
+        } else if (executable instanceof Callable) {
             (String) executable.call()
         } else {
             executable.toString()
@@ -75,10 +80,19 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
     @Input
     String paketCommand
 
-    @Input
-    Collection<String> args = []
+    protected Collection<String> args = []
 
-    protected void exec() {
+    @TaskAction
+    protected void performPaketCommand(IncrementalTaskInputs inputs) {
+        configureArguments()
+        exec()
+    }
+
+    protected void configureArguments() {
+
+    }
+
+    protected final void exec() {
         String osName = System.getProperty("os.name").toLowerCase()
         logger.info("Detected operationg system: {}.", osName)
 
@@ -91,7 +105,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
 
         paketArgs << getExecutable()
 
-        if(paketCommand) {
+        if (paketCommand) {
             paketArgs << paketCommand
         }
 
@@ -106,8 +120,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
             ignoreExitValue = true
         }
 
-        if(execResult.exitValue != 0)
-        {
+        if (execResult.exitValue != 0) {
             logger.error(stdErr.toString())
             throw new GradleException("Paket task ${name} failed")
         }
