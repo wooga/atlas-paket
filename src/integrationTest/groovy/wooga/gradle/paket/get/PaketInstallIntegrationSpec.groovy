@@ -63,4 +63,21 @@ class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
         where:
         taskToRun << bootstrapTestCases
     }
+
+    @Unroll
+    def "never be [UP-TO-DATE] for task #taskToRun"(String taskToRun) {
+        given: "empty paket dependency file and lock"
+        createFile("paket.dependencies")
+        createFile("paket.lock")
+
+        when: "running task 2x times"
+        runTasksSuccessfully(taskToRun)
+        def result = runTasksSuccessfully(taskToRun)
+
+        then: "should never be [UP-TO-DATE]"
+        !result.wasUpToDate(taskToRun)
+
+        where:
+        taskToRun << bootstrapTestCases
+    }
 }
