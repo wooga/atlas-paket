@@ -15,24 +15,17 @@
  *
  */
 
-package wooga.gradle.paket.get
+package wooga.gradle.paket
 
+import nebula.test.IntegrationSpec
+import nebula.test.functional.ExecutionResult
+import spock.lang.Shared
 import spock.lang.Unroll
-import wooga.gradle.paket.PaketIntegrationBaseSpec
 
-class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
+abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
 
-    def setup() {
-        buildFile << """
-            group = 'test'
-            ${applyPlugin(PaketGetPlugin)}
-        """.stripIndent()
-    }
-
-    @Override
-    Object getBootstrapTestCases() {
-        return ["paketInstall", "paketUpdate", "paketRestore"]
-    }
+    @Shared
+    def bootstrapTestCases
 
     @Unroll
     def "calls paketBootstrap when running #taskToRun"(String taskToRun) {
@@ -60,32 +53,27 @@ class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
     }
 
     @Unroll
-    def "installs dependencies when running #taskToRun"(String taskToRun) {
-        given: "A small test nuget package"
-        def nuget = "Mini"
-
-        and: "a paket dependency file"
-        def dependenciesFile = createFile("paket.dependencies")
-        dependenciesFile << """
-            source https://nuget.org/api/v2
-            
-            nuget $nuget
-        """.stripIndent()
-
-        and: "the future packages directory"
-        def packagesDir = new File(projectDir, 'packages')
-        assert !packagesDir.exists()
+    def "skips paket call with [NO-SOURCE] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
+        given: "no dependency file"
+        def dependenciesFile = new File(projectDir, 'paket.dependencies')
+        assert !dependenciesFile.exists()
 
         when:
-        def result = runTasksSuccessfully('paketInstall')
+        def result = runTasksSuccessfully(taskToRun)
 
-        then: "paket runs and creates the packages directory"
-        packagesDir.exists()
-
-        and: "downloads the nuget package"
-        result.standardOutput.contains("Resolving packages for group Main:\n - $nuget")
+        then:
+        hasNoSource(result, "paketBootstrap")
+        hasNoSource(result,taskToRun)
 
         where:
         taskToRun << bootstrapTestCases
+    }
+
+    boolean hasNoSource(ExecutionResult result, String taskName) {
+        containsOutput(result.standardOutput, taskName, "NO-SOURCE")
+    }
+
+    private boolean containsOutput(String stdout, String taskName, String stateIdentifier) {
+        stdout.contains("$taskName $stateIdentifier".toString())
     }
 }
