@@ -26,6 +26,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.SkipWhenEmpty
+import org.gradle.api.tasks.TaskAction
 import wooga.gradle.paket.base.PaketPluginExtension
 
 import java.util.concurrent.Callable
@@ -60,6 +61,10 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
     String executable
 
     String getExecutable() {
+        if(executable == null){
+            executable = paketExtension.paketExecuteablePath
+        }
+
         if(executable == null)
         {
             null

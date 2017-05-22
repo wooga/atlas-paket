@@ -19,12 +19,9 @@ package wooga.gradle.paket.base
 
 class DefaultPaketPluginExtension implements PaketPluginExtension{
 
-    String paketDirectory = ".paket"
-
-    String paketExecuteableName = "paket.exe"
-    String paketBootstrapperFileName = "paket.bootstrapper.exe"
-    String paketBootstrapperDownloadURL = "https://github.com/fsprojects/Paket/releases/download/4.8.5/paket.bootstrapper.exe"
-
-    String version = ""
-    String monoExecutable = "mono"
+    DefaultPaketPluginExtension() {
+        paketExecuteableName = "paket.exe"
+        paketBootstrapperFileName = "paket.bootstrapper.exe"
+        paketBootstrapperDownloadURL = "https://github.com/fsprojects/Paket/releases/download/4.8.5/paket.bootstrapper.exe"
+    }
 }
