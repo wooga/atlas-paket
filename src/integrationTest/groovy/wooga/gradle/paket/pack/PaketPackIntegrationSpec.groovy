@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.pack
 
+import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
 
 class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
@@ -50,7 +51,8 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         ["paketPack-WoogaTest"]
     }
 
-    def "writes nuget packages to output directory"() {
+    @Unroll
+    def "writes nuget packages to output directory when running #taskToRun"(String taskToRun) {
         given:
         def outputFile = new File(new File(new File(projectDir, 'build'), "outputs"), "${packageID}.${version}.nupkg")
         assert !outputFile.exists()
@@ -59,9 +61,13 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         createFile("paket.dependencies")
 
         when:
-        def result = runTasksSuccessfully("paketPack-WoogaTest")
+        def result = runTasksSuccessfully(taskToRun)
 
         then:
         outputFile.exists()
+        result.wasExecuted("paketPack-WoogaTest")
+
+        where:
+        taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
     }
 }

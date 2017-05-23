@@ -51,10 +51,13 @@ class PaketPack extends AbstractPaketTask {
     }
 
     @OutputDirectory
-    def outputDir
+    File outputDir
 
-    File getOutputDir() {
-        project.file outputDir
+    @OutputFile
+    File getOutputFile() {
+        def templateReader = new PaketTemplateReader(getTemplateFile())
+        def packageID = templateReader.getPackageId()
+        project.file({"$outputDir/${packageID}.${version}.nupkg"})
     }
 
     PaketPack() {
@@ -73,6 +76,25 @@ class PaketPack extends AbstractPaketTask {
 
         if (getTemplateFile() != null) {
             args << "templatefile" << getTemplateFile()
+        }
+    }
+
+    private class PaketTemplateReader {
+
+        private def content
+
+        PaketTemplateReader(File templateFile) {
+            content = [:]
+            templateFile.eachLine { line ->
+                def matcher
+                if ((matcher = line =~ /^(\w+)( |\n[ ]{4})(((\n[ ]{4})?.*)+)/)) {
+                    content[matcher[0][1]] = matcher[0][3]
+                }
+            }
+        }
+
+        String getPackageId() {
+            content['id']
         }
     }
 }

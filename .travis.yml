@@ -1,7 +1,7 @@
 language: java
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq mono
+  - sudo apt-get install -qq mono-devel
 
 sudo: true
 jdk:

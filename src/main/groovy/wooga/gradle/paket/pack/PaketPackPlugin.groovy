@@ -54,18 +54,18 @@ class PaketPackPlugin implements Plugin<Project> {
                 def packageID = templateReader.getPackageId()
                 def packageName = packageID.replaceAll(/\./, '')
                 def packTask = tasks.create(TASK_PACK_PREFIX + packageName, PaketPack.class)
+
                 packTask.group = BasePlugin.BUILD_GROUP
                 packTask.templateFile = file
-                packTask.outputDir = { "$project.buildDir/outputs" }
-                packTask.outputs.file { "$packTask.outputDir/${packageID}.${project.version}.nupkg" }
-                packTask.version = { project.version }
+                packTask.outputDir = project.file("${project.buildDir}/outputs")
+                packTask.version = project.version
                 packTask.description = "Pack package ${templateReader.getPackageId()}"
                 packTask.paketExtension = extension
                 packTask.dependsOn paketBootstrap
 
                 tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 
-                project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: project.file("$project.buildDir/outputs/${packageName}.${project.version}.nupkg"), name: packageID, builtBy: packTask])
+                project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: packTask.outputFile, name: packageID, builtBy: packTask])
             }
 
             configurePaketInstallIfPresent()
