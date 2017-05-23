@@ -127,7 +127,7 @@ class PaketPackPluginSpec extends ProjectSpec {
         def artifacts = project.configurations[PaketBasePlugin.PAKET_CONFIGURATION].allArtifacts
         artifacts.size() == 3
         artifacts.every { it.name =~ /Test\.Package[\d]/ }
-        artifacts.every { it.file.path =~ /TestPackage[\d]\..*?\.nupkg/ }
+        artifacts.every { it.file.path =~ /Test\.Package[\d]\..*?\.nupkg/ }
     }
 
     def "set paket install dependency when plugin [paket get] is activated"() {
