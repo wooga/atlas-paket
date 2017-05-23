@@ -36,5 +36,6 @@ class PaketUnityInstall extends AbstractPaketTask {
         description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
         group = PaketUnityPlugin.GROUP
         paketCommand = COMMAND
+        outputs.upToDateWhen {false}
     }
 }
