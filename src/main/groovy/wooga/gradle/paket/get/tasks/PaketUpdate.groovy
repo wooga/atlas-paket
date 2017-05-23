@@ -27,5 +27,6 @@ class PaketUpdate extends AbstractPaketTask {
         super(PaketUpdate.class)
         description = 'Update one or all dependencies to their latest version and update projects.'
         paketCommand = COMMAND
+        outputs.upToDateWhen {false}
     }
 }

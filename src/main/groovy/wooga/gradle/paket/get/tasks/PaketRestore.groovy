@@ -27,5 +27,6 @@ class PaketRestore extends AbstractPaketTask {
         super(PaketRestore.class)
         description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
         paketCommand = COMMAND
+        outputs.upToDateWhen {false}
     }
 }

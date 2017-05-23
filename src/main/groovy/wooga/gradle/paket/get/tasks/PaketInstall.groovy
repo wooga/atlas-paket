@@ -25,5 +25,6 @@ class PaketInstall extends AbstractPaketTask {
         super(PaketInstall.class)
         description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
         paketCommand = "install"
+        outputs.upToDateWhen {false}
     }
 }

@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.get
 
+import spock.lang.Ignore
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationBaseSpec
 
@@ -79,5 +80,11 @@ class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
 
         where:
         taskToRun << bootstrapTestCases
+    }
+
+    @Ignore
+    @Unroll
+    def "Increment task #taskToRun"(String taskToRun) {
+
     }
 }

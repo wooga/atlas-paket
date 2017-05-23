@@ -55,7 +55,6 @@ class PaketGetPlugin implements Plugin<Project> {
             task.paketExtension = extension
             task.group = GROUP
             task.dependsOn paketBootstrap
-            task.outputs.upToDateWhen {false}
         }
     }
 }
