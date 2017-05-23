@@ -17,9 +17,9 @@
 
 package wooga.gradle.paket.pack
 
-import wooga.gradle.paket.PaketIntegrationBaseSpec
+import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
 
-class PaketPackIntegrationSpec extends PaketIntegrationBaseSpec{
+class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
     def paketTemplateFile
     def version = "1.0.0"

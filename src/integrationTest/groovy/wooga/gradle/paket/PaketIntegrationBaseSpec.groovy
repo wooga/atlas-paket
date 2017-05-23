@@ -27,6 +27,12 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
     @Shared
     def bootstrapTestCases
 
+    @Shared
+    String bootstrapTaskName = "paketBootstrap"
+
+    @Shared
+    String bootstrapperFileName = "paket.bootstrapper.exe"
+
     @Unroll
     def "calls paketBootstrap when running #taskToRun"(String taskToRun) {
         given: "an empty paket dependency and lock file"
@@ -35,7 +41,7 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
 
         and: "future paket directories with files"
         def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.bootstrapper.exe')
+        def paketBootstrap = new File(paketDir, bootstrapperFileName)
         def paket = new File(paketDir, 'paket.exe')
 
         assert !paketDir.exists()
@@ -44,27 +50,10 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
         def result = runTasksSuccessfully(taskToRun)
 
         then:
-        result.wasExecuted("paketBootstrap")
+        result.wasExecuted(bootstrapTaskName)
         paketDir.exists()
         paketBootstrap.exists()
         paket.exists()
-
-        where:
-        taskToRun << bootstrapTestCases
-    }
-
-    @Unroll
-    def "skips paket call with [NO-SOURCE] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
-        given: "no dependency file"
-        def dependenciesFile = new File(projectDir, 'paket.dependencies')
-        assert !dependenciesFile.exists()
-
-        when:
-        def result = runTasksSuccessfully(taskToRun)
-
-        then:
-        hasNoSource(result, "paketBootstrap")
-        hasNoSource(result,taskToRun)
 
         where:
         taskToRun << bootstrapTestCases
@@ -85,18 +74,18 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
         def result = runTasksSuccessfully(taskToRun)
 
         then: "bootstrap task was [UP-TO-DATE]"
-        result.wasUpToDate("paketBootstrap")
+        result.wasUpToDate(bootstrapTaskName)
 
         when:"delete bootstrapper"
         def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.bootstrapper.exe')
+        def paketBootstrap = new File(paketDir, bootstrapperFileName)
         paketBootstrap.delete()
 
         and:"run the task again"
         def result2 = runTasksSuccessfully(taskToRun)
 
         then:
-        !result2.wasUpToDate("paketBootstrap")
+        !result2.wasUpToDate(bootstrapTaskName)
 
         where:
         taskToRun << bootstrapTestCases

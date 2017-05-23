@@ -19,9 +19,9 @@ package wooga.gradle.paket.get
 
 import spock.lang.Ignore
 import spock.lang.Unroll
-import wooga.gradle.paket.PaketIntegrationBaseSpec
+import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
 
-class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
+class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
     def setup() {
         buildFile << """
@@ -32,7 +32,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationBaseSpec{
 
     @Override
     Object getBootstrapTestCases() {
-        return ["paketInstall", "paketUpdate", "paketRestore"]
+        return [PaketGetPlugin.INSTALL_TASK_NAME, PaketGetPlugin.UPDATE_TASK_NAME, PaketGetPlugin.RESTORE_TASK_NAME]
     }
 
     @Unroll
