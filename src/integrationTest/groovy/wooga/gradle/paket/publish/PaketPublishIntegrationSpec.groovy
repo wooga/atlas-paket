@@ -56,6 +56,7 @@ class PaketPublishIntegrationSpec extends IntegrationSpec {
 
     def setupSpec() {
         String artifactoryCredentials = System.getenv("artifactoryCredentials")
+        assert artifactoryCredentials
         def credentials = artifactoryCredentials.split(':')
         artifactory = ArtifactoryClient.create(artifactoryUrl, credentials[0], credentials[1])
     }

@@ -95,7 +95,7 @@ dependencies {
     }
 
     testCompile 'com.netflix.nebula:nebula-test:latest.release'
-    integrationTestCompile 'org.jfrog.artifactory.client:artifactory-java-client-services:+'
+    testCompile 'org.jfrog.artifactory.client:artifactory-java-client-services:+'
 
     compile gradleApi()
     compile localGroovy()
