@@ -13,8 +13,5 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-script:
-- ./gradlew check --debug
-
 after_success:
 - ./gradlew cobertura coveralls

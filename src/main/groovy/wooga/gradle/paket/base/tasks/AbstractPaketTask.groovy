@@ -122,7 +122,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
 
         if (execResult.exitValue != 0) {
             logger.error(stdErr.toString())
-            throw new GradleException("Paket task ${name} failed")
+            throw new GradleException("Paket task ${name} failed" + stdErr.toString())
         }
 
         logger.info(stdOut.toString())
