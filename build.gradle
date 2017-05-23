@@ -104,7 +104,9 @@ dependencies {
     }
 
     testCompile 'com.netflix.nebula:nebula-test:latest.release'
-    testCompile 'org.jfrog.artifactory.client:artifactory-java-client-services:+'
+    testCompile('org.jfrog.artifactory.client:artifactory-java-client-services:+') {
+        exclude module: 'logback-classic'
+    }
 
     compile gradleApi()
     compile localGroovy()
