@@ -32,8 +32,17 @@ class PaketPublishIntegrationSpec extends IntegrationSpec {
     @Shared
     def version = "1.0.0"
 
+    def uniquPackagePostfix() {
+        String key = "TRAVIS_JOB_NUMBER"
+        def env = System.getenv()
+        if(env.containsKey(key)) {
+            return env.get(key)
+        }
+        return ""
+    }
+
     @Shared
-    def packageID = "Wooga.Test" + System.getenv().getOrDefault("TRAVIS_JOB_NUMBER", "")
+    def packageID = "Wooga.Test" + uniquPackagePostfix()
 
     @Shared
     def repoName = "integration"
