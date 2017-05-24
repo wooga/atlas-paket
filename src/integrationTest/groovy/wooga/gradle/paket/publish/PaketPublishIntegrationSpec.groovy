@@ -33,7 +33,7 @@ class PaketPublishIntegrationSpec extends IntegrationSpec {
     def version = "1.0.0"
 
     @Shared
-    def packageID = "Wooga.Test"
+    def packageID = "Wooga.Test" + System.getenv().getOrDefault("TRAVIS_JOB_NUMBER", "")
 
     @Shared
     def repoName = "integration"
