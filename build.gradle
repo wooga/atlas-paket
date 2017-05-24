@@ -28,13 +28,6 @@ plugins {
 group 'net.wooga.gradle'
 description = 'Paket plugin for Gradle.'
 
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
 sourceSets {
     integrationTest {
         groovy {
@@ -131,6 +124,20 @@ integrationTest.mustRunAfter test
 
 tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    executionData(test)
+    executionData(integrationTest)
+}
+
+tasks.coveralls {
+    onlyIf {System.getenv("CI") && JavaVersion.current().isJava8Compatible()}
 }
 
 project.tasks.releaseCheck.dependsOn project.tasks.check
