@@ -103,7 +103,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
             paketArgs << paketExtension.monoExecutable
         }
 
-        paketArgs << getExecutable()
+        paketArgs << project.file(getExecutable())
 
         if (paketCommand) {
             paketArgs << paketCommand

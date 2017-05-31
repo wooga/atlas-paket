@@ -59,7 +59,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         packagesDir.exists()
 
         and: "downloads the nuget package"
-        result.standardOutput.contains("Resolving packages for group Main:\n - $nuget")
+        result.standardOutput =~ /(?ms)Resolving packages for group Main:.*- $nuget/
 
         where:
         taskToRun << bootstrapTestCases
