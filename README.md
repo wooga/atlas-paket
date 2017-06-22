@@ -70,10 +70,10 @@ This plugin allows to use the extension [paket.unity3d](http://wooga.github.io/P
 ### Tasks
 The `paket-unity` plugin adds a few tasks that will hook themself onto `paket-get`
 
-| Task name           | Depends on          | Type                                              | Description |
-| ------------------- | ------------------- | ------------------------------------------------- | ----------- |
-| paketUnityBootstrap | paketBootstrap      | wooga.gradle.paket.unity.task.PaketUnityBootstrap | Downloads `paket.unity3d.bootstrapper.exe` and initializes `paket.unity3d.exe`
-| paketUnityInstall   | paketUnityBootstrap | wooga.gradle.paket.unity.tasks.PaketUnityInstall  | Installs the dependencies into the Unity3d project
+| Task name           | Depends on          | Type                                                | Description |
+| ------------------- | ------------------- | --------------------------------------------------- | ----------- |
+| paketUnityBootstrap | paketBootstrap      | `wooga.gradle.paket.unity.task.PaketUnityBootstrap` | Downloads `paket.unity3d.bootstrapper.exe` and initializes `paket.unity3d.exe`
+| paketUnityInstall   | paketUnityBootstrap | `wooga.gradle.paket.unity.tasks.PaketUnityInstall`  | Installs the dependencies into the Unity3d project
 
 The `paketUnityInstall` will configure itself as a [`finalizedBy`][gradle_finalizedBy] task for `paketInstall`, `paketRestore and `paketUpdate`. There is no need to call this task manually. The task also gets skipped when no `paket.unity3d.references` file can be found anywhere in the project directory tree.
 
@@ -86,7 +86,7 @@ The plugin will generate a package task based on the package id inside the [`pak
 
 | Task name             | Depends on          | Type                                              | Description |
 | --------------------- | ------------------- | ------------------------------------------------- | ----------- |
-| paketPack-*packageId* | paketBootstrap      | wooga.gradle.paket.pack.tasks.PaketPack           | Packs the [`paket.template`] [paket_template]  file into a `nupkg` package |
+| paketPack-*packageId* | paketBootstrap      | `wooga.gradle.paket.pack.tasks.PaketPack`         | Packs the [`paket.template`] [paket_template]  file into a `nupkg` package |
 
 The plugin checks if the `paket-get` plugin is applied. If so, it will make all `PaketPack` tasks [`dependOn`][gradle_dependsOn] `paketInstall`.
 
@@ -165,9 +165,9 @@ The plugin creates a number of tasks based on the configurated publishing reposi
 
 | Task name                           | Depends on                           | Type                                              | Description |
 | ----------------------------------- | ------------------------------------ | ------------------------------------------------- | ----------- |
-| publish-*packageId*                 | the `npkg` artifact, paketBootstrap  | wooga.gradle.paket.publish.tasks.PaketPush        | publishes one artifact from the `npgk` configuration based on the `packageId` to the default publishing repository
-| publish*repositoryName*-*packageId* | the `npkg` artifact, paketBootstrap  | wooga.gradle.paket.publish.tasks.PaketPush        | publishes one artifact from the `npgk` configuration based on the `packageId` to the repository named: `repositoryName`
-| publish*repositoryName*             | all `nppg` artifacts, paketBootstrap | DefaultTask                                       | publishes all artifacts to the publishing repository named: `repositoryName`
+| publish-*packageId*                 | the `npkg` artifact, paketBootstrap  | `wooga.gradle.paket.publish.tasks.PaketPush`      | publishes one artifact from the `npgk` configuration based on the `packageId` to the default publishing repository
+| publish*repositoryName*-*packageId* | the `npkg` artifact, paketBootstrap  | `wooga.gradle.paket.publish.tasks.PaketPush`      | publishes one artifact from the `npgk` configuration based on the `packageId` to the repository named: `repositoryName`
+| publish*repositoryName*             | all `nppg` artifacts, paketBootstrap | `DefaultTask`                                     | publishes all artifacts to the publishing repository named: `repositoryName`
 
 
 Gradle and Java Compatibility
