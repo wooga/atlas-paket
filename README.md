@@ -35,7 +35,7 @@ mono > 5.x
 ### Windows
 .Net > 5.x
 
-#Usage
+# Usage
 ## Paket-Base
 The invisible `paket-base` plugin contains the basic functionality and tasks to run all other `paket-*` plugins. It generates the `paketBootstrap` which initializes the build environment to work with `Paket`. It also defines a custom configuration that is used by some the other `paket-*` plugins.
 
