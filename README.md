@@ -78,15 +78,15 @@ The `paket-unity` plugin adds a few tasks that will hook themself onto `paket-ge
 The `paketUnityInstall` will configure itself as a [`finalizedBy`][gradle_finalizedBy] task for `paketInstall`, `paketRestore and `paketUpdate`. There is no need to call this task manually. The task also gets skipped when no `paket.unity3d.references` file can be found anywhere in the project directory tree.
 
 ## Paket-Pack
-The `paket-pack` plugin allows you to package `.nugkg` packages from [`paket.template`] [paket_template] files.
+The `paket-pack` plugin allows you to package `.nugkg` packages from [`paket.template`][paket_template] files.
 It will apply the plugins `base` and `paket-base`.
 
 ### Tasks
-The plugin will generate a package task based on the package id inside the [`paket.template`] [paket_template]  file
+The plugin will generate a package task based on the package id inside the [`paket.template`][paket_template]  file
 
 | Task name             | Depends on          | Type                                              | Description |
 | --------------------- | ------------------- | ------------------------------------------------- | ----------- |
-| paketPack-*packageId* | paketBootstrap      | `wooga.gradle.paket.pack.tasks.PaketPack`         | Packs the [`paket.template`] [paket_template]  file into a `nupkg` package |
+| paketPack-*packageId* | paketBootstrap      | `wooga.gradle.paket.pack.tasks.PaketPack`         | Packs the [`paket.template`][paket_template]  file into a `nupkg` package |
 
 The plugin checks if the `paket-get` plugin is applied. If so, it will make all `PaketPack` tasks [`dependOn`][gradle_dependsOn] `paketInstall`.
 
