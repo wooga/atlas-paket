@@ -1,9 +1,9 @@
 #!groovy
-@Library('github.com/wooga/atlas-jenkins-pipeline@0.0.1') _
+@Library('github.com/wooga/atlas-jenkins-pipeline@0.0.3') _
 
 pipeline {
     agent {
-        label 'windows&&unity_5.5'
+        label 'windows'
     }
 
     environment {
@@ -21,7 +21,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                bat "gradlew.bat check"
+                gradleWrapper "check"
             }
         }
     }
@@ -30,7 +30,7 @@ pipeline {
         always {
             sendSlackNotification currentBuild.result, true
             junit allowEmptyResults: true, testResults: 'build/test-result/**/*.xml'
-            deleteDir()
+            gradleWrapper "clean"
         }
     }
 }
