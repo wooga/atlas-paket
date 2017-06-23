@@ -20,6 +20,7 @@ package wooga.gradle.paket.pack
 import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
 import org.gradle.api.plugins.BasePlugin
+import spock.lang.Unroll
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
@@ -59,16 +60,13 @@ class PaketPackPluginSpec extends ProjectSpec {
         !project.tasks.withType(PaketPack)
     }
 
-    def "creates pack task after evaluation"() {
-        given: "project with plugin applied"
-        project.pluginManager.apply(PLUGIN_NAME)
-
-        and: "one paket template file in the file system"
+    def "creates pack task when paket.template in the project tree"() {
+        given: "one paket template file in the project file system"
         projectWithPaketTemplate(projectDir)
         assert !project.tasks.withType(PaketPack)
 
-        when:
-        project.evaluate()
+        when: "applying paket-pack plugin"
+        project.pluginManager.apply(PLUGIN_NAME)
 
         then:
         def tasks = project.tasks.withType(PaketPack)
@@ -77,15 +75,12 @@ class PaketPackPluginSpec extends ProjectSpec {
     }
 
     def "creates pack tasks for template files in sub directories"() {
-        given: "project with plugin applied"
-        project.pluginManager.apply(PLUGIN_NAME)
-
-        and: "one paket template file in subdirectory in the file system"
+        given: "one paket template file in subdirectory in the file system"
         projectWithPaketTemplates(["Test.Package"])
         assert !project.tasks.withType(PaketPack)
 
-        when:
-        project.evaluate()
+        when: "applying paket-pack plugin"
+        project.pluginManager.apply(PLUGIN_NAME)
 
         then:
         def tasks = project.tasks.withType(PaketPack)
@@ -97,12 +92,8 @@ class PaketPackPluginSpec extends ProjectSpec {
         given: "some paket template files in the file system"
         projectWithPaketTemplates(["Test.Package1", "Test.Package2", "Test.Package3"])
 
-        and: "project with plugin applied"
+        when: "applying paket-pack plugin"
         project.pluginManager.apply(PLUGIN_NAME)
-        assert !project.tasks.withType(PaketPack)
-
-        when:
-        project.evaluate()
 
         then:
         def tasks = project.tasks.withType(PaketPack)
@@ -113,15 +104,12 @@ class PaketPackPluginSpec extends ProjectSpec {
     }
 
     def "adds artifact to configuration [nupkg]"() {
-        given: "project with plugin applied"
-        project.pluginManager.apply(PLUGIN_NAME)
-
-        and: "some paket template files in the file system"
+        given: "some paket template files in the file system"
         projectWithPaketTemplates(["Test.Package1", "Test.Package2", "Test.Package3"])
-        assert !project.configurations[PaketBasePlugin.PAKET_CONFIGURATION].allArtifacts
+        assert !project.configurations.maybeCreate(PaketBasePlugin.PAKET_CONFIGURATION).allArtifacts
 
-        when:
-        project.evaluate()
+        when: "applying paket-pack plugin"
+        project.pluginManager.apply(PLUGIN_NAME)
 
         then:
         def artifacts = project.configurations[PaketBasePlugin.PAKET_CONFIGURATION].allArtifacts
@@ -130,23 +118,29 @@ class PaketPackPluginSpec extends ProjectSpec {
         artifacts.every { it.file.path =~ /Test\.Package[\d]\..*?\.nupkg/ }
     }
 
-    def "set paket install dependency when plugin [paket get] is activated"() {
-        given: "project with plugin applied"
-        project.pluginManager.apply(PLUGIN_NAME)
-
-        and: "plugin paket-get applied"
-        project.pluginManager.apply(GET_PLUGIN_NAME)
-        assert project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]
-
-        and: "some paket template files in the file system"
+    @Unroll("verify dependency to paket install when #firstPlugin is applied before #secondPlugin")
+    def "set paket install dependency when plugin [paket get] is activated no matter the order"() {
+        given: "some paket template files in the file system"
         projectWithPaketTemplates(["Test.Package1", "Test.Package2", "Test.Package3"])
 
-        when:
-        project.evaluate()
+        and: "project with plugin applied"
+        project.pluginManager.apply(firstPlugin)
+
+        and: "plugin paket-get applied"
+        project.pluginManager.apply(secondPlugin)
+        assert project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]
+
+        when: "listing all paketPack tasks"
+        def tasks = project.tasks.withType(PaketPack)
 
         then:
-        def tasks = project.tasks.withType(PaketPack)
+        tasks.size() == 3
         tasks.every { it.dependsOn.contains(project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]) }
+
+        where:
+        firstPlugin     | secondPlugin
+        GET_PLUGIN_NAME | PLUGIN_NAME
+        PLUGIN_NAME     | GET_PLUGIN_NAME
     }
 
     def projectWithPaketTemplates(ids) {

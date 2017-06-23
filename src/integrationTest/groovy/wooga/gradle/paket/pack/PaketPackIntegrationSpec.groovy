@@ -70,4 +70,28 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         where:
         taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
     }
+
+    @Unroll
+    def "can depend on generated pack tasks #taskToRun"(String taskToRun)  {
+        given: "the build.gradle with second task that must run before packetPack"
+        buildFile << """
+            task(preStep) {
+                doLast {
+                    println("execute pre step")
+                }
+            }
+            
+            project.tasks["paketPack-WoogaTest"].dependsOn preStep
+        """.stripIndent()
+
+        when:
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        result.wasExecuted("paketPack-WoogaTest")
+        result.wasExecuted("preStep")
+
+        where:
+        taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
+    }
 }
