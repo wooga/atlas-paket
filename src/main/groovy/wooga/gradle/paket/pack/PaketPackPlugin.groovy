@@ -66,6 +66,8 @@ class PaketPackPlugin implements Plugin<Project> {
 
             project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: packTask.outputFile, name: packageID, builtBy: packTask])
         }
+
+        configurePaketInstallIfPresent()
     }
 
     void configurePaketInstallIfPresent() {
