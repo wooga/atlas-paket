@@ -58,9 +58,8 @@ class PaketBasePlugin implements Plugin<Project> {
         init.finalizedBy paketBootstrap
 
         def configurations = project.configurations
-        configurations.create(PAKET_CONFIGURATION) {
-            description = "paket nupkg archive"
-            transitive = false
-        }
+        def configuration = configurations.maybeCreate(PAKET_CONFIGURATION)
+        configuration.description = "paket nupkg archive"
+        configuration.transitive = false
     }
 }

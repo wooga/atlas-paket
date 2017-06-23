@@ -46,29 +46,25 @@ class PaketPackPlugin implements Plugin<Project> {
         def paketBootstrap = tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
         def extension = project.extensions.getByType(DefaultPaketPluginExtension)
 
-        project.afterEvaluate {
-            def templateFiles = project.fileTree(project.projectDir)
-            templateFiles.include PAKET_TEMPLATE_PATTERN
-            templateFiles.each { File file ->
-                def templateReader = new PaketTemplateReader(file)
-                def packageID = templateReader.getPackageId()
-                def packageName = packageID.replaceAll(/\./, '')
-                def packTask = tasks.create(TASK_PACK_PREFIX + packageName, PaketPack.class)
+        def templateFiles = project.fileTree(project.projectDir)
+        templateFiles.include PAKET_TEMPLATE_PATTERN
+        templateFiles.each { File file ->
+            def templateReader = new PaketTemplateReader(file)
+            def packageID = templateReader.getPackageId()
+            def packageName = packageID.replaceAll(/\./, '')
+            def packTask = tasks.create(TASK_PACK_PREFIX + packageName, PaketPack.class)
 
-                packTask.group = BasePlugin.BUILD_GROUP
-                packTask.templateFile = file
-                packTask.outputDir = project.file("${project.buildDir}/outputs")
-                packTask.version = project.version
-                packTask.description = "Pack package ${templateReader.getPackageId()}"
-                packTask.paketExtension = extension
-                packTask.dependsOn paketBootstrap
+            packTask.group = BasePlugin.BUILD_GROUP
+            packTask.templateFile = file
+            packTask.outputDir = project.file("${project.buildDir}/outputs")
+            packTask.version = project.version
+            packTask.description = "Pack package ${templateReader.getPackageId()}"
+            packTask.paketExtension = extension
+            packTask.dependsOn paketBootstrap
 
-                tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
+            tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 
-                project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: packTask.outputFile, name: packageID, builtBy: packTask])
-            }
-
-            configurePaketInstallIfPresent()
+            project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: packTask.outputFile, name: packageID, builtBy: packTask])
         }
     }
 
@@ -98,4 +94,5 @@ class PaketPackPlugin implements Plugin<Project> {
             content['id']
         }
     }
+
 }
