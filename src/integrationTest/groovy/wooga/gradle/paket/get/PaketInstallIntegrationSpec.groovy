@@ -20,6 +20,7 @@ package wooga.gradle.paket.get
 import spock.lang.Ignore
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
+import wooga.gradle.paket.TestFixtures
 
 class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
@@ -85,5 +86,27 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << bootstrapTestCases
+    }
+
+    @Unroll("verify paket install with gradle #gradleVersionToTest")
+    def "runs plugin with multiple gradle versions"() {
+        given: "empty paket dependency file and lock"
+        createFile("paket.dependencies")
+        createFile("paket.lock")
+
+        gradleVersion = gradleVersionToTest
+
+        expect:
+        runTasksSuccessfully("paketInstall")
+
+        where:
+        gradleVersionToTest << TestFixtures.gradleVersions()
+    }
+
+
+    @Ignore
+    @Unroll
+    def "Increment task #taskToRun"(String taskToRun) {
+
     }
 }
