@@ -19,6 +19,8 @@ package wooga.gradle.paket.pack
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
@@ -27,6 +29,8 @@ import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
 class PaketPackPlugin implements Plugin<Project> {
+
+    static Logger logger = Logging.getLogger(PaketPackPlugin)
 
     Project project
     TaskContainer tasks
@@ -52,7 +56,14 @@ class PaketPackPlugin implements Plugin<Project> {
             def templateReader = new PaketTemplateReader(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./, '')
-            def packTask = tasks.create(TASK_PACK_PREFIX + packageName, PaketPack.class)
+            def taskName = TASK_PACK_PREFIX + packageName
+
+            if (tasks.findByName(taskName)) {
+                logger.warn("Multiple paket.template files with id ${packageID}. Skip template file at: $file.path")
+                return
+            }
+
+            def packTask = tasks.create(taskName, PaketPack.class)
 
             packTask.group = BasePlugin.BUILD_GROUP
             packTask.templateFile = file

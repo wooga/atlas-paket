@@ -103,6 +103,19 @@ class PaketPackPluginSpec extends ProjectSpec {
         tasks.every { it.dependsOn.contains(project.tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]) }
     }
 
+    def "skips pack task creation for duplicate package id"() {
+        given: "some paket template files in the file system with same id"
+        projectWithPaketTemplate(projectDir,"Test.Package1")
+        projectWithPaketTemplates(["Test.Package1"])
+
+        when: "applying paket-pack plugin"
+        project.pluginManager.apply(PLUGIN_NAME)
+
+        then:
+        def tasks = project.tasks.withType(PaketPack)
+        tasks.size() == 1
+    }
+
     def "adds artifact to configuration [nupkg]"() {
         given: "some paket template files in the file system"
         projectWithPaketTemplates(["Test.Package1", "Test.Package2", "Test.Package3"])
