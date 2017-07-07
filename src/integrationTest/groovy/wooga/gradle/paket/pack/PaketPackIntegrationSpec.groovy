@@ -17,8 +17,10 @@
 
 package wooga.gradle.paket.pack
 
+import org.gradle.api.file.FileTree
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
+import wooga.gradle.paket.pack.tasks.PaketPack
 
 class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
@@ -72,7 +74,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     }
 
     @Unroll
-    def "can depend on generated pack tasks #taskToRun"(String taskToRun)  {
+    def "can depend on generated pack tasks #taskToRun"(String taskToRun) {
         given: "the build.gradle with second task that must run before packetPack"
         buildFile << """
             task(preStep) {
@@ -93,5 +95,64 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
+    }
+
+    def "skips pack task creation for duplicate package id"() {
+        given: "some paket template files in the file system with same id"
+        def subDir1 = new File(projectDir, "sub1")
+        def subDir2 = new File(projectDir, "sub2")
+        subDir1.mkdirs()
+        subDir2.mkdirs()
+
+        projectWithPaketTemplate(subDir1, "Test.Package1")
+        projectWithPaketTemplate(subDir2, "Test.Package1")
+
+        when: "applying paket-pack plugin"
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        result.standardOutput.contains("Multiple paket.template files with id Test.Package1")
+        result.standardOutput.contains("Template file with same id already in use")
+        result.standardOutput.contains("Skip template file:")
+
+        where:
+        taskToRun << ["paketPack-TestPackage1", "buildNupkg", "assemble"]
+    }
+
+    @Unroll("verify sort order for template file duplication #subDir1Name|#subDir2Name|#subDir3Name")
+    def "skips pack task creation for duplicate package id and uses first in sorted order"() {
+        given: "some paket template files in the file system with same id"
+        def subDir1 = new File(projectDir, subDir1Name)
+        def subDir2 = new File(projectDir, subDir2Name)
+        def subDir3 = new File(projectDir, subDir3Name)
+
+        subDir1.mkdirs()
+        subDir2.mkdirs()
+        subDir3.mkdirs()
+
+        def templateFiles = [
+                projectWithPaketTemplate(subDir1, "Test.Package1"),
+                projectWithPaketTemplate(subDir2, "Test.Package1"),
+                projectWithPaketTemplate(subDir3, "Test.Package1")
+        ]
+
+        when: "applying paket-pack plugin"
+        def result = runTasksSuccessfully("tasks")
+
+        then:
+        def expectedFileToUse = templateFiles.remove(expectedFileIndex)
+        def unusedOne = templateFiles[0]
+        def unusedTwo = templateFiles[1]
+        result.standardOutput.contains("Multiple paket.template files with id Test.Package1")
+        result.standardOutput.contains("Template file with same id already in use ${expectedFileToUse.path}")
+        result.standardOutput.contains("Skip template file: ${unusedOne.path}")
+        result.standardOutput.contains("Skip template file: ${unusedTwo.path}")
+
+        where:
+        subDir1Name   | subDir2Name   | subDir3Name   | expectedFileIndex
+        "sub1/sub1"   | "sub2"        | "sub1/sub2"   | 1
+        "sub1/subxzy" | "sub2/subklm" | "sub1/subabc" | 2
+        "sub1"        | "sub2"        | "sub3"        | 0
+        "sub1/sub1"   | "sub1"        | "sub1/sub2"   | 1
     }
 }

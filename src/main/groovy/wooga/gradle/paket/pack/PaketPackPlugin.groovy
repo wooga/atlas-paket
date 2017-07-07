@@ -19,6 +19,8 @@ package wooga.gradle.paket.pack
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
@@ -27,6 +29,8 @@ import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
 class PaketPackPlugin implements Plugin<Project> {
+
+    static Logger logger = Logging.getLogger(PaketPackPlugin)
 
     Project project
     TaskContainer tasks
@@ -48,11 +52,40 @@ class PaketPackPlugin implements Plugin<Project> {
 
         def templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
+        templateFiles = templateFiles.sort()
+        templateFiles = templateFiles.sort(true, new Comparator<File>() {
+            @Override
+            int compare(File o1, File o2) {
+                String sep = File.separator
+                if(o1.path.count(sep) > o2.path.count(sep)) {
+                    return 1
+                }
+                else if(o1.path.count(sep) < o2.path.count(sep)) {
+                    return -1
+                }
+                else
+                {
+                    return 0
+                }
+            }
+        })
+
         templateFiles.each { File file ->
             def templateReader = new PaketTemplateReader(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./, '')
-            def packTask = tasks.create(TASK_PACK_PREFIX + packageName, PaketPack.class)
+            def taskName = TASK_PACK_PREFIX + packageName
+
+            def packTask = tasks.findByName(taskName)
+            if (packTask && PaketPack.isInstance(packTask)) {
+                File templateFileInUse = ((PaketPack) packTask).templateFile
+                logger.warn("Multiple paket.template files with id ${packageID}.")
+                logger.warn("Template file with same id already in use $templateFileInUse.path")
+                logger.warn("Skip template file: $file.path")
+                return
+            }
+
+            packTask = tasks.create(taskName, PaketPack.class)
 
             packTask.group = BasePlugin.BUILD_GROUP
             packTask.templateFile = file

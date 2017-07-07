@@ -22,7 +22,7 @@ import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
 
-abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
+abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
 
     @Shared
     def bootstrapTestCases
@@ -76,12 +76,12 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
         then: "bootstrap task was [UP-TO-DATE]"
         result.wasUpToDate(bootstrapTaskName)
 
-        when:"delete bootstrapper"
+        when: "delete bootstrapper"
         def paketDir = new File(projectDir, '.paket')
         def paketBootstrap = new File(paketDir, bootstrapperFileName)
         paketBootstrap.delete()
 
-        and:"run the task again"
+        and: "run the task again"
         def result2 = runTasksSuccessfully(taskToRun)
 
         then:
@@ -97,5 +97,22 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec{
 
     private boolean containsOutput(String stdout, String taskName, String stateIdentifier) {
         stdout.contains("$taskName $stateIdentifier".toString())
+    }
+
+    def projectWithPaketTemplates(ids) {
+        def files = []
+        ids.each { String id ->
+            def subDirectory = new File(projectDir, id)
+            subDirectory.mkdirs()
+            files << projectWithPaketTemplate(subDirectory, id)
+        }
+        files
+    }
+
+    def projectWithPaketTemplate(File directory, String id = "Test.Package") {
+        def templateFile = new File(directory, "paket.template")
+        templateFile.createNewFile()
+        templateFile.append("id $id")
+        templateFile
     }
 }
