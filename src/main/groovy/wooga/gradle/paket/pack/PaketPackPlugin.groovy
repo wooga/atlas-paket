@@ -52,18 +52,40 @@ class PaketPackPlugin implements Plugin<Project> {
 
         def templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
+        templateFiles.sort()
+        templateFiles = templateFiles.sort(true, new Comparator<File>() {
+            @Override
+            int compare(File o1, File o2) {
+                String sep = File.separator
+                if(o1.path.count(sep) > o2.path.count(sep)) {
+                    return 1
+                }
+                else if(o1.path.count(sep) < o2.path.count(sep)) {
+                    return -1
+                }
+                else
+                {
+                    return 0
+                }
+            }
+        })
+
         templateFiles.each { File file ->
             def templateReader = new PaketTemplateReader(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./, '')
             def taskName = TASK_PACK_PREFIX + packageName
 
-            if (tasks.findByName(taskName)) {
-                logger.warn("Multiple paket.template files with id ${packageID}. Skip template file at: $file.path")
+            def packTask = tasks.findByName(taskName)
+            if (packTask && PaketPack.isInstance(packTask)) {
+                File templateFileInUse = ((PaketPack) packTask).templateFile
+                logger.warn("Multiple paket.template files with id ${packageID}.")
+                logger.warn("Template file with same id already in use $templateFileInUse.path")
+                logger.warn("Skip template file: $file.path")
                 return
             }
 
-            def packTask = tasks.create(taskName, PaketPack.class)
+            packTask = tasks.create(taskName, PaketPack.class)
 
             packTask.group = BasePlugin.BUILD_GROUP
             packTask.templateFile = file
