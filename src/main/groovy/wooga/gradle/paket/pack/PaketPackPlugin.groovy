@@ -52,7 +52,7 @@ class PaketPackPlugin implements Plugin<Project> {
 
         def templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
-        templateFiles.sort()
+        templateFiles = templateFiles.sort()
         templateFiles = templateFiles.sort(true, new Comparator<File>() {
             @Override
             int compare(File o1, File o2) {
