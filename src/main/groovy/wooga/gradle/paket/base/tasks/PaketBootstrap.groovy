@@ -33,10 +33,12 @@ class PaketBootstrap extends AbstractPaketTask {
     @Inject
     PaketBootstrap() {
         super(PaketBootstrap.class)
+        supportLogfile = false
     }
 
     PaketBootstrap(Class<AbstractPaketTask> taskType) {
         super(taskType)
+        supportLogfile = false
     }
 
     def outputDir

@@ -86,10 +86,4 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         where:
         taskToRun << bootstrapTestCases
     }
-
-    @Ignore
-    @Unroll
-    def "Increment task #taskToRun"(String taskToRun) {
-
-    }
 }

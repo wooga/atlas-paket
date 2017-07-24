@@ -17,10 +17,8 @@
 
 package wooga.gradle.paket.pack
 
-import org.gradle.api.file.FileTree
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
-import wooga.gradle.paket.pack.tasks.PaketPack
 
 class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
