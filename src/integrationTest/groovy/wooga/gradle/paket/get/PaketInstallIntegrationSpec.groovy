@@ -32,7 +32,12 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
     @Override
     Object getBootstrapTestCases() {
-        return [PaketGetPlugin.INSTALL_TASK_NAME, PaketGetPlugin.UPDATE_TASK_NAME, PaketGetPlugin.RESTORE_TASK_NAME]
+        return [
+                PaketGetPlugin.INSTALL_TASK_NAME,
+                PaketGetPlugin.UPDATE_TASK_NAME,
+                PaketGetPlugin.RESTORE_TASK_NAME,
+                PaketGetPlugin.OUTDATED_TASK_NAME
+        ]
     }
 
     @Unroll
