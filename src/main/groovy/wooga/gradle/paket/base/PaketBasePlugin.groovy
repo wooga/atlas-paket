@@ -17,10 +17,12 @@
 
 package wooga.gradle.paket.base
 
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
+import wooga.gradle.paket.base.tasks.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 import wooga.gradle.paket.get.tasks.PaketInit
 
@@ -61,5 +63,14 @@ class PaketBasePlugin implements Plugin<Project> {
         def configuration = configurations.maybeCreate(PAKET_CONFIGURATION)
         configuration.description = "paket nupkg archive"
         configuration.transitive = false
+
+        tasks.withType(AbstractPaketTask, new Action<AbstractPaketTask>() {
+            @Override
+            void execute(AbstractPaketTask paketTask) {
+                if(!(paketTask instanceof PaketBootstrap)) {
+                    paketTask.dependsOn paketBootstrap
+                }
+            }
+        })
     }
 }

@@ -47,7 +47,6 @@ class PaketPackPlugin implements Plugin<Project> {
         project.pluginManager.apply(BasePlugin.class)
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        def paketBootstrap = tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
         def extension = project.extensions.getByType(DefaultPaketPluginExtension)
 
         def templateFiles = project.fileTree(project.projectDir)
@@ -93,7 +92,6 @@ class PaketPackPlugin implements Plugin<Project> {
             packTask.version = project.version
             packTask.description = "Pack package ${templateReader.getPackageId()}"
             packTask.paketExtension = extension
-            packTask.dependsOn paketBootstrap
 
             tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
 

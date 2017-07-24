@@ -44,7 +44,6 @@ class PaketGetPlugin implements Plugin<Project> {
 
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        def paketBootstrap = tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
         def extension = project.extensions.getByType(DefaultPaketPluginExtension)
 
         def paketInstall = tasks.create(INSTALL_TASK_NAME, PaketInstall.class)
@@ -54,7 +53,6 @@ class PaketGetPlugin implements Plugin<Project> {
         [paketInstall, paketUpdate, paketRestore].each { Task task ->
             task.paketExtension = extension
             task.group = GROUP
-            task.dependsOn paketBootstrap
         }
     }
 }
