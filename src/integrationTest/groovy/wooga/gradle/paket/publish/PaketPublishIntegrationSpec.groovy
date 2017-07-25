@@ -23,9 +23,10 @@ import org.jfrog.artifactory.client.ArtifactoryClient
 import org.jfrog.artifactory.client.model.RepoPath
 import spock.lang.Shared
 import spock.lang.Unroll
+import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
 import wooga.gradle.paket.pack.PaketPackPlugin
 
-class PaketPublishIntegrationSpec extends IntegrationSpec {
+class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
     def paketTemplateFile
 
@@ -55,6 +56,11 @@ class PaketPublishIntegrationSpec extends IntegrationSpec {
 
     @Shared
     Artifactory artifactory
+
+    @Override
+    Object getBootstrapTestCases() {
+        ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}"]
+    }
 
     def artifactoryRepoName = "atlas-nuget-integrationTest"
     def repoUrl = "$artifactoryUrl/api/nuget/atlas-nuget-integrationTest"
@@ -103,9 +109,6 @@ class PaketPublishIntegrationSpec extends IntegrationSpec {
                 Empty nuget package.
         """.stripIndent()
 
-        createFile("paket.lock")
-        createFile("paket.dependencies")
-
         cleanupArtifactory(artifactoryRepoName,packageName)
     }
 
@@ -141,6 +144,10 @@ class PaketPublishIntegrationSpec extends IntegrationSpec {
         given: "the future npkg artifact"
         def nugetArtifact = new File(new File(new File(projectDir, 'build'), "outputs"), packageName)
         assert !nugetArtifact.exists()
+
+        and: "paket.dependencies and paket.lock file"
+        createFile("paket.lock")
+        createFile("paket.dependencies")
 
         when: "run the publish task"
         def result = runTasksSuccessfully(taskToRun)

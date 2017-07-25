@@ -19,32 +19,34 @@ package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.GradleScriptException
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.ConventionTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
+import org.gradle.internal.Factory
+import org.gradle.internal.file.PathToFileResolver
+import org.gradle.tooling.exceptions.UnsupportedOperationConfigurationException
 import wooga.gradle.paket.base.PaketPluginExtension
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
 
-abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTask {
+abstract class AbstractPaketTask<T extends AbstractPaketTask> extends ConventionTask {
     static Logger logger = Logging.getLogger(AbstractPaketTask)
 
-    private final Class<T> taskType;
+    private final Class<T> taskType
+
+    @Inject
+    protected PathToFileResolver getFileResolver() {
+        throw new UnsupportedOperationConfigurationException("file resolver not configured")
+    }
 
     @SkipWhenEmpty
     @InputFiles
     FileCollection paketDependencies = project.fileTree(dir: project.projectDir, include: "paket.dependencies")
-
-
-//            {
-//        project.projectDir.listFiles().find { it.path == "$project.projectDir/paket.dependencies" }
-//    }
-
-//    def getPaketDependencies() {
-//        project.files(paketDependencies)
-//    }
 
     @Internal
     def stdOut = new ByteArrayOutputStream()
@@ -58,6 +60,32 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
     AbstractPaketTask(Class<T> taskType) {
         super()
         this.taskType = taskType
+    }
+
+    @Internal
+    Boolean supportLogfile = true
+
+    private Factory<File> logFile
+
+    @Optional
+    @Internal
+    @Input
+    File getLogFile() {
+        if(logFile)
+        {
+            return logFile.create()
+        }
+        return null
+    }
+
+    AbstractPaketTask setLogFile(Object file) {
+        logFile = fileResolver.resolveLater(file)
+        return this
+    }
+
+    AbstractPaketTask logFile(Object file) {
+        logFile = fileResolver.resolveLater(file)
+        return this
     }
 
     String executable
@@ -107,6 +135,15 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends DefaultTas
 
         if (paketCommand) {
             paketArgs << paketCommand
+        }
+
+        if (!logFile) {
+            this.setLogFile("${project.buildDir}/logs/${name}.log")
+        }
+
+        if (supportLogfile) {
+            paketArgs << "--verbose"
+            paketArgs << "--log-file" << getLogFile().path
         }
 
         paketArgs += args

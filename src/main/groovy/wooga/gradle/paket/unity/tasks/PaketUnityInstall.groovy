@@ -37,5 +37,6 @@ class PaketUnityInstall extends AbstractPaketTask {
         group = PaketUnityPlugin.GROUP
         paketCommand = COMMAND
         outputs.upToDateWhen {false}
+        supportLogfile = false
     }
 }

@@ -37,4 +37,88 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         where:
         taskToRun << bootstrapTestCases
     }
+
+    @Unroll
+    def "writes paket output to logfile when running #taskToRun"(String taskToRun) {
+        given: "a paket dependency file"
+        createFile("paket.dependencies")
+
+        and: "a empty lock file"
+        createFile("paket.lock")
+
+        and: "the log file"
+        def logFile = new File(projectDir, "build/logs/${taskToRun}.log")
+        assert !logFile.exists()
+
+        when:
+        runTasksSuccessfully(taskToRun)
+
+        then:
+        logFile.exists()
+
+        where:
+        taskToRun << bootstrapTestCases
+    }
+
+    @Unroll("verify logout path #taskToRun")
+    def "can set alternate logout path in task configuration when running #taskToRun"(String taskToRun) {
+        given: "a paket dependency file"
+        createFile("paket.dependencies")
+
+        and: "a empty lock file"
+        createFile("paket.lock")
+
+        and: "the log file"
+        def logFile = new File(projectDir, "build/mylogs/${taskToRun}.log")
+        assert !logFile.exists()
+
+        and: "the changed log location"
+        buildFile << """
+            project.afterEvaluate {
+                project.tasks.getByName("${taskToRun}") {
+                    logFile = "build/mylogs/${taskToRun}.log"
+                }
+            }
+        """.stripIndent()
+
+        when:
+        runTasksSuccessfully(taskToRun)
+
+        then:
+        logFile.exists()
+
+        where:
+        taskToRun << bootstrapTestCases
+    }
+
+    @Unroll("verify logout path as method #taskToRun")
+    def "can set alternate logout path in task configuration as method when running #taskToRun"(String taskToRun) {
+        given: "a paket dependency file"
+        createFile("paket.dependencies")
+
+        and: "a empty lock file"
+        createFile("paket.lock")
+
+        and: "the log file"
+        def logFile = new File(projectDir, "build/mylogs/${taskToRun}.log")
+        assert !logFile.exists()
+
+        and: "the changed log location"
+        buildFile << """
+            project.afterEvaluate {
+                project.tasks.getByName("${taskToRun}") {
+                    logFile("build/mylogs/${taskToRun}.log")
+                }
+            }
+        """.stripIndent()
+
+        when:
+        runTasksSuccessfully(taskToRun)
+
+        then:
+        logFile.exists()
+
+        where:
+        taskToRun << bootstrapTestCases
+    }
 }

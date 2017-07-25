@@ -30,6 +30,7 @@ class PaketUnityBootstrap extends PaketBootstrap {
 
     PaketUnityBootstrap() {
         super(PaketUnityBootstrap.class)
+        supportLogfile = false
     }
 
     @Override

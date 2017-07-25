@@ -110,7 +110,6 @@ class PaketPublishPlugin implements Plugin<Project> {
         pushTask.paketExtension = project.extensions.getByType(DefaultPaketPluginExtension)
 
         pushTask.dependsOn artifact
-        pushTask.dependsOn tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
 
         lifecycle.dependsOn pushTask
         pushTask

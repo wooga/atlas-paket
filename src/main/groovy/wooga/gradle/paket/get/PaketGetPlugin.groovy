@@ -24,6 +24,7 @@ import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.get.tasks.PaketInstall
+import wooga.gradle.paket.get.tasks.PaketOutdated
 import wooga.gradle.paket.get.tasks.PaketRestore
 import wooga.gradle.paket.get.tasks.PaketUpdate
 
@@ -36,6 +37,7 @@ class PaketGetPlugin implements Plugin<Project> {
     static final String INSTALL_TASK_NAME = "paketInstall"
     static final String RESTORE_TASK_NAME = "paketRestore"
     static final String UPDATE_TASK_NAME = "paketUpdate"
+    static final String OUTDATED_TASK_NAME = "paketOutdated"
 
     @Override
     void apply(Project project) {
@@ -44,17 +46,16 @@ class PaketGetPlugin implements Plugin<Project> {
 
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        def paketBootstrap = tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
         def extension = project.extensions.getByType(DefaultPaketPluginExtension)
 
         def paketInstall = tasks.create(INSTALL_TASK_NAME, PaketInstall.class)
         def paketUpdate = tasks.create(UPDATE_TASK_NAME, PaketUpdate.class)
         def paketRestore = tasks.create(RESTORE_TASK_NAME, PaketRestore.class)
+        def paketOutdated = tasks.create(OUTDATED_TASK_NAME, PaketOutdated.class)
 
-        [paketInstall, paketUpdate, paketRestore].each { Task task ->
+        [paketInstall, paketUpdate, paketRestore, paketOutdated].each { Task task ->
             task.paketExtension = extension
             task.group = GROUP
-            task.dependsOn paketBootstrap
         }
     }
 }
