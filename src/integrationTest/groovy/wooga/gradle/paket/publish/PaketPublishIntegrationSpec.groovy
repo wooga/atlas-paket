@@ -24,6 +24,7 @@ import org.jfrog.artifactory.client.model.RepoPath
 import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
+import wooga.gradle.paket.TestFixtures
 import wooga.gradle.paket.pack.PaketPackPlugin
 
 class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
@@ -159,5 +160,24 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}", "publish${repoName.capitalize()}", "publish"]
+    }
+
+    @Unroll("verify package build and push with gradle #gradleVersionToTest")
+    def 'builds package and publish with gradle version'() {
+        given: "the future npkg artifact"
+        def nugetArtifact = new File(new File(new File(projectDir, 'build'), "outputs"), packageName)
+        assert !nugetArtifact.exists()
+        gradleVersion = gradleVersionToTest
+
+        when: "run the publish task"
+        def result = runTasksSuccessfully("publish")
+
+        then:
+        nugetArtifact.exists()
+        result.wasExecuted("paketPack-${packageIdToName(packageID)}")
+        hasPackageOnArtifactory(artifactoryRepoName, packageName)
+
+        where:
+        gradleVersionToTest << TestFixtures.gradleVersions()
     }
 }
