@@ -95,6 +95,34 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
     }
 
+    @Unroll
+    def "make version parameter lazy #taskToRun"(String taskToRun) {
+        given: "a build file with version set after the plugin"
+        buildFile.text = ""
+        buildFile << """
+            group = 'test'
+            ${applyPlugin(PaketPackPlugin)}
+            version = "$version"
+        """.stripIndent()
+
+        and: "a future output file"
+        def outputFile = new File(new File(new File(projectDir, 'build'), "outputs"), "${packageID}.${version}.nupkg")
+        assert !outputFile.exists()
+
+        and: "a empty paket.dependencies file"
+        createFile("paket.dependencies")
+
+        when:
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        outputFile.exists()
+        result.wasExecuted("paketPack-WoogaTest")
+
+        where:
+        taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
+    }
+
     def "skips pack task creation for duplicate package id"() {
         given: "some paket template files in the file system with same id"
         def subDir1 = new File(projectDir, "sub1")

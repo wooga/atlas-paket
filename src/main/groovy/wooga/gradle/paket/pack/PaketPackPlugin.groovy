@@ -17,14 +17,19 @@
 
 package wooga.gradle.paket.pack
 
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ConfigurablePublishArtifact
+import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.internal.ConventionMapping
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
+import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
@@ -48,7 +53,7 @@ class PaketPackPlugin implements Plugin<Project> {
         project.pluginManager.apply(PaketBasePlugin.class)
 
         def extension = project.extensions.getByType(DefaultPaketPluginExtension)
-
+        def configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
         def templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
         templateFiles = templateFiles.sort()
@@ -85,20 +90,33 @@ class PaketPackPlugin implements Plugin<Project> {
             }
 
             packTask = tasks.create(taskName, PaketPack.class)
-
             packTask.group = BasePlugin.BUILD_GROUP
-            packTask.templateFile = file
-            packTask.outputDir = project.file("${project.buildDir}/outputs")
-            packTask.version = project.version
             packTask.description = "Pack package ${templateReader.getPackageId()}"
-            packTask.paketExtension = extension
+            packTask.templateFile = file
+            packTask.packageId = packageID
 
+            PublishArtifact artifact = PaketPublishingArtifact.fromTask(packTask)
+
+            configuration.getArtifacts().add(artifact)
             tasks[BasePlugin.ASSEMBLE_TASK_NAME].dependsOn packTask
-
-            project.artifacts.add(PaketBasePlugin.PAKET_CONFIGURATION, [file: packTask.outputFile, name: packageID, builtBy: packTask])
         }
 
         configurePaketInstallIfPresent()
+        configurePaketPackDefaults(extension)
+    }
+
+    private void configurePaketPackDefaults(PaketPluginExtension extention) {
+        tasks.withType(PaketPack, new Action<PaketPack>() {
+            @Override
+            void execute(PaketPack task) {
+                ConventionMapping taskConventionMapping = task.getConventionMapping()
+
+                taskConventionMapping.map("templateFile", { extention.getBaseUrl() })
+                taskConventionMapping.map("outputDir", { project.file("${project.buildDir}/outputs") })
+                taskConventionMapping.map("version", { project.version })
+                taskConventionMapping.map("paketExtension", { extention })
+            }
+        })
     }
 
     void configurePaketInstallIfPresent() {

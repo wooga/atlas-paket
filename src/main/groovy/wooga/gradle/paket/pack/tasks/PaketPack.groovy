@@ -26,6 +26,9 @@ class PaketPack extends AbstractPaketTask {
 
     static String COMMAND = "pack"
 
+    @Internal
+    def packageId
+
     @Optional
     @Input
     def version
@@ -57,7 +60,7 @@ class PaketPack extends AbstractPaketTask {
     File getOutputFile() {
         def templateReader = new PaketTemplateReader(getTemplateFile())
         def packageID = templateReader.getPackageId()
-        project.file({"$outputDir/${packageID}.${version}.nupkg"})
+        project.file({"$outputDir/${packageID}.${getVersion()}.nupkg"})
     }
 
     PaketPack() {

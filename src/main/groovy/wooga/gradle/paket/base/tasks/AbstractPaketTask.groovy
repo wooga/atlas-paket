@@ -55,7 +55,15 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     def stdErr = new ByteArrayOutputStream()
 
     @Internal
-    PaketPluginExtension paketExtension
+    private PaketPluginExtension paketExtension
+
+    PaketPluginExtension getPaketExtension() {
+        return paketExtension
+    }
+
+    void setPaketExtension(PaketPluginExtension value) {
+        paketExtension = value
+    }
 
     AbstractPaketTask(Class<T> taskType) {
         super()
@@ -92,7 +100,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
 
     String getExecutable() {
         if (executable == null) {
-            executable = paketExtension.paketExecuteablePath
+            executable = getPaketExtension().paketExecuteablePath
         }
 
         if (executable == null) {
@@ -128,7 +136,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
 
         if (!osName.contains("windows")) {
             logger.info("Use mono: {}.", true)
-            paketArgs << paketExtension.monoExecutable
+            paketArgs << getPaketExtension().monoExecutable
         }
 
         paketArgs << project.file(getExecutable())
