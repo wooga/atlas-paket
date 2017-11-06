@@ -30,6 +30,7 @@ import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.base.utils.PaketTemplate
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
@@ -75,7 +76,7 @@ class PaketPackPlugin implements Plugin<Project> {
         })
 
         templateFiles.each { File file ->
-            def templateReader = new PaketTemplateReader(file)
+            def templateReader = new PaketTemplate(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./, '')
             def taskName = TASK_PACK_PREFIX + packageName
@@ -109,6 +110,8 @@ class PaketPackPlugin implements Plugin<Project> {
         tasks.withType(PaketPack, new Action<PaketPack>() {
             @Override
             void execute(PaketPack task) {
+                def templateReader = new PaketTemplate(task.templateFile)
+
                 ConventionMapping taskConventionMapping = task.getConventionMapping()
 
                 taskConventionMapping.map("templateFile", { extention.getBaseUrl() })
@@ -126,24 +129,4 @@ class PaketPackPlugin implements Plugin<Project> {
             }
         }
     }
-
-    private class PaketTemplateReader {
-
-        private def content
-
-        PaketTemplateReader(File templateFile) {
-            content = [:]
-            templateFile.eachLine { line ->
-                def matcher
-                if ((matcher = line =~ /^(\w+)( |\n[ ]{4})(((\n[ ]{4})?.*)+)/)) {
-                    content[matcher[0][1]] = matcher[0][3]
-                }
-            }
-        }
-
-        String getPackageId() {
-            content['id']
-        }
-    }
-
 }
