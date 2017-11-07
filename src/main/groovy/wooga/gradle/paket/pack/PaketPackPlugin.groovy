@@ -27,9 +27,11 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.util.GUtil
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.base.utils.PaketTemplate
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
@@ -61,21 +63,18 @@ class PaketPackPlugin implements Plugin<Project> {
             @Override
             int compare(File o1, File o2) {
                 String sep = File.separator
-                if(o1.path.count(sep) > o2.path.count(sep)) {
+                if (o1.path.count(sep) > o2.path.count(sep)) {
                     return 1
-                }
-                else if(o1.path.count(sep) < o2.path.count(sep)) {
+                } else if (o1.path.count(sep) < o2.path.count(sep)) {
                     return -1
-                }
-                else
-                {
+                } else {
                     return 0
                 }
             }
         })
 
         templateFiles.each { File file ->
-            def templateReader = new PaketTemplateReader(file)
+            def templateReader = new PaketTemplate(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./, '')
             def taskName = TASK_PACK_PREFIX + packageName
@@ -109,11 +108,24 @@ class PaketPackPlugin implements Plugin<Project> {
         tasks.withType(PaketPack, new Action<PaketPack>() {
             @Override
             void execute(PaketPack task) {
+                def paketTemplate = new PaketTemplate(task.templateFile)
+
                 ConventionMapping taskConventionMapping = task.getConventionMapping()
 
                 taskConventionMapping.map("templateFile", { extention.getBaseUrl() })
                 taskConventionMapping.map("outputDir", { project.file("${project.buildDir}/outputs") })
-                taskConventionMapping.map("version", { project.version })
+
+                taskConventionMapping.map("version", {
+                    if (paketTemplate.version) {
+                        return paketTemplate.version
+                    }
+
+                    if (project.version != Project.DEFAULT_VERSION) {
+                        return project.version
+                    }
+
+                    return null
+                })
                 taskConventionMapping.map("paketExtension", { extention })
             }
         })
@@ -126,24 +138,4 @@ class PaketPackPlugin implements Plugin<Project> {
             }
         }
     }
-
-    private class PaketTemplateReader {
-
-        private def content
-
-        PaketTemplateReader(File templateFile) {
-            content = [:]
-            templateFile.eachLine { line ->
-                def matcher
-                if ((matcher = line =~ /^(\w+)( |\n[ ]{4})(((\n[ ]{4})?.*)+)/)) {
-                    content[matcher[0][1]] = matcher[0][3]
-                }
-            }
-        }
-
-        String getPackageId() {
-            content['id']
-        }
-    }
-
 }

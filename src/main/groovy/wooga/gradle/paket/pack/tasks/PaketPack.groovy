@@ -17,8 +17,10 @@
 
 package wooga.gradle.paket.pack.tasks
 
+import org.gradle.api.Project
 import org.gradle.api.tasks.*
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.base.utils.PaketTemplate
 
 import java.util.concurrent.Callable
 
@@ -29,7 +31,6 @@ class PaketPack extends AbstractPaketTask {
     @Internal
     def packageId
 
-    @Optional
     @Input
     def version
 
@@ -58,7 +59,7 @@ class PaketPack extends AbstractPaketTask {
 
     @OutputFile
     File getOutputFile() {
-        def templateReader = new PaketTemplateReader(getTemplateFile())
+        def templateReader = new PaketTemplate(getTemplateFile())
         def packageID = templateReader.getPackageId()
         project.file({"$outputDir/${packageID}.${getVersion()}.nupkg"})
     }
@@ -71,33 +72,14 @@ class PaketPack extends AbstractPaketTask {
     @Override
     protected void configureArguments() {
         super.configureArguments()
-        args << "output" << getOutputDir()
+        args << "output" << getOutputDir().path
 
-        if (getVersion() != null) {
+        if (getVersion() != Project.DEFAULT_VERSION) {
             args << "version" << getVersion()
         }
 
         if (getTemplateFile() != null) {
-            args << "templatefile" << getTemplateFile()
-        }
-    }
-
-    private class PaketTemplateReader {
-
-        private def content
-
-        PaketTemplateReader(File templateFile) {
-            content = [:]
-            templateFile.eachLine { line ->
-                def matcher
-                if ((matcher = line =~ /^(\w+)( |\n[ ]{4})(((\n[ ]{4})?.*)+)/)) {
-                    content[matcher[0][1]] = matcher[0][3]
-                }
-            }
-        }
-
-        String getPackageId() {
-            content['id']
+            args << "templatefile" << getTemplateFile().path
         }
     }
 }
