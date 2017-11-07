@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.pack.tasks
 
+import org.gradle.api.Project
 import org.gradle.api.tasks.*
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
 import wooga.gradle.paket.base.utils.PaketTemplate
@@ -30,7 +31,6 @@ class PaketPack extends AbstractPaketTask {
     @Internal
     def packageId
 
-    @Optional
     @Input
     def version
 
@@ -72,14 +72,14 @@ class PaketPack extends AbstractPaketTask {
     @Override
     protected void configureArguments() {
         super.configureArguments()
-        args << "output" << getOutputDir()
+        args << "output" << getOutputDir().path
 
-        if (getVersion() != null) {
+        if (getVersion() != Project.DEFAULT_VERSION) {
             args << "version" << getVersion()
         }
 
         if (getTemplateFile() != null) {
-            args << "templatefile" << getTemplateFile()
+            args << "templatefile" << getTemplateFile().path
         }
     }
 }

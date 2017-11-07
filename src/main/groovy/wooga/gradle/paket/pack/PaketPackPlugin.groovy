@@ -27,6 +27,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.util.GUtil
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
@@ -62,14 +63,11 @@ class PaketPackPlugin implements Plugin<Project> {
             @Override
             int compare(File o1, File o2) {
                 String sep = File.separator
-                if(o1.path.count(sep) > o2.path.count(sep)) {
+                if (o1.path.count(sep) > o2.path.count(sep)) {
                     return 1
-                }
-                else if(o1.path.count(sep) < o2.path.count(sep)) {
+                } else if (o1.path.count(sep) < o2.path.count(sep)) {
                     return -1
-                }
-                else
-                {
+                } else {
                     return 0
                 }
             }
@@ -110,13 +108,24 @@ class PaketPackPlugin implements Plugin<Project> {
         tasks.withType(PaketPack, new Action<PaketPack>() {
             @Override
             void execute(PaketPack task) {
-                def templateReader = new PaketTemplate(task.templateFile)
+                def paketTemplate = new PaketTemplate(task.templateFile)
 
                 ConventionMapping taskConventionMapping = task.getConventionMapping()
 
                 taskConventionMapping.map("templateFile", { extention.getBaseUrl() })
                 taskConventionMapping.map("outputDir", { project.file("${project.buildDir}/outputs") })
-                taskConventionMapping.map("version", { project.version })
+
+                taskConventionMapping.map("version", {
+                    if (paketTemplate.version) {
+                        return paketTemplate.version
+                    }
+
+                    if (project.version != Project.DEFAULT_VERSION) {
+                        return project.version
+                    }
+
+                    return null
+                })
                 taskConventionMapping.map("paketExtension", { extention })
             }
         })
