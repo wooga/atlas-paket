@@ -130,14 +130,15 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         result.standardOutput.contains("Update $nuget to their latest version and update projects.")
     }
 
-    def "generated dependencies update task updates only one dependency"() {
+    //generated dependencies update task updates only one dependency
+    def "gdutuood"() {
         given: "A few small test nugets"
         def nuget1 = "Mini"
-        def nuget2 = "mini-biggy"
+        def nuget2 = "String.Extensions"
 
         and: "some version constrains"
         def version1 = "0.4"
-        def version2 = "2.1"
+        def version2 = "1.0"
 
         def initConstraint1 = "= $version1"
         def updateConstraint1 = "~> $version1"
