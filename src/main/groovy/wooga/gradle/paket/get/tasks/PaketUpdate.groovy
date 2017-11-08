@@ -17,16 +17,31 @@
 
 package wooga.gradle.paket.get.tasks
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketUpdate extends AbstractPaketTask {
 
     static String COMMAND = "update"
 
+    @Optional
+    @Input
+    String nugetPackageId
+
     PaketUpdate() {
         super(PaketUpdate.class)
         description = 'Update one or all dependencies to their latest version and update projects.'
         paketCommand = COMMAND
         outputs.upToDateWhen {false}
+    }
+
+    @Override
+    protected void configureArguments() {
+        super.configureArguments()
+
+        if (getNugetPackageId() != null) {
+            args << getNugetPackageId()
+        }
     }
 }
