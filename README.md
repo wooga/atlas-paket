@@ -64,6 +64,24 @@ The `paket-get` plugin adds a number of tasks to your project. These are mainly 
 | paketRestore   | paketBootstrap | `wooga.gradle.paket.get.tasks.PaketRestore`    | Download the dependencies specified by the paket.lock file into the `packages/` directory. |
 | paketUpdate    | paketBootstrap | `wooga.gradle.paket.get.tasks.PaketUpdate`     | Update one or all dependencies to their latest version and update projects |
 
+#### Dependency update tasks
+The plugin also generates one or more hidden update task for every dependency in the `paket.dependencies` file.
+
+**paket.dependencies**
+```
+source https://nuget.org/api/v2
+        
+nuget DependencyOne
+nuget DependencyTwo
+```
+
+Gradle will generate next to the `paketUpdate` task also:
+
+* `paketUpdateDependencyOne`
+* `paketUpdateDependencyTwo`
+
+The task will be visible with `gradle tasks --all`
+
 ## Paket-Unity
 This plugin allows to use the extension [paket.unity3d](http://wooga.github.io/Paket.Unity3D/) together with `paket-get`
 
@@ -89,6 +107,15 @@ The plugin will generate a package task based on the package id inside the [`pak
 | paketPack-*packageId* | paketBootstrap      | `wooga.gradle.paket.pack.tasks.PaketPack`         | Packs the [`paket.template`][paket_template]  file into a `nupkg` package |
 
 The plugin checks if the `paket-get` plugin is applied. If so, it will make all `PaketPack` tasks [`dependOn`][gradle_dependsOn] `paketInstall`.
+
+### Version for package
+
+The default value for the version parameter in the `PaketPack` task will be determined like:
+
+1. use version in `paket.template` if available
+2. fallback to `project.version` if available (`!=unspecified`)
+
+If the default value for version property could not be set and the task was not configured with a custom version, `gradle` will fail.
 
 ### Artifacts
 When you apply the `paket-pack` plugin your project will produce artifacts in the `nupkg` configuration.
