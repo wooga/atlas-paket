@@ -23,6 +23,7 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
+import wooga.gradle.paket.base.utils.PaketDependencies
 import wooga.gradle.paket.get.tasks.PaketInstall
 import wooga.gradle.paket.get.tasks.PaketOutdated
 import wooga.gradle.paket.get.tasks.PaketRestore
@@ -56,6 +57,18 @@ class PaketGetPlugin implements Plugin<Project> {
         [paketInstall, paketUpdate, paketRestore, paketOutdated].each { Task task ->
             task.paketExtension = extension
             task.group = GROUP
+        }
+
+        def dependenciesFile = project.file("paket.dependencies")
+        if(dependenciesFile.exists()) {
+            def dependencies = new PaketDependencies(project.file("paket.dependencies"))
+
+            dependencies.nugetDependencies.each { nuget ->
+                def t = tasks.create(UPDATE_TASK_NAME + nuget, PaketUpdate.class)
+                t.paketExtension = extension
+                t.nugetPackageId = nuget
+                t.description = "Update $nuget to their latest version and update projects."
+            }
         }
     }
 }
