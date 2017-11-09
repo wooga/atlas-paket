@@ -32,7 +32,7 @@ class PaketPublishingArtifact implements PublishArtifact {
 
     @Override
     String getExtension() {
-        return ".nupkg"
+        return "nupkg"
     }
 
     @Override
