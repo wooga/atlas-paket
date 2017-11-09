@@ -14,16 +14,16 @@ This plugin provides tasks for retrieving and publishing [Paket][paket] packages
 **build.gradle**
 ```groovy
 plugins {
-    id 'net.wooga.paket' version '0.6.0'
+    id 'net.wooga.paket' version '0.8.0'
 }
 ```
 -or-
 ```groovy
 plugins {
-    id 'net.wooga.paket-get' version '0.6.0'
-    id 'net.wooga.paket-pack' version '0.6.0'
-    id 'net.wooga.paket-publish' version '0.6.0'
-    id 'net.wooga.paket-unity' version '0.6.0'
+    id 'net.wooga.paket-get' version '0.8.0'
+    id 'net.wooga.paket-pack' version '0.8.0'
+    id 'net.wooga.paket-publish' version '0.8.0'
+    id 'net.wooga.paket-unity' version '0.8.0'
 }
 ```
 
