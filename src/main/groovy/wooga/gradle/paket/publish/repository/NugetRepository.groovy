@@ -22,16 +22,35 @@ class NugetRepository implements NugetArtifactRepository {
     String apiKey
     String url
     String name
+    String path
 
     def name(String name) {
         setName(name)
     }
 
     def url(String url) {
+        if(path != null)
+        {
+            throw new Exception("path already set")
+        }
         setUrl(url)
     }
 
     def apiKey(String apiKey) {
         setApiKey(apiKey)
     }
+
+    def path(String path){
+        if(url != null)
+        {
+            throw new Exception("url already set")
+        }
+        setPath(path)
+    }
+
+    def getDestination(){
+        path ? path : url
+    }
+
+
 }

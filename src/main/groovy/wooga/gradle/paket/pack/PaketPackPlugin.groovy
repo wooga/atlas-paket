@@ -121,7 +121,7 @@ class PaketPackPlugin implements Plugin<Project> {
                     }
 
                     if (project.version != Project.DEFAULT_VERSION) {
-                        return project.version
+                        return project.version.toString()
                     }
 
                     return null
