@@ -89,10 +89,10 @@ class PaketPublishPlugin implements Plugin<Project> {
             }
         }
 
-        registerPublishLocal(tasks)
+        createPublishLocalTask(tasks)
     }
 
-    void registerPublishLocal(TaskContainer tasks) {
+    void createPublishLocalTask(TaskContainer tasks) {
         def paketCopylifecycle = tasks.create(name: "publishLocal", group: PublishingPlugin.PUBLISH_TASK_GROUP, description: "publish all nupkg to all local paths")
         paketCopylifecycle.dependsOn tasks.withType(PaketCopy)
     }
