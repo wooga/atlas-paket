@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.publish
 
+import groovy.json.StringEscapeUtils
 import org.jfrog.artifactory.client.Artifactory
 import org.jfrog.artifactory.client.ArtifactoryClient
 import org.jfrog.artifactory.client.model.RepoPath
@@ -172,6 +173,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         and: "paket.dependencies and paket.lock file"
         createFile("paket.lock")
         createFile("paket.dependencies")
+        def escapedPath = escapedPath(localPath.absolutePath)
 
         and: "a build.gradle file with a local publish entry"
         buildFile.text = ""
@@ -186,11 +188,11 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
                 repositories {
                     nuget {
                         name "$repoName"
-                        path "$localPath"
+                        path "$escapedPath"
                     }
                 }
             }
-
+            
             paketPublish {
                 publishRepositoryName = "$repoName"
             }
@@ -198,7 +200,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         """.stripIndent()
 
         and: "a future local output file"
-        def futureFile = new File(localPath, nugetArtifact.name)
+        def futureFile = new File(escapedPath, nugetArtifact.name)
         assert !futureFile.exists()
 
         when: "run the publish task"
@@ -211,5 +213,13 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}", "publish${repoName.capitalize()}", "publish"]
+    }
+
+    def escapedPath(String path) {
+        String osName = System.getProperty("os.name").toLowerCase()
+        if (osName.contains("windows")) {
+            return StringEscapeUtils.escapeJava(path)
+        }
+        path
     }
 }
