@@ -20,6 +20,7 @@ package wooga.gradle.paket.pack
 import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
 import org.gradle.api.plugins.BasePlugin
+import spock.lang.Specification
 import spock.lang.Unroll
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.get.PaketGetPlugin

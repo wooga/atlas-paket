@@ -21,7 +21,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                gradleWrapper "check"
+                gradleWrapper "check --info"
             }
         }
     }

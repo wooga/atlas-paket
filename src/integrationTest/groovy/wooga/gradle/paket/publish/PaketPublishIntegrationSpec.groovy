@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.publish
 
-import nebula.test.IntegrationSpec
+import groovy.json.StringEscapeUtils
 import org.jfrog.artifactory.client.Artifactory
 import org.jfrog.artifactory.client.ArtifactoryClient
 import org.jfrog.artifactory.client.model.RepoPath
@@ -36,7 +36,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     def uniquPackagePostfix() {
         String key = "TRAVIS_JOB_NUMBER"
         def env = System.getenv()
-        if(env.containsKey(key)) {
+        if (env.containsKey(key)) {
             return env.get(key)
         }
         return ""
@@ -64,6 +64,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
     def artifactoryRepoName = "atlas-nuget-integrationTest"
     def repoUrl = "$artifactoryUrl/api/nuget/atlas-nuget-integrationTest"
+    def localPath
 
     def packageIdToName(id) {
         id.replaceAll(/\./, '')
@@ -109,14 +110,16 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
                 Empty nuget package.
         """.stripIndent()
 
-        cleanupArtifactory(artifactoryRepoName,packageName)
+        localPath = File.createTempDir()
+        localPath.deleteOnExit()
+        cleanupArtifactory(artifactoryRepoName, packageName)
     }
 
     def cleanup() {
-        cleanupArtifactory(artifactoryRepoName,packageName)
+        cleanupArtifactory(artifactoryRepoName, packageName)
     }
 
-    def cleanupArtifactory(String repoName,String artifactName) {
+    def cleanupArtifactory(String repoName, String artifactName) {
         List<RepoPath> searchItems = artifactory.searches()
                 .repositories(repoName)
                 .artifactsByName(artifactName)
@@ -129,7 +132,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         }
     }
 
-    def hasPackageOnArtifactory(String repoName,String artifactName) {
+    def hasPackageOnArtifactory(String repoName, String artifactName) {
         List<RepoPath> packages = artifactory.searches()
                 .repositories(repoName)
                 .artifactsByName(artifactName)
@@ -159,5 +162,64 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}", "publish${repoName.capitalize()}", "publish"]
+    }
+
+    @Unroll
+    def 'builds package and publish locally #taskToRun'(String taskToRun) {
+        given: "the future npkg artifact"
+        def nugetArtifact = new File(new File(new File(projectDir, 'build'), "outputs"), packageName)
+        assert !nugetArtifact.exists()
+
+        and: "paket.dependencies and paket.lock file"
+        createFile("paket.lock")
+        createFile("paket.dependencies")
+        def escapedPath = escapedPath(localPath.absolutePath)
+
+        and: "a build.gradle file with a local publish entry"
+        buildFile.text = ""
+        buildFile << """
+            group = 'test'
+            version = "$version"
+
+            ${applyPlugin(PaketPackPlugin)}
+            ${applyPlugin(PaketPublishPlugin)}
+
+            publishing {
+                repositories {
+                    nuget {
+                        name "$repoName"
+                        path "$escapedPath"
+                    }
+                }
+            }
+            
+            paketPublish {
+                publishRepositoryName = "$repoName"
+            }
+
+        """.stripIndent()
+
+        and: "a future local output file"
+        def futureFile = new File(escapedPath, nugetArtifact.name)
+        assert !futureFile.exists()
+
+        when: "run the publish task"
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        nugetArtifact.exists()
+        result.wasExecuted("paketPack-${packageIdToName(packageID)}")
+        futureFile.exists()
+
+        where:
+        taskToRun << ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}", "publish${repoName.capitalize()}", "publish"]
+    }
+
+    def escapedPath(String path) {
+        String osName = System.getProperty("os.name").toLowerCase()
+        if (osName.contains("windows")) {
+            return StringEscapeUtils.escapeJava(path)
+        }
+        path
     }
 }
