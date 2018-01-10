@@ -183,7 +183,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         nuget $nuget2 $updateConstraint2
         """.stripIndent()
 
-        def result = runTasksSuccessfully("paketUpdate$nuget1")
+        runTasksSuccessfully("paketUpdate$nuget1")
 
         then:
         !lockFile.text.contains("$nuget1 ($version1)")
