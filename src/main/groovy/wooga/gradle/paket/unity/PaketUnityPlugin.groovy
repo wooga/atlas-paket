@@ -17,13 +17,13 @@
 
 package wooga.gradle.paket.unity
 
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
 import wooga.gradle.paket.get.PaketGetPlugin
+import wooga.gradle.paket.get.tasks.PaketUpdate
 import wooga.gradle.paket.unity.tasks.PaketUnityBootstrap
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
@@ -71,13 +71,18 @@ class PaketUnityPlugin implements Plugin<Project> {
 
     void configurePaketDependencyInstallIfPresent() {
         project.plugins.withType(PaketGetPlugin) {
+
+            def paketUnityInstall = tasks[INSTALL_TASK_NAME]
             def paketInstall = project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]
-            def paketUpdate = project.tasks[PaketGetPlugin.UPDATE_TASK_NAME]
             def paketRestore = project.tasks[PaketGetPlugin.RESTORE_TASK_NAME]
 
-            [paketInstall, paketUpdate, paketRestore].each { Task task ->
-                task.finalizedBy tasks[PaketUnityPlugin.INSTALL_TASK_NAME]
+            Closure configClosure = { task ->
+                task.finalizedBy paketUnityInstall
             }
+
+            project.tasks.withType(PaketUpdate, configClosure)
+
+            [paketInstall, paketRestore].each configClosure
         }
     }
 }

@@ -17,9 +17,9 @@
 
 package wooga.gradle.paket.get
 
-import spock.lang.Ignore
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationDependencyFileSpec
+import wooga.gradle.paket.unity.PaketUnityPlugin
 
 class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
@@ -188,6 +188,5 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         then:
         !lockFile.text.contains("$nuget1 ($version1)")
         lockFile.text.contains("$nuget2 ($version2)")
-
     }
 }

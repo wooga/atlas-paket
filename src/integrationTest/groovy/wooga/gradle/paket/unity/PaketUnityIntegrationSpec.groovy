@@ -21,6 +21,7 @@ import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
+import wooga.gradle.paket.get.PaketGetPlugin
 
 class PaketUnityIntegrationSpec extends IntegrationSpec {
 
@@ -72,7 +73,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         then:
         hasNoSource(result, "paketUnityBootstrap")
-        hasNoSource(result,taskToRun)
+        hasNoSource(result, taskToRun)
 
         where:
         taskToRun << bootstrapTestCases
@@ -113,12 +114,12 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         then: "bootstrap task was [UP-TO-DATE]"
         result1.wasUpToDate("paketUnityBootstrap")
 
-        when:"delete bootstrapper"
+        when: "delete bootstrapper"
         def paketDir = new File(projectDir, '.paket')
         def paketBootstrap = new File(paketDir, 'paket.unity3d.bootstrapper.exe')
         paketBootstrap.delete()
 
-        and:"run the task again"
+        and: "run the task again"
         def result2 = runTasksSuccessfully(taskToRun)
 
         then:
@@ -143,6 +144,44 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         where:
         taskToRun << bootstrapTestCases
+    }
+
+    @Unroll
+    def "run paketUnityInstall after #taskToRun"(String taskToRun) {
+        given: "a small test nuget package"
+        def nuget = "Mini"
+
+        and: "apply paket get plugin to get paket unity install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file and lock"
+        def dependencies = createFile("paket.dependencies")
+        createFile("paket.lock")
+
+        dependencies << """
+        source https://nuget.org/api/v2
+        
+        nuget $nuget
+        """.stripIndent()
+
+        and: "the future packages directory"
+        def packagesDir = new File(projectDir, 'packages')
+        assert !packagesDir.exists()
+
+        when:
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        where:
+        taskToRun                        | _
+        PaketGetPlugin.INSTALL_TASK_NAME | _
+        PaketGetPlugin.UPDATE_TASK_NAME  | _
+        PaketGetPlugin.RESTORE_TASK_NAME | _
+        "paketUpdateMini"                | _
     }
 
     boolean hasNoSource(ExecutionResult result, String taskName) {
