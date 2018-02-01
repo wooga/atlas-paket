@@ -87,6 +87,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     }
 
     AbstractPaketTask setLogFile(Object file) {
+
         logFile = fileResolver.resolveLater(file)
         return this
     }
