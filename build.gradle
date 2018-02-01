@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id "net.wooga.plugins" version "0.2.1"
+    id "net.wooga.plugins" version "0.3.0"
 }
 
 group 'net.wooga.gradle'
@@ -36,19 +36,19 @@ pluginBundle {
 
         paketGet {
             id = 'net.wooga.paket-get'
-            displayName = 'Gradle Paket plugin'
+            displayName = 'Gradle Paket Get plugin'
             description = 'This plugin provides tasks for retrieving Nuget packages via Paket'
         }
 
         paketPack {
             id = 'net.wooga.paket-pack'
-            displayName = 'Gradle Paket plugin'
+            displayName = 'Gradle Paket Pack plugin'
             description = 'This plugin provides tasks for packing Nuget packages via Paket'
         }
 
         paketPublish {
             id = 'net.wooga.paket-publish'
-            displayName = 'Gradle Paket plugin'
+            displayName = 'Gradle Paket Publish plugin'
             description = 'This plugin provides tasks for publishing Nuget packages via Paket'
         }
 
