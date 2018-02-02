@@ -24,6 +24,10 @@ If you believe your issue is device/platform dependent, please specify:
 
 * Operating system
 * Platform (including architecture, e.g. x86, x86_64, arm, etc.)
+* paket version
+* mono version
+* Java version
+* gradle version
 
 #### Specify steps to reproduce
 
@@ -31,7 +35,7 @@ Many bugs can't be reproduced unless specific steps are taken. Please **specify 
 
 #### Use Labels
 
-Githubs label system makes it easier to search for specific issues or group them into clusters. There is a wide varity of labels already defined.
+Githubs label system makes it easier to search for specific issues or group them into clusters. There is a wide varity of labels already defined. 
 
 ## Contributing pull requests
 
