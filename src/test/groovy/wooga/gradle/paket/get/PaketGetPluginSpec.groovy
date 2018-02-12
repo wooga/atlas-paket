@@ -74,7 +74,7 @@ class PaketGetPluginSpec extends ProjectSpec {
         expect:
         def task = (AbstractPaketTask) project.tasks[taskName]
         taskClass.isInstance(task)
-        task.paketExtension
+        task.executable
 
         where:
         taskName                         | taskClass
@@ -101,7 +101,7 @@ class PaketGetPluginSpec extends ProjectSpec {
         expect:
         def task = (PaketUpdate) project.tasks["paketUpdate$dependency"]
         taskClass.isInstance(task)
-        task.paketExtension
+        task.executable
         task.nugetPackageId == dependency
 
         where:

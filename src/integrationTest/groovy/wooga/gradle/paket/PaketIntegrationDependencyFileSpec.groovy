@@ -24,8 +24,8 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
     @Unroll
     def "skips paket call with [NO-SOURCE] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
         given: "no dependency file"
-        def dependenciesFile = new File(projectDir, 'paket.dependencies')
-        assert !dependenciesFile.exists()
+        def futureDependenciesFile = new File(projectDir, 'paket.dependencies')
+        assert !futureDependenciesFile.exists()
 
         when:
         def result = runTasksSuccessfully(taskToRun)

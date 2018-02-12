@@ -19,11 +19,10 @@ package wooga.gradle.paket.get.tasks
 
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
+import wooga.gradle.paket.PaketCommand
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketUpdate extends AbstractPaketTask {
-
-    static String COMMAND = "update"
 
     @Optional
     @Input
@@ -32,8 +31,8 @@ class PaketUpdate extends AbstractPaketTask {
     PaketUpdate() {
         super(PaketUpdate.class)
         description = 'Update one or all dependencies to their latest version and update projects.'
-        paketCommand = COMMAND
-        outputs.upToDateWhen {false}
+        paketCommand = PaketCommand.UPDATE
+        outputs.upToDateWhen { false }
     }
 
     @Override

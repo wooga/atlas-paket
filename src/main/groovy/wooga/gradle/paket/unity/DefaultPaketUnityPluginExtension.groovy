@@ -17,13 +17,38 @@
 
 package wooga.gradle.paket.unity
 
-import wooga.gradle.paket.base.PaketPluginExtension
+import org.gradle.api.Project
+import wooga.gradle.paket.base.DefaultPaketPluginExtension
 
-class DefaultPaketUnityPluginExtension implements PaketPluginExtension {
+class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension {
 
-    DefaultPaketUnityPluginExtension() {
-        paketExecuteableName = "paket.unity3d.exe"
-        paketBootstrapperFileName = "paket.unity3d.bootstrapper.exe"
-        paketBootstrapperDownloadURL = "https://github.com/wooga/Paket.Unity3D/releases/download/0.2.1/paket.unity3d.bootstrapper.exe"
+    private static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "**/paket.unity3d.references"
+    private static final String DEFAULT_PAKET_UNITY_EXECUTION_NAME = "paket.unity3d.exe"
+    private static final String DEFAULT_PAKET_UNITY_BOOTSTRAPPER_EXECUTION_NAME = "paket.unity3d.bootstrapper.exe"
+    private static final String DEFAULT_PAKET_UNITY_BOOTSTRAPPER_URL = "https://github.com/wooga/Paket.Unity3D/releases/download/0.2.1/paket.unity3d.bootstrapper.exe"
+
+    DefaultPaketUnityPluginExtension(Project project) {
+        super(project)
+    }
+
+    @Override
+    String getPaketBootstrapperUrl() {
+        return customPaketBootstrapperUrl ?: DEFAULT_PAKET_UNITY_BOOTSTRAPPER_URL
+    }
+
+    @Override
+    protected String getExecutableName() {
+        DEFAULT_PAKET_UNITY_EXECUTION_NAME
+    }
+
+    @Override
+    protected String getBootstrapperExecutableName() {
+        DEFAULT_PAKET_UNITY_BOOTSTRAPPER_EXECUTION_NAME
+    }
+
+    @Override
+    File getPaketDependenciesFile() {
+        def files = project.files(project.fileTree(dir: project.projectDir, include: "**/paket.unity3d.references").files)
+        files.isEmpty() ? new File(project.projectDir, "no-source") : files.first()
     }
 }

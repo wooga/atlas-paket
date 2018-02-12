@@ -21,14 +21,30 @@ import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 
 import javax.inject.Inject
-import java.util.concurrent.Callable
 
 class PaketBootstrap extends AbstractPaketTask {
     static Logger logger = Logging.getLogger(PaketBootstrap)
+
+    @Input
+    String bootstrapURL
+
+    @Optional
+    @Input
+    String paketVersion
+
+    @OutputFiles
+    FileCollection getOutputFiles() {
+        return project.files(getExecutable())
+    }
+    void setPaketVersion(String value) {
+           paketVersion = value
+    }
 
     @Inject
     PaketBootstrap() {
@@ -41,87 +57,10 @@ class PaketBootstrap extends AbstractPaketTask {
         supportLogfile = false
     }
 
-    def outputDir
-
-    def getOutputDir() {
-        (File) project.file(outputDir)
-    }
-
-    @OutputFiles
-    FileCollection getOutputFiles() {
-        return project.files(getPaketFile(), getPaketBootstrapper())
-    }
-
-    @Input
-    def paketFile
-
-    def getPaketFile() {
-        (File) project.file(paketFile)
-    }
-
-    @Input
-    def paketBootstrapper
-
-    def getPaketBootstrapper() {
-        return (File) project.file(paketBootstrapper)
-    }
-
-    @Input
-    def paketBootstrapperFileName
-
-    def getPaketBootstrapperFileName() {
-        if (paketBootstrapperFileName == null) {
-            null
-        } else if (paketBootstrapperFileName instanceof Callable) {
-            (String) paketBootstrapperFileName.call()
-        } else {
-            paketBootstrapperFileName.toString()
-        }
-    }
-
-    @Input
-    def bootstrapURL
-
-    def getBootstrapURL() {
-        if (bootstrapURL == null) {
-            null
-        } else if (bootstrapURL instanceof Callable) {
-            bootstrapURL.call()
-        } else {
-            bootstrapURL.toString()
-        }
-    }
-
-    @Optional
-    @Input
-    def paketVersion
-
-    def getPaketVersion() {
-        if (paketVersion == null) {
-            null
-        } else if (paketVersion instanceof Callable) {
-            (String) paketVersion.call()
-        } else {
-            paketVersion.toString()
-        }
-    }
-
-    @Override
-    String getExecutable() {
-        this.getPaketBootstrapper()
-    }
-
     @Override
     protected void performPaketCommand(IncrementalTaskInputs inputs) {
         checkBootstrapper()
-
-        if (!inputs.incremental) {
-            project.delete(paketFile)
-        }
-
-        inputs.outOfDate { change ->
-            super.performPaketCommand(inputs)
-        }
+        super.performPaketCommand(inputs)
     }
 
     @Override
@@ -135,13 +74,16 @@ class PaketBootstrap extends AbstractPaketTask {
     }
 
     def checkBootstrapper() {
-        File f = getPaketBootstrapper()
+        File f = getExecutable()
         if (f.exists()) {
             logger.info("Bootstrap file {} already exists", f.path)
             return
         }
 
-        new URL("${getBootstrapURL()}").withInputStream { i ->
+        f.parentFile.mkdirs()
+
+        def url =  new URL(getBootstrapURL())
+        url.withInputStream { i ->
             f.withOutputStream {
                 it << i
             }

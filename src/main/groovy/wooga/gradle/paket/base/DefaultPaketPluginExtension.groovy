@@ -17,11 +17,150 @@
 
 package wooga.gradle.paket.base
 
-class DefaultPaketPluginExtension implements PaketPluginExtension{
+import org.gradle.api.Project
 
-    DefaultPaketPluginExtension() {
-        paketExecuteableName = "paket.exe"
-        paketBootstrapperFileName = "paket.bootstrapper.exe"
-        paketBootstrapperDownloadURL = "https://github.com/fsprojects/Paket/releases/download/4.8.5/paket.bootstrapper.exe"
+class DefaultPaketPluginExtension implements PaketPluginExtension {
+
+    private static final String DEFAULT_PAKET_DIRECTORY = ".paket"
+    private static final String DEFAULT_PAKET_EXECUTION_NAME = "paket.exe"
+    private static final String DEFAULT_PAKET_BOOTSTRAPPER_EXECUTION_NAME = "paket.bootstrapper.exe"
+    private static final String DEFAULT_PAKET_DEPENDENCIES_FILE_NAME = "paket.dependencies"
+    private static
+    final String DEFAULT_PAKET_BOOTSTRAPPER_URL = "https://github.com/fsprojects/Paket/releases/download/4.8.5/paket.bootstrapper.exe"
+
+    private static final String DEFAULT_VERSION = ""
+    private static final String DEFAULT_MONO_EXECUTABLE = "mono"
+
+    protected Project project
+    protected File customPaketDirectory
+    protected File customMonoExecutable
+    protected File customPaketExecutable
+    protected File customPaketBootstrapperExecutable
+    protected String customVersion
+    protected String customPaketBootstrapperUrl
+
+    DefaultPaketPluginExtension(final Project project) {
+        this.project = project
+    }
+
+    @Override
+    File getPaketDirectory() {
+        if (customPaketDirectory) {
+            return customPaketDirectory
+        }
+        project.file(DEFAULT_PAKET_DIRECTORY)
+    }
+
+    @Override
+    void setPaketDirectory(Object directory) {
+        customPaketDirectory = project.file(directory)
+    }
+
+    @Override
+    PaketPluginExtension paketDirectory(Object directory) {
+        setPaketDirectory(directory)
+        this
+    }
+
+    @Override
+    String getVersion() {
+        return customVersion ?: DEFAULT_VERSION
+    }
+
+    @Override
+    void setVersion(Object version) {
+        this.customVersion = version
+    }
+
+    @Override
+    PaketPluginExtension version(Object version) {
+        setVersion(version)
+        this
+    }
+
+    @Override
+    String getMonoExecutable() {
+        return customMonoExecutable ?: DEFAULT_MONO_EXECUTABLE
+    }
+
+    @Override
+    void setMonoExecutable(Object path) {
+        this.customMonoExecutable = path
+    }
+
+    @Override
+    PaketPluginExtension monoExecutable(Object path) {
+        setMonoExecutable(path)
+        this
+    }
+
+    @Override
+    File getExecutable() {
+        if (!customPaketExecutable) {
+            customPaketExecutable = new File(getPaketDirectory(), getExecutableName())
+        }
+        customPaketExecutable
+    }
+
+    @Override
+    void setExecutable(Object executable) {
+        this.customPaketExecutable =  project.file(executable)
+    }
+
+    @Override
+    PaketPluginExtension executable(Object executable) {
+        setExecutable(executable)
+        this
+    }
+
+    @Override
+    File getBootstrapperExecutable() {
+        if (!customPaketBootstrapperExecutable) {
+            customPaketBootstrapperExecutable = new File(getPaketDirectory(), getBootstrapperExecutableName())
+        }
+
+        println(customPaketBootstrapperExecutable)
+
+        customPaketBootstrapperExecutable
+    }
+
+    @Override
+    void setBootstrapperExecutable(Object fileName) {
+        this.customPaketBootstrapperExecutable =  project.file(fileName)
+    }
+
+    @Override
+    PaketPluginExtension bootstrapperExecutable(Object fileName) {
+        setBootstrapperExecutable(fileName)
+        this
+    }
+
+    @Override
+    String getPaketBootstrapperUrl() {
+        return customPaketBootstrapperUrl ?: DEFAULT_PAKET_BOOTSTRAPPER_URL
+    }
+
+    @Override
+    void setPaketBootstrapperUrl(Object url) {
+        this.customPaketBootstrapperUrl = url
+    }
+
+    @Override
+    PaketPluginExtension paketBootstrapperUrl(Object url) {
+        setPaketBootstrapperUrl(url)
+        this
+    }
+
+    @Override
+    File getPaketDependenciesFile() {
+        return new File(project.projectDir, DEFAULT_PAKET_DEPENDENCIES_FILE_NAME)
+    }
+
+    protected String getExecutableName() {
+        DEFAULT_PAKET_EXECUTION_NAME
+    }
+
+    protected String getBootstrapperExecutableName() {
+        DEFAULT_PAKET_BOOTSTRAPPER_EXECUTION_NAME
     }
 }

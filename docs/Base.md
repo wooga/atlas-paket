@@ -10,7 +10,7 @@ The `paket-base` plugin add a number of tasks to your project
 
 | Task name      | Depends on     | Type                                           | Description |
 | -------------- | -------------- | ---------------------------------------------- | ----------- |
-| paketInit      |                | `wooga.gradle.paket.get.tasks.PaketInit`       | Creates empty `paket.dependencies` file and calls `paketBootstrap` |
+| paketInit      |                | `wooga.gradle.paket.base.tasks.PaketInit`       | Creates empty `paket.dependencies` file and calls `paketBootstrap` |
 | paketBootstrap |                | `wooga.gradle.paket.base.tasks.PaketBootstrap` | Downloads `paket.bootstrapper.exe` and initializes `paket.exe`     |
 
 Configuration

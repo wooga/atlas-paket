@@ -17,107 +17,61 @@
 
 package wooga.gradle.paket.base.tasks
 
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.GradleScriptException
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
-import org.gradle.internal.Factory
-import org.gradle.internal.file.PathToFileResolver
-import org.gradle.tooling.exceptions.UnsupportedOperationConfigurationException
-import wooga.gradle.paket.base.PaketPluginExtension
-
-import javax.inject.Inject
-import java.util.concurrent.Callable
 
 abstract class AbstractPaketTask<T extends AbstractPaketTask> extends ConventionTask {
+
     static Logger logger = Logging.getLogger(AbstractPaketTask)
 
+    @Internal
     private final Class<T> taskType
 
-    @Inject
-    protected PathToFileResolver getFileResolver() {
-        throw new UnsupportedOperationConfigurationException("file resolver not configured")
+    @Internal
+    protected Boolean supportLogfile = true
+
+    @Input
+    File executable
+
+    @Optional
+    @Input
+    String monoExecutable
+
+    @Optional
+    @Input
+    File getLogFile() {
+        return logFile ? project.file(logFile) : null
     }
+
+    def logFile
+
+    @Optional
+    @Input
+    protected String paketCommand
 
     @SkipWhenEmpty
     @InputFiles
-    FileCollection paketDependencies = project.fileTree(dir: project.projectDir, include: "paket.dependencies")
+    FileCollection dependenciesFile
 
     @Internal
-    def stdOut = new ByteArrayOutputStream()
+    protected ByteArrayOutputStream stdOut
 
     @Internal
-    def stdErr = new ByteArrayOutputStream()
+    protected ByteArrayOutputStream stdErr
 
-    @Internal
-    private PaketPluginExtension paketExtension
-
-    PaketPluginExtension getPaketExtension() {
-        return paketExtension
-    }
-
-    void setPaketExtension(PaketPluginExtension value) {
-        paketExtension = value
-    }
+    protected Collection<String> args = []
 
     AbstractPaketTask(Class<T> taskType) {
         super()
         this.taskType = taskType
+        stdOut = new ByteArrayOutputStream()
+        stdErr = new ByteArrayOutputStream()
     }
-
-    @Internal
-    Boolean supportLogfile = true
-
-    private Factory<File> logFile
-
-    @Optional
-    @Internal
-    @Input
-    File getLogFile() {
-        if(logFile)
-        {
-            return logFile.create()
-        }
-        return null
-    }
-
-    AbstractPaketTask setLogFile(Object file) {
-
-        logFile = fileResolver.resolveLater(file)
-        return this
-    }
-
-    AbstractPaketTask logFile(Object file) {
-        logFile = fileResolver.resolveLater(file)
-        return this
-    }
-
-    String executable
-
-    String getExecutable() {
-        if (executable == null) {
-            executable = getPaketExtension().paketExecuteablePath
-        }
-
-        if (executable == null) {
-            null
-        } else if (executable instanceof Callable) {
-            (String) executable.call()
-        } else {
-            executable.toString()
-        }
-    }
-
-    @Optional
-    @Input
-    String paketCommand
-
-    protected Collection<String> args = []
 
     @TaskAction
     protected void performPaketCommand(IncrementalTaskInputs inputs) {
@@ -125,29 +79,23 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
         exec()
     }
 
-    protected void configureArguments() {
-
-    }
+    protected void configureArguments() {}
 
     protected final void exec() {
         String osName = System.getProperty("os.name").toLowerCase()
-        logger.info("Detected operationg system: {}.", osName)
+        logger.info("Detected operation system: {}.", osName)
 
         def paketArgs = []
 
         if (!osName.contains("windows")) {
             logger.info("Use mono: {}.", true)
-            paketArgs << getPaketExtension().monoExecutable
+            paketArgs << getMonoExecutable()
         }
 
-        paketArgs << project.file(getExecutable())
+        paketArgs << getExecutable()
 
         if (paketCommand) {
             paketArgs << paketCommand
-        }
-
-        if (!logFile) {
-            this.setLogFile("${project.buildDir}/logs/${name}.log")
         }
 
         if (supportLogfile) {
@@ -161,8 +109,8 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
 
         def execResult = project.exec {
             commandLine = paketArgs
-            standardOutput = stdOut
-            errorOutput = stdErr
+            standardOutput = this.stdOut
+            errorOutput = this.stdErr
             ignoreExitValue = true
         }
 

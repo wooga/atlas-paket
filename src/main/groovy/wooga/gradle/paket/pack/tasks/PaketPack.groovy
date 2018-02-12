@@ -19,6 +19,7 @@ package wooga.gradle.paket.pack.tasks
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.*
+import wooga.gradle.paket.PaketCommand
 import wooga.gradle.paket.base.tasks.AbstractPaketTask
 import wooga.gradle.paket.base.utils.PaketTemplate
 
@@ -26,25 +27,13 @@ import java.util.concurrent.Callable
 
 class PaketPack extends AbstractPaketTask {
 
-    static String COMMAND = "pack"
-
     @Internal
     def packageId
 
+    @Optional
     @Input
-    def version
+    String version
 
-    String getVersion() {
-        if (!version) {
-            return null
-        }
-
-        if (version instanceof Callable) {
-            version.call()
-        } else {
-            version.toString()
-        }
-    }
 
     @Optional
     @InputFile
@@ -66,7 +55,7 @@ class PaketPack extends AbstractPaketTask {
 
     PaketPack() {
         super(PaketPack.class)
-        paketCommand = COMMAND
+        paketCommand = PaketCommand.PACK
     }
 
     @Override

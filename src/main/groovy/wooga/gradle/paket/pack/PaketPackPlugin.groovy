@@ -54,9 +54,9 @@ class PaketPackPlugin implements Plugin<Project> {
         project.pluginManager.apply(BasePlugin.class)
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        def extension = project.extensions.getByType(DefaultPaketPluginExtension)
-        def configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
-        def templateFiles = project.fileTree(project.projectDir)
+        final extension = project.extensions.getByType(PaketPluginExtension)
+        final configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
+        final templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
         templateFiles = templateFiles.sort()
         templateFiles = templateFiles.sort(true, new Comparator<File>() {
@@ -104,7 +104,7 @@ class PaketPackPlugin implements Plugin<Project> {
         configurePaketPackDefaults(extension)
     }
 
-    private void configurePaketPackDefaults(PaketPluginExtension extention) {
+    private void configurePaketPackDefaults(PaketPluginExtension extension) {
         tasks.withType(PaketPack, new Action<PaketPack>() {
             @Override
             void execute(PaketPack task) {
@@ -112,7 +112,8 @@ class PaketPackPlugin implements Plugin<Project> {
 
                 ConventionMapping taskConventionMapping = task.getConventionMapping()
 
-                taskConventionMapping.map("templateFile", { extention.getBaseUrl() })
+                // already set on creation, right?
+                //taskConventionMapping.map("templateFile", { extension.getBaseUrl() })
                 taskConventionMapping.map("outputDir", { project.file("${project.buildDir}/outputs") })
 
                 taskConventionMapping.map("version", {
@@ -126,7 +127,6 @@ class PaketPackPlugin implements Plugin<Project> {
 
                     return null
                 })
-                taskConventionMapping.map("paketExtension", { extention })
             }
         })
     }
