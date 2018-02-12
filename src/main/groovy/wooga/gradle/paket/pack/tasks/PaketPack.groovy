@@ -29,8 +29,7 @@ class PaketPack extends AbstractPaketTask {
 
     @Internal
     def packageId
-
-    @Optional
+    
     @Input
     String version
 

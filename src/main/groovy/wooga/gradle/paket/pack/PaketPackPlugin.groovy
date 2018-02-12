@@ -44,6 +44,8 @@ class PaketPackPlugin implements Plugin<Project> {
 
     static String PAKET_TEMPLATE_PATTERN = "**/paket.template"
     static String TASK_PACK_PREFIX = "paketPack-"
+    static final String EXTENSION_NAME = 'paketPack'
+
 
     @Override
     void apply(Project project) {
@@ -54,7 +56,8 @@ class PaketPackPlugin implements Plugin<Project> {
         project.pluginManager.apply(BasePlugin.class)
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        final extension = project.extensions.getByType(PaketPluginExtension)
+        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPackPluginExtension, project)
+
         final configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
         final templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
@@ -115,17 +118,8 @@ class PaketPackPlugin implements Plugin<Project> {
                 // already set on creation, right?
                 //taskConventionMapping.map("templateFile", { extension.getBaseUrl() })
                 taskConventionMapping.map("outputDir", { project.file("${project.buildDir}/outputs") })
-
                 taskConventionMapping.map("version", {
-                    if (paketTemplate.version) {
-                        return paketTemplate.version
-                    }
-
-                    if (project.version != Project.DEFAULT_VERSION) {
-                        return project.version.toString()
-                    }
-
-                    return null
+                    paketTemplate.version ?: extension.getVersion()
                 })
             }
         })
