@@ -19,13 +19,9 @@ package wooga.gradle.paket.unity
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.file.FileCollection
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.get.tasks.PaketUpdate
-import wooga.gradle.paket.unity.tasks.PaketUnityBootstrap
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
 class PaketUnityPlugin implements Plugin<Project> {
@@ -34,7 +30,6 @@ class PaketUnityPlugin implements Plugin<Project> {
 
     static final String GROUP = "PaketUnity"
     static final String EXTENSION_NAME = 'paketUnity'
-    static final String BOOTSTRAP_TASK_NAME = "paketUnityBootstrap"
     static final String INSTALL_TASK_NAME = "paketUnityInstall"
 
     @Override
@@ -44,46 +39,28 @@ class PaketUnityPlugin implements Plugin<Project> {
         project.pluginManager.apply(PaketBasePlugin.class)
 
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketUnityPluginExtension, project)
-        final paketUnityBootstrap = createPaketUnityBootstrapTask(project, extension)
-        final paketInstall = createPaketUnityInstallTask(project, extension)
+        createPaketUnityInstallTasks(project, extension)
 
         project.tasks.matching({ it.name.startsWith("paketUnity") }).each { task ->
             task.onlyIf {
-                project.file("$project.projectDir/${PaketBasePlugin.DEPENDENCIES_FILE_NAME}").exists()
+                extension.getPaketReferencesFiles() && !extension.getPaketReferencesFiles().isEmpty() &&
+                        extension.getPaketDependenciesFile() && extension.getPaketDependenciesFile().exists()
             }
         }
-
-        paketInstall.dependsOn paketUnityBootstrap
 
         configurePaketDependencyInstallIfPresent()
     }
 
-    private static Task createPaketUnityInstallTask(final Project project, final PaketPluginExtension extension) {
-        def task = project.tasks.create(INSTALL_TASK_NAME, PaketUnityInstall.class)
-        def conventionMapping = task.conventionMapping
-        conventionMapping.map("executable", { extension.getExecutable() })
+    private static void createPaketUnityInstallTasks(final Project project, final PaketUnityPluginExtension extension) {
 
-        task.setDependenciesFile(DependenciesFileCollection(project, extension))
-
-        task.group = GROUP
-        task
-    }
-
-    private static Task createPaketUnityBootstrapTask(final Project project, final PaketPluginExtension extension) {
-
-        def task = project.tasks.create(BOOTSTRAP_TASK_NAME, PaketUnityBootstrap.class)
-        def conventionMapping = task.conventionMapping
-
-        conventionMapping.map("executable", { extension.getBootstrapperExecutable() })
-        conventionMapping.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
-        conventionMapping.map("paketVersion", { extension.getVersion() })
-        conventionMapping.map("dependenciesFile", { DependenciesFileCollection(project, extension) })
-
-        task
-    }
-
-    private static FileCollection DependenciesFileCollection(Project project, PaketPluginExtension extension) {
-        extension.getPaketDependenciesFile().exists() ? project.files(extension.getPaketDependenciesFile()) : project.files()
+        def lifecycleTask = project.tasks.create(INSTALL_TASK_NAME)
+        extension.paketReferencesFiles.each { referenceFile ->
+            def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall.class)
+            task.conventionMapping.map("paketOutputDir", { extension.paketOutputDir })
+            task.referencesFile = referenceFile
+            task.group = GROUP
+            lifecycleTask.dependsOn task
+        }
     }
 
     void configurePaketDependencyInstallIfPresent() {

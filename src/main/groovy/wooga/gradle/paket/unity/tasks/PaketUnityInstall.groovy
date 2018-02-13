@@ -17,18 +17,50 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import wooga.gradle.paket.internal.PaketCommand
-import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
+import org.gradle.api.Action
+import org.gradle.api.file.CopySpec
+import org.gradle.api.internal.ConventionTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.TaskAction
+import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
-class PaketUnityInstall extends AbstractPaketTask {
+class PaketUnityInstall extends ConventionTask {
+
+    @InputFile
+    File referencesFile
+
+    @Input
+    String paketOutputDir
 
     PaketUnityInstall() {
-        super(PaketUnityInstall.class)
-        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
+        description = 'Copy paket dependencies into unity projects'
         group = PaketUnityPlugin.GROUP
-        paketCommand = PaketCommand.INSTALL
-        outputs.upToDateWhen { false }
-        supportLogfile = false
+    }
+
+    @TaskAction
+    protected performCopy() {
+
+        def projectCopySpec = project.copySpec()
+        def references = new PaketUnityReferences(referencesFile)
+        references.nugets.each { nuget ->
+            projectCopySpec.from("packages/${nuget}/content", new Action<CopySpec>() {
+
+                @Override
+                void execute(CopySpec spec) {
+                    spec.into("/Assets/${paketOutputDir}/${nuget}")
+                    spec.exclude("**/Meta")
+                }
+            })
+        }
+
+        project.sync(new Action<CopySpec>() {
+            @Override
+            void execute(CopySpec spec) {
+                spec.with(projectCopySpec)
+                spec.into("${referencesFile.parent}")
+            }
+        })
     }
 }

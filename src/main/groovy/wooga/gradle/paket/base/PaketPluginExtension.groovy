@@ -44,5 +44,4 @@ interface PaketPluginExtension {
     PaketPluginExtension paketBootstrapperUrl(Object url)
 
     File getPaketDependenciesFile()
-
 }
