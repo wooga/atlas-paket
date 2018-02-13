@@ -21,10 +21,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
-import wooga.gradle.paket.base.utils.PaketDependencies
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
 import wooga.gradle.paket.get.tasks.PaketInstall
 import wooga.gradle.paket.get.tasks.PaketOutdated
 import wooga.gradle.paket.get.tasks.PaketRestore

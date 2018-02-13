@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.base.utils
+package wooga.gradle.paket.base.utils.internal
 
 class PaketDependencies {
 

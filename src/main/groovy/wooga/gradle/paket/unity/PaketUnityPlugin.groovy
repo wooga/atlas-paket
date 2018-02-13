@@ -73,15 +73,10 @@ class PaketUnityPlugin implements Plugin<Project> {
 
         def task = project.tasks.create(BOOTSTRAP_TASK_NAME, PaketUnityBootstrap.class)
         def conventionMapping = task.conventionMapping
-        task.setExecutable(extension.getBootstrapperExecutable())
-        task.setBootstrapURL(extension.getPaketBootstrapperUrl())
-        task.setPaketVersion(extension.getVersion())
-        /*
-        task.setDependenciesFile(DependenciesFileCollection(project, extension))
+
         conventionMapping.map("executable", { extension.getBootstrapperExecutable() })
         conventionMapping.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
         conventionMapping.map("paketVersion", { extension.getVersion() })
-        */
         conventionMapping.map("dependenciesFile", { DependenciesFileCollection(project, extension) })
 
         task

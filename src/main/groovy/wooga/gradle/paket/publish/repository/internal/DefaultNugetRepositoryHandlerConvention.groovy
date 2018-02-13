@@ -15,11 +15,13 @@
  *
  */
 
-package wooga.gradle.paket.publish.repository
+package wooga.gradle.paket.publish.repository.internal
 
 import org.gradle.api.Action
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.util.ConfigureUtil
+import wooga.gradle.paket.publish.repository.NugetArtifactRepository
+import wooga.gradle.paket.publish.repository.NugetRepositoryHandlerConvention
 
 class DefaultNugetRepositoryHandlerConvention implements NugetRepositoryHandlerConvention {
 

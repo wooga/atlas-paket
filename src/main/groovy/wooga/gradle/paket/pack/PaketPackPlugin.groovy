@@ -20,18 +20,15 @@ package wooga.gradle.paket.pack
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ConfigurablePublishArtifact
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.ConventionMapping
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
-import org.gradle.util.GUtil
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
-import wooga.gradle.paket.base.utils.PaketTemplate
+import wooga.gradle.paket.base.utils.internal.PaketTemplate
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 

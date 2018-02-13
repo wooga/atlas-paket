@@ -48,7 +48,7 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension {
 
     @Override
     File getPaketDependenciesFile() {
-        def files = project.files(project.fileTree(dir: project.projectDir, include: "**/paket.unity3d.references").files)
+        def files = project.files(project.fileTree(dir: project.projectDir, include: DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME).files)
         files.isEmpty() ? new File(project.projectDir, "no-source") : files.first()
     }
 }

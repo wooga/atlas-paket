@@ -21,7 +21,7 @@ import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
 import spock.lang.Unroll
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.get.tasks.PaketInstall
 import wooga.gradle.paket.get.tasks.PaketRestore
 import wooga.gradle.paket.get.tasks.PaketUpdate

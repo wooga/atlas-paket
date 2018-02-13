@@ -19,8 +19,8 @@ package wooga.gradle.paket.get.tasks
 
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
-import wooga.gradle.paket.PaketCommand
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.internal.PaketCommand
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 class PaketUpdate extends AbstractPaketTask {
 

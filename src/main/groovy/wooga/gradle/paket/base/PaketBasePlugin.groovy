@@ -20,10 +20,8 @@ package wooga.gradle.paket.base
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileTree
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 import wooga.gradle.paket.base.tasks.PaketInit
 
@@ -74,6 +72,7 @@ class PaketBasePlugin implements Plugin<Project> {
         project.tasks.withType(AbstractPaketTask, new Action<AbstractPaketTask>() {
             @Override
             void execute(AbstractPaketTask task) {
+
                 final taskConvention = task.conventionMapping
                 taskConvention.map("executable", { extension.getExecutable() })
                 taskConvention.map("monoExecutable", { extension.getMonoExecutable() })
@@ -98,16 +97,10 @@ class PaketBasePlugin implements Plugin<Project> {
     private static void addBootstrapTask(final Project project, PaketPluginExtension extension) {
         PaketBootstrap task = project.tasks.create(name: BOOTSTRAP_TASK_NAME, type: PaketBootstrap)
 
-        task.setExecutable(extension.getBootstrapperExecutable())
-        task.setBootstrapURL(extension.getPaketBootstrapperUrl())
-        task.setPaketVersion(extension.getVersion())
-
-        /*
         final taskConvention = task.conventionMapping
         taskConvention.map("executable", { extension.getBootstrapperExecutable() })
         taskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
         taskConvention.map("paketVersion", { extension.getVersion() })
-        */
 
         /*
         taskConvention.map("outputFiles", {

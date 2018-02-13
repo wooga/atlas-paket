@@ -32,8 +32,8 @@ import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.publish.repository.DefaultNugetRepositoryHandlerConvention
-import wooga.gradle.paket.publish.repository.NugetRepository
+import wooga.gradle.paket.publish.repository.internal.DefaultNugetRepositoryHandlerConvention
+import wooga.gradle.paket.publish.repository.internal.NugetRepository
 import wooga.gradle.paket.publish.tasks.PaketCopy
 import wooga.gradle.paket.publish.tasks.PaketPush
 

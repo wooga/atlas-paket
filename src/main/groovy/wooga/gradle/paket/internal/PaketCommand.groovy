@@ -1,4 +1,4 @@
-package wooga.gradle.paket
+package wooga.gradle.paket.internal
 
 class PaketCommand {
     static final String INSTALL = "install"

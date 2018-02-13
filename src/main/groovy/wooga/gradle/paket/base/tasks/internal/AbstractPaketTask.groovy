@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.base.tasks
+package wooga.gradle.paket.base.tasks.internal
 
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection

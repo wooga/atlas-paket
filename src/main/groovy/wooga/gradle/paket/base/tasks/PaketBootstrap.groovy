@@ -25,6 +25,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 import javax.inject.Inject
 
@@ -42,6 +43,7 @@ class PaketBootstrap extends AbstractPaketTask {
     FileCollection getOutputFiles() {
         return project.files(getExecutable())
     }
+    
     void setPaketVersion(String value) {
            paketVersion = value
     }
