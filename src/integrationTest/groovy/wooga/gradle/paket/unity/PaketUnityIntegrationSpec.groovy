@@ -173,7 +173,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         then: "evaluate incremental task execution"
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
         appliedReferences.each { ref ->
-            assert new File("${unityProjectName}/Assets/${ref}")
+            assert new File(projectDir,"${unityProjectName}/Assets/Paket.Unity3D/${ref}").exists()
         }
 
         where:
@@ -187,7 +187,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     }
 
     private void createUnityProject(String projectName, String[] references) {
-        def referencesFile = createFile("${projectName}/paket.unity3d.references")
+        def referencesFile = createFile( "${projectName}/paket.unity3d.references")
         referencesFile << """${references.join("\r")}""".stripIndent()
     }
 
