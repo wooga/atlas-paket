@@ -17,14 +17,15 @@
 
 package wooga.gradle.paket.get.tasks
 
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.internal.PaketCommand
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 class PaketInstall extends AbstractPaketTask {
-    
+
     PaketInstall() {
         super(PaketInstall.class)
         description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
-        paketCommand = "install"
-        outputs.upToDateWhen {false}
+        paketCommand = PaketCommand.INSTALL
+        outputs.upToDateWhen { false }
     }
 }

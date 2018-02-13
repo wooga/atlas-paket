@@ -30,10 +30,9 @@ import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.publish.repository.DefaultNugetRepositoryHandlerConvention
-import wooga.gradle.paket.publish.repository.NugetRepository
+import wooga.gradle.paket.publish.repository.internal.DefaultNugetRepositoryHandlerConvention
+import wooga.gradle.paket.publish.repository.internal.NugetRepository
 import wooga.gradle.paket.publish.tasks.PaketCopy
 import wooga.gradle.paket.publish.tasks.PaketPush
 
@@ -132,7 +131,6 @@ class PaketPublishPlugin implements Plugin<Project> {
         task.apiKey = repository.apiKey
         task.inputFile = artifact.file
         task.description = "Publishes ${artifact.file.name} to ${repository.url}"
-        task.paketExtension = project.extensions.getByType(DefaultPaketPluginExtension)
         task
     }
 }

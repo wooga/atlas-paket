@@ -17,20 +17,12 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.SkipWhenEmpty
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 
 class PaketUnityBootstrap extends PaketBootstrap {
 
-    @SkipWhenEmpty
-    @InputFiles
-    FileCollection paketDependencies = project.files(project.fileTree(dir: project.projectDir, include: "**/paket.unity3d.references").files)
-
     PaketUnityBootstrap() {
         super(PaketUnityBootstrap.class)
-        supportLogfile = false
     }
 
     @Override

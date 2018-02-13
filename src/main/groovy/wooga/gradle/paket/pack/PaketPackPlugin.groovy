@@ -20,18 +20,15 @@ package wooga.gradle.paket.pack
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ConfigurablePublishArtifact
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.ConventionMapping
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
-import org.gradle.util.GUtil
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
-import wooga.gradle.paket.base.utils.PaketTemplate
+import wooga.gradle.paket.base.utils.internal.PaketTemplate
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.tasks.PaketPack
 
@@ -44,6 +41,8 @@ class PaketPackPlugin implements Plugin<Project> {
 
     static String PAKET_TEMPLATE_PATTERN = "**/paket.template"
     static String TASK_PACK_PREFIX = "paketPack-"
+    static final String EXTENSION_NAME = 'paketPack'
+
 
     @Override
     void apply(Project project) {
@@ -54,9 +53,10 @@ class PaketPackPlugin implements Plugin<Project> {
         project.pluginManager.apply(BasePlugin.class)
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        def extension = project.extensions.getByType(DefaultPaketPluginExtension)
-        def configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
-        def templateFiles = project.fileTree(project.projectDir)
+        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPackPluginExtension, project)
+
+        final configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
+        final templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
         templateFiles = templateFiles.sort()
         templateFiles = templateFiles.sort(true, new Comparator<File>() {
@@ -104,7 +104,7 @@ class PaketPackPlugin implements Plugin<Project> {
         configurePaketPackDefaults(extension)
     }
 
-    private void configurePaketPackDefaults(PaketPluginExtension extention) {
+    private void configurePaketPackDefaults(PaketPluginExtension extension) {
         tasks.withType(PaketPack, new Action<PaketPack>() {
             @Override
             void execute(PaketPack task) {
@@ -112,21 +112,12 @@ class PaketPackPlugin implements Plugin<Project> {
 
                 ConventionMapping taskConventionMapping = task.getConventionMapping()
 
-                taskConventionMapping.map("templateFile", { extention.getBaseUrl() })
+                // already set on creation, right?
+                //taskConventionMapping.map("templateFile", { extension.getBaseUrl() })
                 taskConventionMapping.map("outputDir", { project.file("${project.buildDir}/outputs") })
-
                 taskConventionMapping.map("version", {
-                    if (paketTemplate.version) {
-                        return paketTemplate.version
-                    }
-
-                    if (project.version != Project.DEFAULT_VERSION) {
-                        return project.version.toString()
-                    }
-
-                    return null
+                    paketTemplate.version ?: extension.getVersion()
                 })
-                taskConventionMapping.map("paketExtension", { extention })
             }
         })
     }

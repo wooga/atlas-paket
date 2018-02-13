@@ -21,9 +21,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.PaketBasePlugin
-import wooga.gradle.paket.base.utils.PaketDependencies
+import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
 import wooga.gradle.paket.get.tasks.PaketInstall
 import wooga.gradle.paket.get.tasks.PaketOutdated
 import wooga.gradle.paket.get.tasks.PaketRestore
@@ -47,7 +47,7 @@ class PaketGetPlugin implements Plugin<Project> {
 
         project.pluginManager.apply(PaketBasePlugin.class)
 
-        def extension = project.extensions.getByType(DefaultPaketPluginExtension)
+        def extension = project.extensions.getByType(PaketPluginExtension)
 
         def paketInstall = tasks.create(INSTALL_TASK_NAME, PaketInstall.class)
         def paketUpdate = tasks.create(UPDATE_TASK_NAME, PaketUpdate.class)
@@ -55,19 +55,17 @@ class PaketGetPlugin implements Plugin<Project> {
         def paketOutdated = tasks.create(OUTDATED_TASK_NAME, PaketOutdated.class)
 
         [paketInstall, paketUpdate, paketRestore, paketOutdated].each { Task task ->
-            task.paketExtension = extension
             task.group = GROUP
         }
 
-        def dependenciesFile = project.file("paket.dependencies")
+        final dependenciesFile = extension.paketDependenciesFile
         if(dependenciesFile.exists()) {
-            def dependencies = new PaketDependencies(project.file("paket.dependencies"))
+            final dependencies = new PaketDependencies(dependenciesFile)
 
             dependencies.nugetDependencies.each { nuget ->
-                def t = tasks.create(UPDATE_TASK_NAME + nuget, PaketUpdate.class)
-                t.paketExtension = extension
-                t.nugetPackageId = nuget
-                t.description = "Update $nuget to their latest version and update projects."
+                def task = tasks.create(UPDATE_TASK_NAME + nuget, PaketUpdate.class)
+                task.nugetPackageId = nuget
+                task.description = "Update $nuget to their latest version and update projects."
             }
         }
     }

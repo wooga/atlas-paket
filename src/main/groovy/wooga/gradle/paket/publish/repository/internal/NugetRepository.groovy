@@ -15,7 +15,9 @@
  *
  */
 
-package wooga.gradle.paket.publish.repository
+package wooga.gradle.paket.publish.repository.internal
+
+import wooga.gradle.paket.publish.repository.NugetArtifactRepository
 
 class NugetRepository implements NugetArtifactRepository {
 

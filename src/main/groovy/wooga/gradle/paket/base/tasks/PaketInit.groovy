@@ -15,25 +15,20 @@
  *
  */
 
-package wooga.gradle.paket.get.tasks
+package wooga.gradle.paket.base.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import wooga.gradle.paket.base.PaketBasePlugin
 
 class PaketInit extends DefaultTask {
 
     static Logger logger = Logging.getLogger(PaketInit)
 
     @OutputFile
-    def dependenciesFile = "$project.projectDir/${PaketBasePlugin.DEPENDENCIES_FILE_NAME}"
-
-    File getDependenciesFile() {
-        project.file dependenciesFile
-    }
+    def dependenciesFile
 
     PaketInit() {
         super()
@@ -45,7 +40,7 @@ class PaketInit extends DefaultTask {
     }
 
     @TaskAction
-    void performInit() {
+    void performPaketCommand() {
         logger.info("Create empty file {}", getDependenciesFile().path)
         getDependenciesFile().createNewFile()
     }

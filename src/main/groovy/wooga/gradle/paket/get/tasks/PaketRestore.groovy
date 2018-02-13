@@ -17,16 +17,16 @@
 
 package wooga.gradle.paket.get.tasks
 
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.internal.PaketCommand
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 class PaketRestore extends AbstractPaketTask {
 
-    static String COMMAND = "restore"
 
     PaketRestore() {
         super(PaketRestore.class)
         description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
-        paketCommand = COMMAND
-        outputs.upToDateWhen {false}
+        paketCommand = PaketCommand.RESTORE
+        outputs.upToDateWhen { false }
     }
 }

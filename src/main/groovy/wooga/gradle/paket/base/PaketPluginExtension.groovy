@@ -17,21 +17,32 @@
 
 package wooga.gradle.paket.base
 
-trait PaketPluginExtension {
-    String paketDirectory = ".paket"
+interface PaketPluginExtension {
 
-    String paketExecuteableName
-    String paketBootstrapperFileName
-    String paketBootstrapperDownloadURL
+    File getPaketDirectory()
+    void setPaketDirectory(Object directory)
+    PaketPluginExtension paketDirectory(Object directory)
+    
+    String getVersion()
+    void setVersion(Object version)
+    PaketPluginExtension version(Object version)
 
-    String version = ""
-    String monoExecutable = "mono"
+    String getMonoExecutable()
+    void setMonoExecutable(Object path)
+    PaketPluginExtension monoExecutable(Object path)
 
-    String getPaketExecuteablePath() {
-        "$paketDirectory/$paketExecuteableName"
-    }
+    File getExecutable()
+    void setExecutable(Object executable)
+    PaketPluginExtension executable(Object executable)
 
-    String getPaketBootstrapperPath() {
-        "$paketDirectory/$paketBootstrapperFileName"
-    }
+    File getBootstrapperExecutable()
+    void setBootstrapperExecutable(Object fileName)
+    PaketPluginExtension bootstrapperExecutable(Object fileName)
+
+    String getPaketBootstrapperUrl()
+    void setPaketBootstrapperUrl(Object url)
+    PaketPluginExtension paketBootstrapperUrl(Object url)
+
+    File getPaketDependenciesFile()
+
 }

@@ -17,14 +17,16 @@
 
 package wooga.gradle.paket.get.tasks
 
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
+import wooga.gradle.paket.internal.PaketCommand
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 class PaketOutdated extends AbstractPaketTask {
+
 
     PaketOutdated() {
         super(PaketOutdated.class)
         description = 'Finds dependencies that have newer versions available'
-        paketCommand = "outdated"
+        paketCommand = PaketCommand.OUTDATED
         outputs.upToDateWhen { false }
     }
 }

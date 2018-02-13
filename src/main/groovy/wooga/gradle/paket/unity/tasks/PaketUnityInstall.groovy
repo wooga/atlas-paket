@@ -17,26 +17,18 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.SkipWhenEmpty
+import wooga.gradle.paket.internal.PaketCommand
+import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.unity.PaketUnityPlugin
-import wooga.gradle.paket.base.tasks.AbstractPaketTask
 
 class PaketUnityInstall extends AbstractPaketTask {
-
-    static String COMMAND = "install"
-
-    @SkipWhenEmpty
-    @InputFiles
-    FileCollection paketDependencies = project.files(project.fileTree(dir: project.projectDir, include: "**/paket.unity3d.references").files)
 
     PaketUnityInstall() {
         super(PaketUnityInstall.class)
         description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
         group = PaketUnityPlugin.GROUP
-        paketCommand = COMMAND
-        outputs.upToDateWhen {false}
+        paketCommand = PaketCommand.INSTALL
+        outputs.upToDateWhen { false }
         supportLogfile = false
     }
 }

@@ -20,6 +20,7 @@ package wooga.gradle.paket.base.utils
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+import wooga.gradle.paket.base.utils.internal.PaketTemplate
 
 class PaketTemplateSpec extends Specification {
 
