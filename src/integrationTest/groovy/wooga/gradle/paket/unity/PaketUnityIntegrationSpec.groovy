@@ -147,11 +147,9 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
     }
 
-    def "run paketUnityInstall with dependencies and custom output dir"() {
-        given: "a small project with a unity project dir"
-        def unityProjectName = "Test.Project"
-        def dependencyName = "Wooga.TestDependency"
-        def outputDir = "Paket.Custom.Unity3D"
+    @Unroll
+    def "run paketUnityInstall for project #unityProjectName with dependencies #rootDependencies and references #projectReferences #shouldBeExecuted"() {
+        given: "a root project with a unity project  called #unityProjectName"
 
         and: "apply paket get plugin to get paket install task"
         buildFile << """
@@ -163,39 +161,44 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
             ${applyPlugin(PaketUnityPlugin)}
         """.stripIndent()
 
-        and: "and a custom paket output target"
-        buildFile << """
-        
-        paketUnity {
-            setPaketOutputDir("${outputDir}")
-        }
-        
-        """.stripIndent()
+        and: "paket dependency file"
+        createDependencies(rootDependencies.toArray() as String[])
 
-        and: "paket dependency file and lock"
-        def dependencies = createFile("paket.dependencies")
+        and: "unity project #unityProjectName with references #projectReferences"
+        createUnityProject(unityProjectName, projectReferences.toArray() as String[])
 
-        dependencies << """
-        source https://nuget.org/api/v2
-        ${dependencyName}
-          """.stripIndent()
-
-        and: "paket unity references file "
-        def references = createFile("${unityProjectName}/paket.unity3d.references")
-        references << """
-        ${dependencyName}
-        """.stripIndent()
-
-        and: "dependency package with file"
-        createFile("packages/${dependencyName}/content/${dependencyName}.cs")
-
-        when:
+        when: "paketUnityInstall is executed"
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
-        def packagesDir = new File(projectDir, "${unityProjectName}/Assets/${outputDir}/${dependencyName}")
-        assert packagesDir.exists()
 
-        then:
+        then: "evaluate incremental task execution"
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        appliedReferences.each { ref ->
+            assert new File("${unityProjectName}/Assets/${ref}")
+        }
+
+        where:
+        unityProjectName | rootDependencies | projectReferences | shouldBeExecuted
+        "Project"        | ["D1", "D2"]     | ["D1"]            | true
+        "Project"        | ["D1"]           | ["D1", "D2"]      | true
+        "Project"        | ["D1", "D2"]     | ["D1", "D2"]      | true
+
+        appliedReferences = rootDependencies.intersect(projectReferences)
+
+    }
+
+    private void createUnityProject(String projectName, String[] references) {
+        def referencesFile = createFile("${projectName}/paket.unity3d.references")
+        referencesFile << """${references.join("\r")}""".stripIndent()
+    }
+
+    private void createDependencies(String[] dependencies) {
+        def dependenciesFile = createFile("paket.dependencies")
+        dependenciesFile << """source https://nuget.org/api/v2
+        ${dependencies.join("\r")}""".stripIndent()
+
+        dependencies.each { dependency ->
+            createFile("packages/${dependency}/content/ContentFile.cs")
+        }
     }
 
     boolean hasNoSource(ExecutionResult result, String taskName) {
