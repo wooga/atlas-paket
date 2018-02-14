@@ -147,11 +147,12 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
     }
 
-    boolean hasNoSource(ExecutionResult result, String taskName) {
+
+    static boolean hasNoSource(ExecutionResult result, String taskName) {
         containsOutput(result.standardOutput, taskName, "NO-SOURCE")
     }
 
-    private boolean containsOutput(String stdout, String taskName, String stateIdentifier) {
+    static boolean containsOutput(String stdout, String taskName, String stateIdentifier) {
         stdout.contains("$taskName $stateIdentifier".toString())
     }
 }

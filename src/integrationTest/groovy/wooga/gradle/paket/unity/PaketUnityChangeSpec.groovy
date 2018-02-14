@@ -3,6 +3,7 @@ package wooga.gradle.paket.unity
 import nebula.test.IntegrationSpec
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
+import wooga.gradle.paket.get.tasks.PaketInstall
 
 class PaketUnityChangeSpec extends IntegrationSpec {
 
@@ -127,8 +128,8 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         then:
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
         !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
-        !result.standardOutput.contains("inputFiles' file ${dep1.path} has changed.")
-        !result.standardOutput.contains("inputFiles' file ${dep2.path} has changed.")
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
 
         when: "change source file in dependencies"
         dep1 << "change"
@@ -138,10 +139,169 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         then:
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
         !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
-        result.standardOutput.contains("inputFiles' file ${dep1.path} has changed.")
-        !result.standardOutput.contains("inputFiles' file ${dep2.path} has changed.")
+        containsHasChangedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
     }
 
+    def "task :paketInstall removes incrementally"() {
+        given:
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file"
+        createDependencies(project3References)
+        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+
+        def out1 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
+        def out2 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+
+        assert !out1.exists()
+        assert !out2.exists()
+
+        and: "unity project #unityProjectName with references #projectReferences"
+        createOrUpdateReferenceFile(project1Name, project3References)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
+
+        out1.exists()
+        out2.exists()
+
+        when: "delete source file in dependencies"
+        dep1.delete()
+
+        result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        containsHasRemovedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
+
+        !out1.exists()
+        out2.exists()
+    }
+
+    def "task :paketInstall removes incrementally 2"() {
+        given:
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file"
+        createDependencies(project3References)
+        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+
+        def out1 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
+        def out2 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+
+        assert !out1.exists()
+        assert !out2.exists()
+
+        and: "unity project #unityProjectName with references #projectReferences"
+        createOrUpdateReferenceFile(project1Name, project3References)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
+
+        out1.exists()
+        out2.exists()
+
+        when: "delete source file in dependencies"
+        out2.delete()
+
+        result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
+
+        result.standardOutput.contains("All input files are considered out-of-date for incremental task")
+
+        out1.exists()
+        out2.exists()
+    }
+
+    def "task :paketInstall incremental after local patch"() {
+        given:
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file"
+        createDependencies(project3References)
+        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+
+        def out1 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
+        def out2 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+
+        assert !out1.exists()
+        assert !out2.exists()
+
+        and: "unity project #unityProjectName with references #projectReferences"
+        createOrUpdateReferenceFile(project1Name, project3References)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
+
+        out1.exists()
+        out2.exists()
+
+        when: "delete source file in dependencies"
+        out2 << "local patch"
+
+        result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
+
+        result.standardOutput.contains("All input files are considered out-of-date for incremental task")
+
+        out1.exists()
+        out2.exists()
+    }
+
+    def containsHasChangedOrDeletedOutput(String stdOut, String filePath) {
+        containsHasChangedOutput(stdOut, filePath) || containsHasRemovedOutput(stdOut, filePath)
+    }
+
+    def containsHasChangedOutput(String stdOut, String filePath) {
+        stdOut.contains("inputFiles' file ${filePath} has changed.")
+    }
+
+    def containsHasRemovedOutput(String stdOut, String filePath) {
+        stdOut.contains("inputFiles' file ${filePath} has been removed.")
+    }
 
     private File createOrUpdateReferenceFile(String projectName, List<String> references) {
         def path = "${projectName}/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}"

@@ -68,7 +68,7 @@ class PaketUnityInstall extends ConventionTask {
     protected performCopy(IncrementalTaskInputs inputs) {
         if (!inputs.incremental) {
             if (getOutputDirectory().exists()) {
-                getOutputDirectory().delete()
+                getOutputDirectory().deleteDir()
                 assert !getOutputDirectory().exists()
             }
         }
@@ -87,12 +87,22 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(InputFileDetails removed) {
                 removed.file.delete()
+                def outputPath = transformInputToOutputPath(removed.file, project.file("packages"))
+                outputPath.delete()
+
+                File parent = outputPath.parentFile
+                while (parent.isDirectory() && parent.listFiles().toList().empty) {
+                    parent.deleteDir()
+                    parent = parent.parentFile
+                }
+                
                 assert removed.removed
+                assert !outputPath.exists()
             }
         })
     }
 
-    protected File transformInputToOutputPath(File inputFile, File baseDirectory) {
+    File transformInputToOutputPath(File inputFile, File baseDirectory) {
         def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
         def pathSegments = relativePath.split(File.separator).toList()
         pathSegments.remove(1)
