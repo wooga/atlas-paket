@@ -148,7 +148,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     }
 
     @Unroll
-    def "run paketUnityInstall for project #unityProjectName with dependencies #rootDependencies and references #projectReferences #shouldBeExecuted"() {
+    def "run paketUnityInstall for project #rootDependencies | #projectReferences | #projectReferenceUpdate | #appliedReferencesAfterUpdate"() {
         given: "a root project with a unity project  called #unityProjectName"
 
         and: "apply paket get plugin to get paket install task"
@@ -165,33 +165,77 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         createDependencies(rootDependencies.toArray() as String[])
 
         and: "unity project #unityProjectName with references #projectReferences"
-        createUnityProject(unityProjectName, projectReferences.toArray() as String[])
+        def referencesFile = createUnityProject(unityProjectName, projectReferences.toArray() as String[])
+
+        and: "paketUnityInstall is executed"
+        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        and:
+        if (projectReferenceUpdate) {
+            referencesFile = """source https://nuget.org/api/v2
+            ${appliedReferencesAfterUpdate.join("\r")}""".stripIndent()
+        }
+
+        when: "paketUnityInstall is executed again"
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then: "evaluate incremental task execution"
+        assert result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        assert fileExists("${unityProjectName}/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}")
+
+        def refToCheck = appliedReferencesAfterUpdate ?: appliedReferences
+
+        refToCheck.each { ref ->
+            assert fileExists("${unityProjectName}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
+        }
+
+        where:
+        unityProjectName | rootDependencies   | projectReferences | projectReferenceUpdate
+        "Project"        | ["D1"]             | ["D1"]            | ["D1"]
+        "Project"        | ["D1", "D2"]       | ["D1"]            | ["D2"]
+        "Project"        | ["D1", "D2"]       | ["D1", "D2"]      | ["D2"]
+        "Project"        | ["D1"]             | ["D1"]            | _
+        "Project"        | ["D1", "D2"]       | ["D1", "D2"]      | ["D1", "D2"]
+        "Project"        | ["D1", "D2"]       | ["D1", "D2"]      | _
+        "Project"        | ["D1", "D2", "D3"] | ["D3"]            | ["D1", "D2", "D4"]
+
+        appliedReferences = rootDependencies.intersect(projectReferences)
+        appliedReferencesAfterUpdate = rootDependencies.intersect(projectReferenceUpdate)
+
+    }
+
+    def "run paketUnityInstall a root project with multiple unity projects"() {
+        given: "a root project with a multiple unity projects"
+        createUnityProject("Project.1", ["D1", "D2", "D3"] as String[])
+        createUnityProject("Project.2", ["D1", "D4"] as String[])
+
+        and: "a dependencies file"
+        createDependencies(["D1", "D2", "D4"] as String[])
 
         when: "paketUnityInstall is executed"
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
 
         then: "evaluate incremental task execution"
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
-        appliedReferences.each { ref ->
-            assert new File(projectDir,"${unityProjectName}/Assets/Paket.Unity3D/${ref}").exists()
+
+        ["D1", "D2"].each { ref ->
+            assert fileExists("Project.1/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
         }
+        assert !fileExists("Project.1/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/D3")
 
-        where:
-        unityProjectName | rootDependencies | projectReferences | shouldBeExecuted
-        "Project"        | ["D1", "D2"]     | ["D1"]            | true
-        "Project"        | ["D1"]           | ["D1", "D2"]      | true
-        "Project"        | ["D1", "D2"]     | ["D1", "D2"]      | true
-
-        appliedReferences = rootDependencies.intersect(projectReferences)
-
+        ["D1", "D4"].each { ref ->
+            assert fileExists("Project.2/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
+        }
     }
 
-    private void createUnityProject(String projectName, String[] references) {
-        def referencesFile = createFile( "${projectName}/paket.unity3d.references")
+
+    private File createUnityProject(String projectName, String[] references) {
+        def referencesFile = createFile("${projectName}/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}")
         referencesFile << """${references.join("\r")}""".stripIndent()
+        referencesFile
     }
 
-    private void createDependencies(String[] dependencies) {
+    private File createDependencies(String[] dependencies) {
         def dependenciesFile = createFile("paket.dependencies")
         dependenciesFile << """source https://nuget.org/api/v2
         ${dependencies.join("\r")}""".stripIndent()
@@ -199,6 +243,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         dependencies.each { dependency ->
             createFile("packages/${dependency}/content/ContentFile.cs")
         }
+        dependenciesFile
     }
 
     boolean hasNoSource(ExecutionResult result, String taskName) {

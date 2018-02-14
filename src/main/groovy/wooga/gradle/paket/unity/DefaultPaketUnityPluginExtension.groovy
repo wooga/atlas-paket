@@ -24,8 +24,8 @@ import wooga.gradle.paket.base.PaketPluginExtension
 
 class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension implements PaketUnityPluginExtension {
 
-    private static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "**/paket.unity3d.references"
-    private static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
+    public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
+        public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
     protected String customPaketPaketDir
 
     DefaultPaketUnityPluginExtension(Project project) {
@@ -34,7 +34,7 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     @Override
     FileCollection getPaketReferencesFiles() {
-        project.files(project.fileTree(dir: project.projectDir, include: DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME).files)
+        project.files(project.fileTree(dir: project.projectDir, include: "**/${DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}").files)
     }
     @Override
     String getPaketOutputDir() {

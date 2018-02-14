@@ -49,7 +49,7 @@ class PaketUnityInstall extends ConventionTask {
 
                 @Override
                 void execute(CopySpec spec) {
-                    spec.into("/Assets/${paketOutputDir}/${nuget}")
+                    spec.into("${nuget}")
                     spec.exclude("**/Meta")
                 }
             })
@@ -59,7 +59,7 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(CopySpec spec) {
                 spec.with(projectCopySpec)
-                spec.into("${referencesFile.parent}")
+                spec.into("${referencesFile.parent}/Assets/${paketOutputDir}")
             }
         })
     }
