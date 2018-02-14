@@ -6,6 +6,7 @@ import wooga.gradle.paket.base.PaketPluginExtension
 interface PaketUnityPluginExtension extends PaketPluginExtension {
     FileCollection getPaketReferencesFiles()
 
-    String getPaketOutputDir()
-    void setPaketOutputDir(String directory)
+    String getGetPaketOutputDirectoryName()
+
+    void setGetPaketOutputDirectoryName(String directory)
 }

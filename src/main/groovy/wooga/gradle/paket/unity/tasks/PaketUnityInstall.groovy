@@ -17,22 +17,47 @@
 
 package wooga.gradle.paket.unity.tasks
 
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
-import org.gradle.api.file.CopySpec
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.incremental.IncrementalTaskInputs
+import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
 class PaketUnityInstall extends ConventionTask {
 
-    @InputFile
+    @Input
     File referencesFile
 
     @Input
-    String paketOutputDir
+    String paketOutputDirectoryName
+
+    File projectRoot
+
+    @OutputDirectory
+    File getOutputDirectory() {
+        new File(projectRoot, "Assets/${getPaketOutputDirectoryName()}")
+    }
+
+    @InputFiles
+    FileCollection getInputFiles() {
+        Set<File> files = []
+        def references = new PaketUnityReferences(referencesFile)
+        references.nugets.each { nuget ->
+            def fileTree = project.fileTree(dir: project.projectDir)
+            fileTree.include("packages/${nuget}/content/**")
+            fileTree.exclude("**/*.meta")
+            fileTree.exclude("**/Meta")
+            files << fileTree.files
+        }
+        project.files(files)
+    }
 
     PaketUnityInstall() {
         description = 'Copy paket dependencies into unity projects'
@@ -40,27 +65,38 @@ class PaketUnityInstall extends ConventionTask {
     }
 
     @TaskAction
-    protected performCopy() {
-
-        def projectCopySpec = project.copySpec()
-        def references = new PaketUnityReferences(referencesFile)
-        references.nugets.each { nuget ->
-            projectCopySpec.from("packages/${nuget}/content", new Action<CopySpec>() {
-
-                @Override
-                void execute(CopySpec spec) {
-                    spec.into("${nuget}")
-                    spec.exclude("**/Meta")
-                }
-            })
+    protected performCopy(IncrementalTaskInputs inputs) {
+        if (!inputs.incremental) {
+            if (getOutputDirectory().exists()) {
+                getOutputDirectory().delete()
+                assert !getOutputDirectory().exists()
+            }
         }
 
-        project.sync(new Action<CopySpec>() {
+        inputs.outOfDate(new Action<InputFileDetails>() {
             @Override
-            void execute(CopySpec spec) {
-                spec.with(projectCopySpec)
-                spec.into("${referencesFile.parent}/Assets/${paketOutputDir}")
+            void execute(InputFileDetails outOfDate) {
+                def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
+                FileUtils.copyFile(outOfDate.file, outputPath)
+                assert outputPath.exists()
+
             }
         })
+
+        inputs.removed(new Action<InputFileDetails>() {
+            @Override
+            void execute(InputFileDetails removed) {
+                removed.file.delete()
+                assert removed.removed
+            }
+        })
+    }
+
+    protected File transformInputToOutputPath(File inputFile, File baseDirectory) {
+        def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
+        def pathSegments = relativePath.split(File.separator).toList()
+        pathSegments.remove(1)
+        def outputPath = new File(getOutputDirectory(), pathSegments.join(File.separator))
+        outputPath
     }
 }

@@ -56,8 +56,9 @@ class PaketUnityPlugin implements Plugin<Project> {
         def lifecycleTask = project.tasks.create(INSTALL_TASK_NAME)
         extension.paketReferencesFiles.each { referenceFile ->
             def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall.class)
-            task.conventionMapping.map("paketOutputDir", { extension.paketOutputDir })
+            task.conventionMapping.map("paketOutputDirectoryName", { extension.getGetPaketOutputDirectoryName() })
             task.referencesFile = referenceFile
+            task.projectRoot = referenceFile.parentFile
             task.group = GROUP
             lifecycleTask.dependsOn task
         }

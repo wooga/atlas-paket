@@ -20,13 +20,12 @@ package wooga.gradle.paket.unity
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
-import wooga.gradle.paket.base.PaketPluginExtension
 
 class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension implements PaketUnityPluginExtension {
 
     public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
-        public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
-    protected String customPaketPaketDir
+    public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
+    protected String customPaketOutputDirectory
 
     DefaultPaketUnityPluginExtension(Project project) {
         super(project)
@@ -36,13 +35,14 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     FileCollection getPaketReferencesFiles() {
         project.files(project.fileTree(dir: project.projectDir, include: "**/${DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}").files)
     }
-    @Override
-    String getPaketOutputDir() {
-        return customPaketPaketDir ?: DEFAULT_PAKET_DIRECTORY
+
+
+    String getGetPaketOutputDirectoryName() {
+        return customPaketOutputDirectory ?: DEFAULT_PAKET_DIRECTORY
     }
 
-    @Override
-    void setPaketOutputDir(String directory) {
-        customPaketPaketDir = directory
+
+    void setGetPaketOutputDirectoryName(String directory) {
+        customPaketOutputDirectory = directory
     }
 }
