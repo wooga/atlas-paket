@@ -106,7 +106,7 @@ class PaketUnityInstall extends ConventionTask {
 
     File transformInputToOutputPath(File inputFile, File baseDirectory) {
         def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
-        def pathSegments = relativePath.split(Matcher.quoteReplacement(File.separator)).toList()
+        def pathSegments = relativePath.split(File.separator).toList()
         pathSegments.remove(1)
         def outputPath = new File(getOutputDirectory(), pathSegments.join(File.separator))
         outputPath
