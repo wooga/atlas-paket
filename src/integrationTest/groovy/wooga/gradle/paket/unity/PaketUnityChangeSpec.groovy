@@ -7,6 +7,8 @@ import wooga.gradle.paket.get.tasks.PaketInstall
 
 class PaketUnityChangeSpec extends IntegrationSpec {
 
+    final static String STD_OUT_ALL_OUT_OF_DATE = "All input files are considered out-of-date for incremental task"
+
     String project1Name = "Project.1"
     String project2Name = "Project.2"
     String project3Name = "Project.3"
@@ -143,7 +145,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
     }
 
-    def "task :paketInstall removes incrementally"() {
+    def "task :paketInstall removes incrementally with changed source"() {
         given:
         buildFile << """
             ${applyPlugin(PaketGetPlugin)}
@@ -191,7 +193,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         out2.exists()
     }
 
-    def "task :paketInstall removes incrementally 2"() {
+    def "task :paketInstall adds with change in target directory"() {
         given:
         buildFile << """
             ${applyPlugin(PaketGetPlugin)}
@@ -235,13 +237,13 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
         !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
 
-        result.standardOutput.contains("All input files are considered out-of-date for incremental task")
+        allFilesOutOfDate(result.standardOutput)
 
         out1.exists()
         out2.exists()
     }
 
-    def "task :paketInstall incremental after local patch"() {
+    def "task :paketInstall adds incrementally with changed target content"() {
         given:
         buildFile << """
             ${applyPlugin(PaketGetPlugin)}
@@ -285,7 +287,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         !containsHasChangedOrDeletedOutput(result.standardOutput, dep1.path)
         !containsHasChangedOrDeletedOutput(result.standardOutput, dep2.path)
 
-        result.standardOutput.contains("All input files are considered out-of-date for incremental task")
+        allFilesOutOfDate(result.standardOutput)
 
         out1.exists()
         out2.exists()
@@ -301,6 +303,10 @@ class PaketUnityChangeSpec extends IntegrationSpec {
 
     def containsHasRemovedOutput(String stdOut, String filePath) {
         stdOut.contains("inputFiles' file ${filePath} has been removed.")
+    }
+
+    def allFilesOutOfDate(String stdOut){
+        stdOut.contains(STD_OUT_ALL_OUT_OF_DATE)
     }
 
     private File createOrUpdateReferenceFile(String projectName, List<String> references) {
