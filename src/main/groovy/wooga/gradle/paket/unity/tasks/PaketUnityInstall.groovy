@@ -30,6 +30,8 @@ import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
+import java.util.regex.Matcher
+
 class PaketUnityInstall extends ConventionTask {
 
     @Input
@@ -104,7 +106,7 @@ class PaketUnityInstall extends ConventionTask {
 
     File transformInputToOutputPath(File inputFile, File baseDirectory) {
         def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
-        def pathSegments = relativePath.split(File.separator).toList()
+        def pathSegments = relativePath.split(Matcher.quoteReplacement(File.separator)).toList()
         pathSegments.remove(1)
         def outputPath = new File(getOutputDirectory(), pathSegments.join(File.separator))
         outputPath
