@@ -48,7 +48,6 @@ class PaketLock {
 
         lockContent.eachLine { line ->
 
-            // ignore empty lines
             if (!line.trim()) {
                 return
             }
@@ -68,7 +67,6 @@ class PaketLock {
                 return
             }
             if (currentIndent == LineType.REMOTE.value) {
-                // we don't handle remote information for now
                 return
             }
             if (currentIndent == LineType.NAME.value) {
@@ -90,7 +88,23 @@ class PaketLock {
         return false
     }
 
-    List<String> getLockDependencies(SourceType source, String id) {
-        content[source.getValue()][id] as List<String>
+    List<String> getDependencies(SourceType source, String id) {
+        content[source.getValue()] && content[source.getValue()][id] ? content[source.getValue()][id] as List<String> : null
+    }
+
+    List<String> getAllDependencies(List<String> references) {
+        def result = []
+        for (def referenceDependency in references) {
+            result.add(referenceDependency)
+            def referenceDependencies = getDependencies(SourceType.NUGET, referenceDependency)
+            if (referenceDependencies) {
+                result.addAll(referenceDependencies)
+                def dependencies = getAllDependencies(referenceDependencies)
+                if (dependencies) {
+                    result.addAll(dependencies)
+                }
+            }
+        }
+        result.unique()
     }
 }

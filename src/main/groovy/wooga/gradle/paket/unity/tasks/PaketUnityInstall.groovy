@@ -52,25 +52,36 @@ class PaketUnityInstall extends ConventionTask {
     @InputFiles
     FileCollection getInputFiles() {
         Set<File> files = []
-        def references = new PaketUnityReferences(referencesFile)
-        def locks = new PaketLock(lockFile)
-        
-        references.nugets.each { nuget ->
+        def references = new PaketUnityReferences(getReferencesFile())
+
+        if (!getLockFile().exists()) {
+            return null
+        }
+
+        def locks = new PaketLock(getLockFile())
+        def dependencies = locks.getAllDependencies(references.nugets)
+        dependencies.each { nuget ->
             files << getFilesForPackage(nuget)
-            files << getFilesForDependencyPackage(nuget, locks)
         }
         project.files(files)
     }
 
-    Set<File> getFilesForDependencyPackage(String nuget, PaketLock locks) {
+    Set<File> getFilesForPackage(String nuget) {
         Set<File> files = []
-        locks.getLockDependencies(PaketLock.SourceType.NUGET, nuget).each { nugetDependency ->
-            files << getFilesForPackage(nugetDependency)
-        }
+        files << detectContentFiles(nuget)
+        files << detectContentDLLs(nuget)
         files
     }
 
-    Set<File> getFilesForPackage(String nuget) {
+    Set<File> detectContentFiles(String nuget) {
+        def fileTree = project.fileTree(dir: project.projectDir)
+        fileTree.include("packages/${nuget}/lib/net35/**")
+        fileTree.exclude("**/*.meta")
+        fileTree.exclude("**/Meta")
+        fileTree.files
+    }
+
+    Set<File> detectContentDLLs(String nuget) {
         def fileTree = project.fileTree(dir: project.projectDir)
         fileTree.include("packages/${nuget}/content/**")
         fileTree.exclude("**/*.meta")
@@ -96,15 +107,16 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(InputFileDetails outOfDate) {
                 def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
+                println("copy: ${outputPath}")
                 FileUtils.copyFile(outOfDate.file, outputPath)
                 assert outputPath.exists()
-
             }
         })
 
         inputs.removed(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails removed) {
+                println("remove: ${removed.file}")
                 removed.file.delete()
                 def outputPath = transformInputToOutputPath(removed.file, project.file("packages"))
                 outputPath.delete()

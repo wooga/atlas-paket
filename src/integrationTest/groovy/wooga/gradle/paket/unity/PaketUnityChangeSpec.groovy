@@ -318,7 +318,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     private File createDependencies(List<String> dependencies) {
         def dependenciesFile = createFile("paket.dependencies")
         dependenciesFile << """source https://nuget.org/api/v2
-        ${dependencies.join("\r")}""".stripIndent()
+nuget ${dependencies.join("\nnuget ")}""".stripIndent()
 
         dependencies.each { dependency ->
             createFile("packages/${dependency}/content/ContentFile.cs")
@@ -332,7 +332,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         lockFile << """
 NUGET
     remote: https://wooga.artifactoryonline.com/wooga/api/nuget/atlas-nuget
-        ${dependencies.join("\r")}""".stripIndent()
+        ${dependencies.join("\n")}""".stripIndent()
         lockFile
     }
 

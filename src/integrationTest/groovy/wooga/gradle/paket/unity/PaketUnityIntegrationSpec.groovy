@@ -124,10 +124,14 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         and: "paket dependency file and lock"
         def dependencies = createFile("paket.dependencies")
 
+
         dependencies << """
         source https://nuget.org/api/v2
-        ${dependencyName}
+        nuget ${dependencyName}
           """.stripIndent()
+
+        def lockFile = createFile("paket.lock")
+        lockFile << """${dependencyName}""".stripIndent()
 
         and: "paket unity references file "
         def references = createFile("${unityProjectName}/paket.unity3d.references")
@@ -146,7 +150,6 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         then:
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
     }
-
 
     static boolean hasNoSource(ExecutionResult result, String taskName) {
         containsOutput(result.standardOutput, taskName, "NO-SOURCE")
