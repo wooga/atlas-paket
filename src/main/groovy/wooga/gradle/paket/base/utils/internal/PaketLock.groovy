@@ -2,8 +2,6 @@ package wooga.gradle.paket.base.utils.internal
 
 class PaketLock {
 
-    public static final String INDENTATION = ' ' * 2
-
     enum SourceType {
         NUGET("NUGET")
 
@@ -14,6 +12,21 @@ class PaketLock {
         }
 
         String getValue() {
+            value
+        }
+    }
+
+    enum LineType {
+
+        TYPE(0), REMOTE(1), NAME(2), DEPENDENCY(3)
+
+        private final int value
+
+        LineType(int value) {
+            this.value = value
+        }
+
+        int getValue() {
             value
         }
     }
@@ -29,28 +42,44 @@ class PaketLock {
 
         def currentSourceType
         def currentPackageName
+        def currentIndent = 0
+        def currentLeadingWhitespaces = 0
+        def currentLineData
 
         lockContent.eachLine { line ->
-            if (!line.trim() || line.trim().startsWith("remote:")) {
+
+            // ignore empty lines
+            if (!line.trim()) {
                 return
             }
-            if (isValidSourceType(line.trim())) {
-                currentSourceType = line.trim()
+
+            def newLeadingWhitespaces = (line =~ /\s/).size()
+            if (newLeadingWhitespaces > currentLeadingWhitespaces) {
+                currentIndent++
+            } else if (newLeadingWhitespaces < currentLeadingWhitespaces) {
+                currentIndent--
+            }
+            currentLeadingWhitespaces = newLeadingWhitespaces
+            currentLineData = line.trim()
+
+            if (currentIndent == LineType.TYPE.value && isValidSourceType(currentLineData)) {
+                currentSourceType = currentLineData
                 content[currentSourceType] = [:]
                 return
             }
-            if (line.startsWith(INDENTATION * 3)) {
-                (content[currentSourceType][currentPackageName] as List<String>) << line.trim().split(" ")[0]
+            if (currentIndent == LineType.REMOTE.value) {
+                // we don't handle remote information for now
                 return
             }
-            if (line.startsWith(INDENTATION * 2)) {
-                currentPackageName = line.trim().split(" ")[0]
-                content[currentSourceType][currentPackageName] = []
+            if (currentIndent == LineType.NAME.value) {
+                currentPackageName = currentLineData.split(" ")[0]
+                content["${currentSourceType}"][currentPackageName] = []
                 return
             }
-
+            if (currentIndent == LineType.DEPENDENCY.value) {
+                (content["${currentSourceType}"]["${currentPackageName}"] as List<String>) << currentLineData.split(" ")[0]
+            }
         }
-        println(content)
     }
 
     boolean isValidSourceType(String value) {
@@ -61,7 +90,7 @@ class PaketLock {
         return false
     }
 
-    List<String> getDependencies(SourceType source, String id) {
+    List<String> getLockDependencies(SourceType source, String id) {
         content[source.getValue()][id] as List<String>
     }
 }

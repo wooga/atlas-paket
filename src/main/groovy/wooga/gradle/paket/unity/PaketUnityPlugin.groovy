@@ -44,7 +44,8 @@ class PaketUnityPlugin implements Plugin<Project> {
         project.tasks.matching({ it.name.startsWith("paketUnity") }).each { task ->
             task.onlyIf {
                 extension.getPaketReferencesFiles() && !extension.getPaketReferencesFiles().isEmpty() &&
-                        extension.getPaketDependenciesFile() && extension.getPaketDependenciesFile().exists()
+                        extension.getPaketDependenciesFile() && extension.getPaketDependenciesFile().exists() &&
+                        extension.getPaketLockFile() && extension.getPaketLockFile().exists()
             }
         }
 
@@ -58,6 +59,7 @@ class PaketUnityPlugin implements Plugin<Project> {
             def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall.class)
             task.conventionMapping.map("paketOutputDirectoryName", { extension.getGetPaketOutputDirectoryName() })
             task.referencesFile = referenceFile
+            task.lockFile = extension.getPaketLockFile()
             task.projectRoot = referenceFile.parentFile
             task.group = GROUP
             lifecycleTask.dependsOn task

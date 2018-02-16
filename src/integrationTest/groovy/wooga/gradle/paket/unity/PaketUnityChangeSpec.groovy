@@ -3,7 +3,6 @@ package wooga.gradle.paket.unity
 import nebula.test.IntegrationSpec
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
-import wooga.gradle.paket.get.tasks.PaketInstall
 
 class PaketUnityChangeSpec extends IntegrationSpec {
 
@@ -117,12 +116,12 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         """.stripIndent()
 
         and: "paket dependency file"
-        createDependencies(["D1","D2"])
+        createDependencies(["D1", "D2"])
         def dep1 = createFile("packages/D1/content/ContentFile.cs")
         def dep2 = createFile("packages/D2/content/ContentFile.cs")
 
         and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile("Test", ["D1","D2"])
+        createOrUpdateReferenceFile("Test", ["D1", "D2"])
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -156,8 +155,8 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
         def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
 
-        def out1 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
-        def out2 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+        def out1 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
+        def out2 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
 
         assert !out1.exists()
         assert !out2.exists()
@@ -204,8 +203,8 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
         def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
 
-        def out1 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
-        def out2 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+        def out1 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
+        def out2 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
 
         assert !out1.exists()
         assert !out2.exists()
@@ -254,8 +253,8 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
         def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
 
-        def out1 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
-        def out2 = new File(projectDir,"${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+        def out1 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
+        def out2 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
 
         assert !out1.exists()
         assert !out2.exists()
@@ -305,7 +304,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         stdOut.contains("inputFiles' file ${filePath} has been removed.")
     }
 
-    def allFilesOutOfDate(String stdOut){
+    def allFilesOutOfDate(String stdOut) {
         stdOut.contains(STD_OUT_ALL_OUT_OF_DATE)
     }
 
@@ -324,7 +323,17 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         dependencies.each { dependency ->
             createFile("packages/${dependency}/content/ContentFile.cs")
         }
+        createLockFile(dependencies)
         dependenciesFile
+    }
+
+    private File createLockFile(List<String> dependencies) {
+        def lockFile = createFile("paket.lock")
+        lockFile << """
+NUGET
+    remote: https://wooga.artifactoryonline.com/wooga/api/nuget/atlas-nuget
+        ${dependencies.join("\r")}""".stripIndent()
+        lockFile
     }
 
 }

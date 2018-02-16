@@ -50,7 +50,7 @@ class PaketLockSpec extends Specification {
         def lock = new PaketLock(content)
 
         then:
-        def nugets = lock.getDependencies(PaketLock.SourceType.NUGET, "Wooga.XCodeEditor")
+        def nugets = lock.getLockDependencies(PaketLock.SourceType.NUGET, "Wooga.XCodeEditor")
         nugets.size() == 1
         nugets.contains("Wooga.JsonDotNetNode")
 

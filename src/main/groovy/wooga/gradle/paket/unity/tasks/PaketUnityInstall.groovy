@@ -27,14 +27,17 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
+import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
-
 
 class PaketUnityInstall extends ConventionTask {
 
     @Input
     File referencesFile
+
+    @Input
+    File lockFile
 
     @Input
     String paketOutputDirectoryName
@@ -50,14 +53,29 @@ class PaketUnityInstall extends ConventionTask {
     FileCollection getInputFiles() {
         Set<File> files = []
         def references = new PaketUnityReferences(referencesFile)
+        def locks = new PaketLock(lockFile)
+        
         references.nugets.each { nuget ->
-            def fileTree = project.fileTree(dir: project.projectDir)
-            fileTree.include("packages/${nuget}/content/**")
-            fileTree.exclude("**/*.meta")
-            fileTree.exclude("**/Meta")
-            files << fileTree.files
+            files << getFilesForPackage(nuget)
+            files << getFilesForDependencyPackage(nuget, locks)
         }
         project.files(files)
+    }
+
+    Set<File> getFilesForDependencyPackage(String nuget, PaketLock locks) {
+        Set<File> files = []
+        locks.getLockDependencies(PaketLock.SourceType.NUGET, nuget).each { nugetDependency ->
+            files << getFilesForPackage(nugetDependency)
+        }
+        files
+    }
+
+    Set<File> getFilesForPackage(String nuget) {
+        def fileTree = project.fileTree(dir: project.projectDir)
+        fileTree.include("packages/${nuget}/content/**")
+        fileTree.exclude("**/*.meta")
+        fileTree.exclude("**/Meta")
+        fileTree.files
     }
 
     PaketUnityInstall() {
