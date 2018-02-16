@@ -9,4 +9,6 @@ interface PaketUnityPluginExtension extends PaketPluginExtension {
     String getGetPaketOutputDirectoryName()
 
     void setGetPaketOutputDirectoryName(String directory)
+
+    File getPaketLockFile()
 }

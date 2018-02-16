@@ -1,4 +1,4 @@
-package wooga.gradle.paket.base.utils
+package wooga.gradle.paket.base.utils.internal
 
 import spock.lang.Shared
 import spock.lang.Specification

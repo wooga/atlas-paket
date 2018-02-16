@@ -30,7 +30,6 @@ import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
-import java.util.regex.Matcher
 
 class PaketUnityInstall extends ConventionTask {
 
@@ -97,7 +96,7 @@ class PaketUnityInstall extends ConventionTask {
                     parent.deleteDir()
                     parent = parent.parentFile
                 }
-                
+
                 assert removed.removed
                 assert !outputPath.exists()
             }
