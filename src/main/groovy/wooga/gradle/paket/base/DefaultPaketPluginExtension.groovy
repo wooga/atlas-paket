@@ -18,6 +18,7 @@
 package wooga.gradle.paket.base
 
 import org.gradle.api.Project
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
 
 class DefaultPaketPluginExtension implements PaketPluginExtension {
 
@@ -104,7 +105,7 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
 
     @Override
     void setExecutable(Object executable) {
-        this.customPaketExecutable =  project.file(executable)
+        this.customPaketExecutable = project.file(executable)
     }
 
     @Override
@@ -126,7 +127,7 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
 
     @Override
     void setBootstrapperExecutable(Object fileName) {
-        this.customPaketBootstrapperExecutable =  project.file(fileName)
+        this.customPaketBootstrapperExecutable = project.file(fileName)
     }
 
     @Override
@@ -154,6 +155,14 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     @Override
     File getPaketDependenciesFile() {
         return new File(project.projectDir, DEFAULT_PAKET_DEPENDENCIES_FILE_NAME)
+    }
+
+    @Override
+    PaketDependencies getPaketDependencies() {
+        if (!getPaketDependenciesFile().exists()) {
+            return null
+        }
+        new PaketDependencies(getPaketDependenciesFile())
     }
 
     protected String getExecutableName() {

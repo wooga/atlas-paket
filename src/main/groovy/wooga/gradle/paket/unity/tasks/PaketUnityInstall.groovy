@@ -40,13 +40,16 @@ class PaketUnityInstall extends ConventionTask {
     File lockFile
 
     @Input
+    List<String> frameworks
+
+    @Input
     String paketOutputDirectoryName
 
     File projectRoot
 
     @OutputDirectory
     File getOutputDirectory() {
-        new File(projectRoot, "Assets/${getPaketOutputDirectoryName()}")
+        new File(getProjectRoot(), "Assets/${getPaketOutputDirectoryName()}")
     }
 
     @InputFiles
@@ -67,23 +70,13 @@ class PaketUnityInstall extends ConventionTask {
     }
 
     Set<File> getFilesForPackage(String nuget) {
-        Set<File> files = []
-        files << detectContentFiles(nuget)
-        files << detectContentDLLs(nuget)
-        files
-    }
-
-    Set<File> detectContentFiles(String nuget) {
-        def fileTree = project.fileTree(dir: project.projectDir)
-        fileTree.include("packages/${nuget}/lib/net35/**")
-        fileTree.exclude("**/*.meta")
-        fileTree.exclude("**/Meta")
-        fileTree.files
-    }
-
-    Set<File> detectContentDLLs(String nuget) {
         def fileTree = project.fileTree(dir: project.projectDir)
         fileTree.include("packages/${nuget}/content/**")
+
+        frameworks.each({
+            fileTree.include("packages/${nuget}/lib/${it}/**")
+        })
+
         fileTree.exclude("**/*.meta")
         fileTree.exclude("**/Meta")
         fileTree.files
@@ -107,7 +100,7 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(InputFileDetails outOfDate) {
                 def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
-                println("copy: ${outputPath}")
+                println("${outputPath.exists() ? "update" : "install"}: ${outputPath}")
                 FileUtils.copyFile(outOfDate.file, outputPath)
                 assert outputPath.exists()
             }

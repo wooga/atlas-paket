@@ -17,6 +17,8 @@
 
 package wooga.gradle.paket.base
 
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
+
 interface PaketPluginExtension {
 
     File getPaketDirectory()
@@ -44,4 +46,6 @@ interface PaketPluginExtension {
     PaketPluginExtension paketBootstrapperUrl(Object url)
 
     File getPaketDependenciesFile()
+
+    PaketDependencies getPaketDependencies()
 }

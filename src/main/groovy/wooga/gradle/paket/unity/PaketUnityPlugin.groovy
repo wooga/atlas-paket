@@ -62,6 +62,8 @@ class PaketUnityPlugin implements Plugin<Project> {
             task.referencesFile = referenceFile
             task.projectRoot = referenceFile.parentFile
             task.group = GROUP
+            task.frameworks = extension.getPaketDependencies().frameworks
+
             lifecycleTask.dependsOn task
         }
     }
