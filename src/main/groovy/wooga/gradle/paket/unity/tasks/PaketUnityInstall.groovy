@@ -61,11 +61,15 @@ class PaketUnityInstall extends ConventionTask {
             return null
         }
 
+        //println("prepare install for:")
         def locks = new PaketLock(getLockFile())
         def dependencies = locks.getAllDependencies(references.nugets)
         dependencies.each { nuget ->
-            files << getFilesForPackage(nuget)
+            def depFiles = getFilesForPackage(nuget)
+            //println("- ${nuget} with ${depFiles.size()} files")
+            files << depFiles
         }
+
         project.files(files)
     }
 
@@ -78,6 +82,7 @@ class PaketUnityInstall extends ConventionTask {
         })
 
         fileTree.exclude("**/*.meta")
+        fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
         fileTree.files
     }
@@ -92,6 +97,7 @@ class PaketUnityInstall extends ConventionTask {
         if (!inputs.incremental) {
             if (getOutputDirectory().exists()) {
                 getOutputDirectory().deleteDir()
+                println("delete target directory: ${getOutputDirectory()}")
                 assert !getOutputDirectory().exists()
             }
         }
@@ -100,7 +106,7 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(InputFileDetails outOfDate) {
                 def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
-                println("${outputPath.exists() ? "update" : "install"}: ${outputPath}")
+                println("${outOfDate.added ? "install" : "update"}: ${outputPath}")
                 FileUtils.copyFile(outOfDate.file, outputPath)
                 assert outputPath.exists()
             }
@@ -116,6 +122,7 @@ class PaketUnityInstall extends ConventionTask {
 
                 File parent = outputPath.parentFile
                 while (parent.isDirectory() && parent.listFiles().toList().empty) {
+                    println("Garbage collecting: ${removed.file}")
                     parent.deleteDir()
                     parent = parent.parentFile
                 }

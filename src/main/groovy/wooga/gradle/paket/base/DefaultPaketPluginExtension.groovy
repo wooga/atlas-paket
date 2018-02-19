@@ -119,9 +119,6 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
         if (!customPaketBootstrapperExecutable) {
             customPaketBootstrapperExecutable = new File(getPaketDirectory(), getBootstrapperExecutableName())
         }
-
-        println(customPaketBootstrapperExecutable)
-
         customPaketBootstrapperExecutable
     }
 
@@ -138,7 +135,7 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
 
     @Override
     String getPaketBootstrapperUrl() {
-        return customPaketBootstrapperUrl ?: DEFAULT_PAKET_BOOTSTRAPPER_URL
+        customPaketBootstrapperUrl ?: DEFAULT_PAKET_BOOTSTRAPPER_URL
     }
 
     @Override
@@ -154,15 +151,12 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
 
     @Override
     File getPaketDependenciesFile() {
-        return new File(project.projectDir, DEFAULT_PAKET_DEPENDENCIES_FILE_NAME)
+        new File(project.projectDir, DEFAULT_PAKET_DEPENDENCIES_FILE_NAME)
     }
 
     @Override
     PaketDependencies getPaketDependencies() {
-        if (!getPaketDependenciesFile().exists()) {
-            return new PaketDependencies("")
-        }
-        new PaketDependencies(getPaketDependenciesFile())
+        getPaketDependenciesFile().exists() ? new PaketDependencies(getPaketDependenciesFile()) : new PaketDependencies("")
     }
 
     protected String getExecutableName() {
