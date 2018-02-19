@@ -63,7 +63,7 @@ class PaketDependencies {
         nugets
     }
 
-    Set<String> getFrameworks() {
+    List<String> getFrameworks() {
         frameworks ?: DEFAULT_FRAMEWORKS
     }
 }

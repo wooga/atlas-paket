@@ -160,7 +160,7 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     @Override
     PaketDependencies getPaketDependencies() {
         if (!getPaketDependenciesFile().exists()) {
-            return null
+            return new PaketDependencies("")
         }
         new PaketDependencies(getPaketDependenciesFile())
     }

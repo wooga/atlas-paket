@@ -42,7 +42,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         createFile("paket.unity3d.references")
 
         when:
-        def result = runTasks(taskToRun)
+        def result = runTasksSuccessfully(taskToRun)
 
         then:
         result.wasSkipped(taskToRun)
