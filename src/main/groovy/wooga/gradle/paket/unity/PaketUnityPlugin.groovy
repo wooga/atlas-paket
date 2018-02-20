@@ -55,14 +55,22 @@ class PaketUnityPlugin implements Plugin<Project> {
     private static void createPaketUnityInstallTasks(final Project project, final PaketUnityPluginExtension extension) {
 
         def lifecycleTask = project.tasks.create(INSTALL_TASK_NAME)
+        lifecycleTask.with {
+            group = GROUP
+            description = "Installs dependencies for all Unity3d projects"
+        }
+
         extension.paketReferencesFiles.each { referenceFile ->
-            def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall.class)
-            task.conventionMapping.map("paketOutputDirectoryName", { extension.getGetPaketOutputDirectoryName() })
-            task.frameworks = extension.getPaketDependencies().getFrameworks()
-            task.lockFile = extension.getPaketLockFile()
-            task.referencesFile = referenceFile
-            task.projectRoot = referenceFile.parentFile
-            task.group = GROUP
+            def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall)
+            task.with {
+                group = GROUP
+                description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
+                conventionMapping.map("paketOutputDirectoryName", { extension.getGetPaketOutputDirectoryName() })
+                frameworks = extension.getPaketDependencies().getFrameworks()
+                lockFile = extension.getPaketLockFile()
+                referencesFile = referenceFile
+                projectRoot = referenceFile.parentFile
+            }
             lifecycleTask.dependsOn task
         }
     }

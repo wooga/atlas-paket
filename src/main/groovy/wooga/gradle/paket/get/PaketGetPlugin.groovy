@@ -64,6 +64,7 @@ class PaketGetPlugin implements Plugin<Project> {
 
             dependencies.nugetDependencies.each { nuget ->
                 def task = tasks.create(UPDATE_TASK_NAME + nuget, PaketUpdate.class)
+                task.group = GROUP
                 task.nugetPackageId = nuget
                 task.description = "Update $nuget to their latest version and update projects."
             }
