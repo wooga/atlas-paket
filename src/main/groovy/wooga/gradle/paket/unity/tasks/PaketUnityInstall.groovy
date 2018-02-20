@@ -75,7 +75,7 @@ class PaketUnityInstall extends ConventionTask {
         def fileTree = project.fileTree(dir: project.projectDir)
         fileTree.include("packages/${nuget}/content/**")
 
-        frameworks.each({
+        getFrameworks().each({
             fileTree.include("packages/${nuget}/lib/${it}/**")
         })
 
@@ -134,7 +134,7 @@ class PaketUnityInstall extends ConventionTask {
         })
     }
 
-    File transformInputToOutputPath(File inputFile, File baseDirectory) {
+    private File transformInputToOutputPath(File inputFile, File baseDirectory) {
         def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
         def pathSegments = relativePath.split(File.separator).toList()
         pathSegments.remove(1)

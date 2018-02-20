@@ -30,7 +30,6 @@ class PaketBasePlugin implements Plugin<Project> {
     Project project
 
     static final String EXTENSION_NAME = 'paket'
-    static final String DEPENDENCIES_FILE_NAME = "paket.dependencies"
     static final String BOOTSTRAP_TASK_NAME = "paketBootstrap"
     static final String INIT_TASK_NAME = "paketInit"
     static final String PAKET_CONFIGURATION = "nupkg"
