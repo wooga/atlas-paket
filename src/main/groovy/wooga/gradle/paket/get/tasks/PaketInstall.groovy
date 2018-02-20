@@ -20,6 +20,18 @@ package wooga.gradle.paket.get.tasks
 import wooga.gradle.paket.internal.PaketCommand
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
+/**
+ * Example:
+ * <pre>
+ * {@code
+ *
+ *     task paketInstall(type:wooga.gradle.paket.tasks.PaketInstall) {
+ *
+ *     }
+ *
+ * </pre>
+ */
+
 class PaketInstall extends AbstractPaketTask {
 
     PaketInstall() {

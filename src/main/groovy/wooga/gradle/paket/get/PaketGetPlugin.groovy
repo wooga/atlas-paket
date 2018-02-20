@@ -29,6 +29,14 @@ import wooga.gradle.paket.get.tasks.PaketOutdated
 import wooga.gradle.paket.get.tasks.PaketRestore
 import wooga.gradle.paket.get.tasks.PaketUpdate
 
+/**
+ * A {@link org.gradle.api.Plugin} which provides wrapper tasks for https://fsprojects.github.io/Paket
+ * The paket-get plugin will apply the paket-base plugin and all it's tasks.
+ * If you only want to retrieve dependencies through paket in your project apply this plugin.
+ * It will check for a paket.dependencies file in your root.
+ * The tasks provided will skip with NO-SOURCES when there is no paket.dependencies file.
+ */
+
 class PaketGetPlugin implements Plugin<Project> {
 
     Project project
@@ -59,7 +67,7 @@ class PaketGetPlugin implements Plugin<Project> {
         }
 
         final dependenciesFile = extension.paketDependenciesFile
-        if(dependenciesFile.exists()) {
+        if (dependenciesFile.exists()) {
             final dependencies = new PaketDependencies(dependenciesFile)
 
             dependencies.nugetDependencies.each { nuget ->
