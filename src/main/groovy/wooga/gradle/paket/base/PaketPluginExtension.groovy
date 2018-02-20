@@ -24,7 +24,7 @@ interface PaketPluginExtension {
     File getPaketDirectory()
     void setPaketDirectory(Object directory)
     PaketPluginExtension paketDirectory(Object directory)
-    
+
     String getVersion()
     void setVersion(Object version)
     PaketPluginExtension version(Object version)

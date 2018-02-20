@@ -3,7 +3,6 @@ package wooga.gradle.paket.base.utils.internal
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-import wooga.gradle.paket.base.utils.internal.PaketDependencies
 
 class PaketDependenciesSpec extends Specification {
 
@@ -139,7 +138,6 @@ class PaketDependenciesSpec extends Specification {
 
         then:
         def frameworks = dependencies.frameworks
-        frameworks.size() == 1
         frameworks.contains("net35")
     }
 }

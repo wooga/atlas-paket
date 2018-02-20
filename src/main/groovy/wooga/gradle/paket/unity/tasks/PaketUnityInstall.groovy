@@ -61,12 +61,10 @@ class PaketUnityInstall extends ConventionTask {
             return null
         }
 
-        //println("prepare install for:")
         def locks = new PaketLock(getLockFile())
         def dependencies = locks.getAllDependencies(references.nugets)
         dependencies.each { nuget ->
             def depFiles = getFilesForPackage(nuget)
-            //println("- ${nuget} with ${depFiles.size()} files")
             files << depFiles
         }
 
@@ -94,10 +92,13 @@ class PaketUnityInstall extends ConventionTask {
 
     @TaskAction
     protected performCopy(IncrementalTaskInputs inputs) {
+
+        logger.quiet("include libs with frameworks: " + getFrameworks().join(", "))
+
         if (!inputs.incremental) {
             if (getOutputDirectory().exists()) {
                 getOutputDirectory().deleteDir()
-                println("delete target directory: ${getOutputDirectory()}")
+                logger.quiet("delete target directory: ${getOutputDirectory()}")
                 assert !getOutputDirectory().exists()
             }
         }
@@ -106,7 +107,7 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(InputFileDetails outOfDate) {
                 def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
-                println("${outOfDate.added ? "install" : "update"}: ${outputPath}")
+                logger.quiet("${outOfDate.added ? "install" : "update"}: ${outputPath}")
                 FileUtils.copyFile(outOfDate.file, outputPath)
                 assert outputPath.exists()
             }
@@ -115,14 +116,14 @@ class PaketUnityInstall extends ConventionTask {
         inputs.removed(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails removed) {
-                println("remove: ${removed.file}")
+                logger.quiet("remove: ${removed.file}")
                 removed.file.delete()
                 def outputPath = transformInputToOutputPath(removed.file, project.file("packages"))
                 outputPath.delete()
 
                 File parent = outputPath.parentFile
                 while (parent.isDirectory() && parent.listFiles().toList().empty) {
-                    println("Garbage collecting: ${removed.file}")
+                    logger.quiet("Garbage collecting: ${removed.file}")
                     parent.deleteDir()
                     parent = parent.parentFile
                 }
