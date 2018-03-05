@@ -19,7 +19,7 @@ package wooga.gradle.paket.publish
 
 import groovy.json.StringEscapeUtils
 import org.jfrog.artifactory.client.Artifactory
-import org.jfrog.artifactory.client.ArtifactoryClient
+import org.jfrog.artifactory.client.ArtifactoryClientBuilder
 import org.jfrog.artifactory.client.model.RepoPath
 import spock.lang.Shared
 import spock.lang.Unroll
@@ -74,7 +74,11 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         String artifactoryCredentials = System.getenv("artifactoryCredentials")
         assert artifactoryCredentials
         def credentials = artifactoryCredentials.split(':')
-        artifactory = ArtifactoryClient.create(artifactoryUrl, credentials[0], credentials[1])
+        artifactory = ArtifactoryClientBuilder.create()
+                .setUrl(artifactoryUrl)
+                .setUsername(credentials[0])
+                .setPassword(credentials[1])
+                .build()
     }
 
     def setup() {
