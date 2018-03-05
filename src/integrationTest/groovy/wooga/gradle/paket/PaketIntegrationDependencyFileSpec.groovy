@@ -41,7 +41,7 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         taskToRun << bootstrapTestCases
     }
 
-    @Unroll
+    @Unroll("wpotlwr #taskToRun")
     def "writes paket output to logfile when running #taskToRun"(String taskToRun) {
         given: "a paket dependency file"
         createFile("paket.dependencies")
@@ -128,10 +128,11 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
     def "run paketUnityInstall on a real project with dependencies"() {
         given: "a dependencies file"
         def dependenciesFile = createFile("paket.dependencies")
-        dependenciesFile << """source https://nuget.org/api/v2
-nuget Mini
-nuget Wooga.Lambda
-""".stripIndent()
+        dependenciesFile << """
+            source https://nuget.org/api/v2
+            nuget Mini
+            nuget Wooga.Lambda
+        """.stripIndent().trim()
 
         and: "a project with a paket.unity3d.references file"
         def referencesFile = createFile("Test/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}")
