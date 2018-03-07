@@ -87,7 +87,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         taskToRun << bootstrapTestCases
     }
 
-    def "generated dependencies update task never show up in tasks list"() {
+    def "generated dependencies update task show up in tasks list"() {
         given: "A small test nuget package"
         def nuget = "Mini"
 
@@ -105,7 +105,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         def result = runTasksSuccessfully("tasks")
 
         then:
-        !result.standardOutput.contains("paketUpdateMini")
+        result.standardOutput.contains("paketUpdateMini")
     }
 
     def "generated dependencies update task shows up in tasks --all list"() {

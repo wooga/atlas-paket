@@ -18,6 +18,9 @@
 package wooga.gradle.paket
 
 import spock.lang.Unroll
+import wooga.gradle.paket.get.PaketGetPlugin
+import wooga.gradle.paket.unity.DefaultPaketUnityPluginExtension
+import wooga.gradle.paket.unity.PaketUnityPlugin
 
 abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSpec {
 
@@ -38,7 +41,7 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         taskToRun << bootstrapTestCases
     }
 
-    @Unroll
+    @Unroll("wpotlwr #taskToRun")
     def "writes paket output to logfile when running #taskToRun"(String taskToRun) {
         given: "a paket dependency file"
         createFile("paket.dependencies")
@@ -120,5 +123,39 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
 
         where:
         taskToRun << bootstrapTestCases
+    }
+
+    //run paketUnityInstall on a real project with dependencies
+    def "rpIoarpwd"() {
+        given: "a dependencies file"
+        fork=true
+        def dependenciesFile = createFile("paket.dependencies")
+        dependenciesFile << """
+            source https://nuget.org/api/v2
+            nuget Mini
+            nuget Wooga.Lambda
+        """.stripIndent().trim()
+
+        and: "a project with a paket.unity3d.references file"
+        def referencesFile = createFile("Test/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}")
+        referencesFile << """
+        Mini
+        Wooga.Lambda
+        """.stripIndent()
+
+        and: "apply paket plugin to get paket install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+            ${applyPlugin(PaketUnityPlugin)}
+        """.stripIndent()
+
+        when: "paketInstall is executed"
+        def result = runTasksSuccessfully("paketInstall")
+
+        then: "evaluate incremental task execution"
+        result.wasExecuted("paketInstall")
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+
     }
 }

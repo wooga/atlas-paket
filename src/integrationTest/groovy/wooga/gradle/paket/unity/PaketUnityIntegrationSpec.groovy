@@ -36,50 +36,6 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     def bootstrapTestCases = [PaketUnityPlugin.INSTALL_TASK_NAME]
 
     @Unroll
-    def "calls paketBootstrap when running #taskToRun"(String taskToRun) {
-        given: "an empty paket dependency and lock file"
-        createFile("paket.dependencies")
-        createFile("paket.unity3d.references")
-        createFile("paket.lock")
-
-        and: "future paket directories with files"
-        def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.unity3d.bootstrapper.exe')
-        def paket = new File(paketDir, 'paket.unity3d.exe')
-
-        assert !paketDir.exists()
-
-        when:
-        def result = runTasksSuccessfully(taskToRun)
-
-        then:
-        result.wasExecuted("paketUnityBootstrap")
-        paketDir.exists()
-        paketBootstrap.exists()
-        paket.exists()
-
-        where:
-        taskToRun << bootstrapTestCases
-    }
-
-    @Unroll
-    def "skips paket call with [NO-SOURCE] when no [paket.unity3d.references] file is present when running #taskToRun"(String taskToRun) {
-        given: "an empty paket dependency and lock file"
-        createFile("paket.dependencies")
-        createFile("paket.lock")
-
-        when:
-        def result = runTasksSuccessfully(taskToRun)
-
-        then:
-        hasNoSource(result, "paketUnityBootstrap")
-        hasNoSource(result, taskToRun)
-
-        where:
-        taskToRun << bootstrapTestCases
-    }
-
-    @Unroll
     def "skips paket call with [only-if] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
         given: "an empty paket dependency and lock file"
         createFile("paket.lock")
@@ -89,41 +45,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         def result = runTasksSuccessfully(taskToRun)
 
         then:
-        result.wasSkipped("paketUnityBootstrap")
-
-        where:
-        taskToRun << bootstrapTestCases
-    }
-
-    @Unroll
-    def "skip bootstrap when files are [UP-TO-DATE] when running #taskToRun"(String taskToRun) {
-        given: "a paket dependency file"
-        createFile("paket.dependencies")
-
-        and: "a empty lock file"
-        createFile("paket.lock")
-        directory("unitySub")
-        createFile("unitySub/paket.unity3d.references")
-
-        and: "a first run of #taskToRun"
-        runTasksSuccessfully(taskToRun)
-
-        when: "running a second time without changes"
-        def result1 = runTasksSuccessfully(taskToRun)
-
-        then: "bootstrap task was [UP-TO-DATE]"
-        result1.wasUpToDate("paketUnityBootstrap")
-
-        when: "delete bootstrapper"
-        def paketDir = new File(projectDir, '.paket')
-        def paketBootstrap = new File(paketDir, 'paket.unity3d.bootstrapper.exe')
-        paketBootstrap.delete()
-
-        and: "run the task again"
-        def result2 = runTasksSuccessfully(taskToRun)
-
-        then:
-        !result2.wasUpToDate("paketUnityBootstrap")
+        result.wasSkipped(taskToRun)
 
         where:
         taskToRun << bootstrapTestCases
@@ -184,11 +106,56 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         "paketUpdateMini"                | _
     }
 
-    boolean hasNoSource(ExecutionResult result, String taskName) {
+    def "run paketUnityInstall with dependencies"() {
+        given: "a small project with a unity project dir"
+        def unityProjectName = "Test.Project"
+        def dependencyName = "Wooga.TestDependency"
+
+        and: "apply paket get plugin to get paket install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "apply paket unity plugin to get paket unity install task"
+        buildFile << """
+            ${applyPlugin(PaketUnityPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file and lock"
+        def dependencies = createFile("paket.dependencies")
+
+
+        dependencies << """
+        source https://nuget.org/api/v2
+        nuget ${dependencyName}
+          """.stripIndent()
+
+        def lockFile = createFile("paket.lock")
+        lockFile << """${dependencyName}""".stripIndent()
+
+        and: "paket unity references file "
+        def references = createFile("${unityProjectName}/paket.unity3d.references")
+        references << """
+        ${dependencyName}
+        """.stripIndent()
+
+        and: "dependency package with file"
+        createFile("packages/${dependencyName}/content/${dependencyName}.cs")
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+        def packagesDir = new File(projectDir, "${unityProjectName}/Assets/Paket.Unity3D/${dependencyName}")
+        assert packagesDir.exists()
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+    }
+
+    static boolean hasNoSource(ExecutionResult result, String taskName) {
         containsOutput(result.standardOutput, taskName, "NO-SOURCE")
     }
 
-    private boolean containsOutput(String stdout, String taskName, String stateIdentifier) {
+    static boolean containsOutput(String stdout, String taskName, String stateIdentifier) {
         stdout.contains("$taskName $stateIdentifier".toString())
     }
 }

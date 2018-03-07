@@ -1,9 +1,8 @@
-package wooga.gradle.paket.base.utils
+package wooga.gradle.paket.base.utils.internal
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-import wooga.gradle.paket.base.utils.internal.PaketDependencies
 
 class PaketDependenciesSpec extends Specification {
 
@@ -22,6 +21,8 @@ class PaketDependenciesSpec extends Specification {
 
     // HTTP resources.
     http http://www.fssnip.net/1n decrypt.fs
+                         
+    framework: net35, net40
 
     group Test
         source https://nuget.org/api/v2
@@ -104,5 +105,39 @@ class PaketDependenciesSpec extends Specification {
         property               | data
         "getSources"           | "source"
         "getNugetDependencies" | "nuget"
+    }
+
+    @Unroll
+    def "parses frameworks from paket.dependencies with #objectType"() {
+        when:
+        def dependencies = new PaketDependencies(content)
+
+        then:
+        def frameworks = dependencies.frameworks
+        frameworks.size() == 2
+        frameworks.contains("net35")
+        frameworks.contains("net40")
+
+        where:
+        objectType | content
+        "String"   | DEPENDENCIES_CONTENT
+        "File"     | dependenciesFile << DEPENDENCIES_CONTENT
+    }
+
+    @Unroll
+    def "Set default framework if not defined"() {
+        when:
+        def content = """
+        source https://nuget.org/api/v2
+        source https://nuget.org/api/v3
+        nuget Dependency.One = 0.1.0
+        nuget Dependency.Two ~> 2.0.1
+        """.stripIndent()
+
+        def dependencies = new PaketDependencies(content)
+
+        then:
+        def frameworks = dependencies.frameworks
+        frameworks.contains("net35")
     }
 }

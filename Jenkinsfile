@@ -15,6 +15,7 @@ pipeline {
 
         stage('check') {
             parallel {
+
                 stage('Windows') {
                     agent {
                         label 'windows&&atlas'

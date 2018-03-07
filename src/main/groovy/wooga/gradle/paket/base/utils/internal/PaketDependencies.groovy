@@ -19,12 +19,16 @@ package wooga.gradle.paket.base.utils.internal
 
 class PaketDependencies {
 
+    final private List<String> DEFAULT_FRAMEWORKS = ["net11", "net20", "net35", "unity", "net35-unity full v3.5", "net35-unity subset v3.5"]
+    // 4.6 -> ["net462", "net461", "net46", "net452", "net451", "net45", "net403", "net40", "net4"]
+
     PaketDependencies(File dependenciesFile) {
         this(dependenciesFile.text)
     }
 
     private List<String> nugets
     private List<String> dependencySources
+    private List<String> frameworks
 
     PaketDependencies(String dependenciesContent) {
         nugets = []
@@ -32,13 +36,20 @@ class PaketDependencies {
 
         dependenciesContent.eachLine { line ->
             def matcher
-            if ((matcher = line =~ /^\s*([\w:]+)\s([\w\/:.]+)(.*)$/)) {
-                switch (matcher[0][1]) {
+            if ((matcher = line =~ /^\s*([\w:]+)\s([\w\/:.(, )+]+)(.*)$/)) {
+
+                def key = matcher[0][1].toString()
+                def value = matcher[0][2].toString().trim()
+
+                switch (key) {
                     case "nuget":
-                        nugets << matcher[0][2].toString()
+                        nugets << value
                         break
                     case "source":
-                        dependencySources << matcher[0][2].toString()
+                        dependencySources << value
+                        break
+                    case "framework:":
+                        frameworks = value.split(",").collect { it.trim() }
                         break
                 }
             }
@@ -51,5 +62,9 @@ class PaketDependencies {
 
     Set<String> getNugetDependencies() {
         nugets
+    }
+
+    List<String> getFrameworks() {
+        frameworks ?: DEFAULT_FRAMEWORKS
     }
 }

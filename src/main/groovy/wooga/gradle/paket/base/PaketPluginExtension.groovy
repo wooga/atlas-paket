@@ -17,12 +17,14 @@
 
 package wooga.gradle.paket.base
 
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
+
 interface PaketPluginExtension {
 
     File getPaketDirectory()
     void setPaketDirectory(Object directory)
     PaketPluginExtension paketDirectory(Object directory)
-    
+
     String getVersion()
     void setVersion(Object version)
     PaketPluginExtension version(Object version)
@@ -45,4 +47,5 @@ interface PaketPluginExtension {
 
     File getPaketDependenciesFile()
 
+    PaketDependencies getPaketDependencies()
 }

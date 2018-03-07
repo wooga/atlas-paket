@@ -18,37 +18,38 @@
 package wooga.gradle.paket.unity
 
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import wooga.gradle.paket.base.DefaultPaketPluginExtension
 
-class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension {
+class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension implements PaketUnityPluginExtension {
 
-    private static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "**/paket.unity3d.references"
-    private static final String DEFAULT_PAKET_UNITY_EXECUTION_NAME = "paket.unity3d.exe"
-    private static final String DEFAULT_PAKET_UNITY_BOOTSTRAPPER_EXECUTION_NAME = "paket.unity3d.bootstrapper.exe"
-    private static final String DEFAULT_PAKET_UNITY_BOOTSTRAPPER_URL = "https://github.com/wooga/Paket.Unity3D/releases/download/0.2.1/paket.unity3d.bootstrapper.exe"
+    public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
+    public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
+    private static final String DEFAULT_PAKET_LOCK_FILE_NAME = "paket.lock"
+
+    protected String customPaketOutputDirectory
 
     DefaultPaketUnityPluginExtension(Project project) {
         super(project)
     }
 
     @Override
-    String getPaketBootstrapperUrl() {
-        return customPaketBootstrapperUrl ?: DEFAULT_PAKET_UNITY_BOOTSTRAPPER_URL
+    FileCollection getPaketReferencesFiles() {
+        project.files(project.fileTree(dir: project.projectDir, include: "**/${DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}").files)
+    }
+
+
+    String getGetPaketOutputDirectoryName() {
+        return customPaketOutputDirectory ?: DEFAULT_PAKET_DIRECTORY
+    }
+
+
+    void setGetPaketOutputDirectoryName(String directory) {
+        customPaketOutputDirectory = directory
     }
 
     @Override
-    protected String getExecutableName() {
-        DEFAULT_PAKET_UNITY_EXECUTION_NAME
-    }
-
-    @Override
-    protected String getBootstrapperExecutableName() {
-        DEFAULT_PAKET_UNITY_BOOTSTRAPPER_EXECUTION_NAME
-    }
-
-    @Override
-    File getPaketDependenciesFile() {
-        def files = project.files(project.fileTree(dir: project.projectDir, include: DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME).files)
-        files.isEmpty() ? new File(project.projectDir, "no-source") : files.first()
+    File getPaketLockFile() {
+        return new File(project.projectDir, DEFAULT_PAKET_LOCK_FILE_NAME)
     }
 }

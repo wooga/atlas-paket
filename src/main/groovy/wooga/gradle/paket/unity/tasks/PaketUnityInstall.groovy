@@ -17,18 +17,128 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import wooga.gradle.paket.internal.PaketCommand
-import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
+import org.apache.commons.io.FileUtils
+import org.gradle.api.Action
+import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.ConventionTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.incremental.IncrementalTaskInputs
+import org.gradle.api.tasks.incremental.InputFileDetails
+import wooga.gradle.paket.base.utils.internal.PaketLock
+import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
-class PaketUnityInstall extends AbstractPaketTask {
+class PaketUnityInstall extends ConventionTask {
+
+    @Input
+    File referencesFile
+
+    @Input
+    File lockFile
+
+    @Input
+    List<String> frameworks
+
+    @Input
+    String paketOutputDirectoryName
+
+    File projectRoot
+
+    @OutputDirectory
+    File getOutputDirectory() {
+        new File(getProjectRoot(), "Assets/${getPaketOutputDirectoryName()}")
+    }
+
+    @InputFiles
+    FileCollection getInputFiles() {
+        Set<File> files = []
+        def references = new PaketUnityReferences(getReferencesFile())
+
+        if (!getLockFile().exists()) {
+            return null
+        }
+
+        def locks = new PaketLock(getLockFile())
+        def dependencies = locks.getAllDependencies(references.nugets)
+        dependencies.each { nuget ->
+            def depFiles = getFilesForPackage(nuget)
+            files << depFiles
+        }
+
+        project.files(files)
+    }
+
+    Set<File> getFilesForPackage(String nuget) {
+        def fileTree = project.fileTree(dir: project.projectDir)
+        fileTree.include("packages/${nuget}/content/**")
+
+        getFrameworks().each({
+            fileTree.include("packages/${nuget}/lib/${it}/**")
+        })
+
+        fileTree.exclude("**/*.meta")
+        fileTree.exclude("**/*.pdb")
+        fileTree.exclude("**/Meta")
+        fileTree.files
+    }
 
     PaketUnityInstall() {
-        super(PaketUnityInstall.class)
-        description = 'Download the dependencies specified by the paket.dependencies or paket.lock file into the packages/ directory and update projects.'
+        description = 'Copy paket dependencies into unity projects'
         group = PaketUnityPlugin.GROUP
-        paketCommand = PaketCommand.INSTALL
-        outputs.upToDateWhen { false }
-        supportLogfile = false
+    }
+
+    @TaskAction
+    protected performCopy(IncrementalTaskInputs inputs) {
+
+        logger.quiet("include libs with frameworks: " + getFrameworks().join(", "))
+
+        if (!inputs.incremental) {
+            if (getOutputDirectory().exists()) {
+                getOutputDirectory().deleteDir()
+                logger.quiet("delete target directory: ${getOutputDirectory()}")
+                assert !getOutputDirectory().exists()
+            }
+        }
+
+        inputs.outOfDate(new Action<InputFileDetails>() {
+            @Override
+            void execute(InputFileDetails outOfDate) {
+                def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
+                logger.quiet("${outOfDate.added ? "install" : "update"}: ${outputPath}")
+                FileUtils.copyFile(outOfDate.file, outputPath)
+                assert outputPath.exists()
+            }
+        })
+
+        inputs.removed(new Action<InputFileDetails>() {
+            @Override
+            void execute(InputFileDetails removed) {
+                logger.quiet("remove: ${removed.file}")
+                removed.file.delete()
+                def outputPath = transformInputToOutputPath(removed.file, project.file("packages"))
+                outputPath.delete()
+
+                File parent = outputPath.parentFile
+                while (parent.isDirectory() && parent.listFiles().toList().empty) {
+                    logger.quiet("Garbage collecting: ${removed.file}")
+                    parent.deleteDir()
+                    parent = parent.parentFile
+                }
+
+                assert removed.removed
+                assert !outputPath.exists()
+            }
+        })
+    }
+
+    private File transformInputToOutputPath(File inputFile, File baseDirectory) {
+        def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
+        def pathSegments = relativePath.split("/").toList()
+        pathSegments.remove(1)
+        def outputPath = new File(getOutputDirectory(), pathSegments.join(File.separator))
+        outputPath
     }
 }
