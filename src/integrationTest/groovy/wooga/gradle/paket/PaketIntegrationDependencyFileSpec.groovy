@@ -125,8 +125,10 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         taskToRun << bootstrapTestCases
     }
 
-    def "run paketUnityInstall on a real project with dependencies"() {
+    //run paketUnityInstall on a real project with dependencies
+    def "rpIoarpwd"() {
         given: "a dependencies file"
+        fork=true
         def dependenciesFile = createFile("paket.dependencies")
         dependenciesFile << """
             source https://nuget.org/api/v2

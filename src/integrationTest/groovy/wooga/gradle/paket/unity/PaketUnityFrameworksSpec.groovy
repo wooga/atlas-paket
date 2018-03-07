@@ -14,7 +14,7 @@ class PaketUnityFrameworksSpec extends IntegrationSpec {
         """.stripIndent()
     }
 
-    @Unroll
+    @Unroll("task:paketUnityInstall wf")
     def "task:paketUnityInstall with frameworks:#includeFrameworks"() {
         given: "a project with a unity project"
         def dependency = "Newtonsoft.Json"
