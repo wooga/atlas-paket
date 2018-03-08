@@ -19,7 +19,7 @@ package wooga.gradle.paket.unity
 
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
+import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 
 class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension implements PaketUnityPluginExtension {
 

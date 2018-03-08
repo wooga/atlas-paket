@@ -29,6 +29,20 @@ import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 import javax.inject.Inject
 
+/**
+ * A worker task to download the {@code paket.exe} file before executing any other paket tasks.
+ * All paket tasks depend on this task to check for the availability and update of the {@code paket.exe}.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     paketBootstrap {
+ *         paketVersion = "1.0.0"
+ *         bootstrapURL = "http://...."
+ *     }
+ * }
+ * </pre>
+ */
 class PaketBootstrap extends AbstractPaketTask {
     static Logger logger = Logging.getLogger(PaketBootstrap)
 
