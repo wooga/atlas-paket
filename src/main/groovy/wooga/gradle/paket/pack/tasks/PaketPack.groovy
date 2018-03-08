@@ -23,11 +23,28 @@ import wooga.gradle.paket.internal.PaketCommand
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.utils.internal.PaketTemplate
 
+/**
+ * A task to invoke {@code paket pack} command with given {@code paket.template} file.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     task pack(type:wooga.gradle.paket.pack.tasks.PaketPack {
+ *         templateFile = file('test/paket.template')
+ *         version = "1.0.0"
+ *         outputDir = file('build/out')
+ *     }
+ * }
+ * </pre>
+ */
 class PaketPack extends AbstractPaketTask {
 
     @Internal
     def packageId
-    
+
+    /**
+     * The nuget package version.
+     */
     @Input
     String version
 
@@ -36,6 +53,11 @@ class PaketPack extends AbstractPaketTask {
     @InputFile
     def templateFile
 
+    /**
+     * Returns the {@link File} path to the {@code paket.template} file.
+     *
+     * @return the template file
+     */
     File getTemplateFile() {
         project.file templateFile
     }
@@ -43,6 +65,12 @@ class PaketPack extends AbstractPaketTask {
     @OutputDirectory
     File outputDir
 
+    /**
+     * Returns the output file path for the packed nuget package.
+     *
+     * @return  output path for the nuget package
+     * @default {@code "$outputDir/${packageID}.${version}.nupkg"}
+     */
     @OutputFile
     File getOutputFile() {
         def templateReader = new PaketTemplate(getTemplateFile())

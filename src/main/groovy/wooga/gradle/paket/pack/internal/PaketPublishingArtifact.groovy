@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.pack
+package wooga.gradle.paket.pack.internal
 
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.tasks.DefaultTaskDependency
