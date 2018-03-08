@@ -30,7 +30,7 @@ import java.util.concurrent.Callable
  * Example:
  * <pre>
  * {@code
- *     task push(type:wooga.gradle.paket.publish.tasks.PaketPush {
+ *     task push(type:wooga.gradle.paket.publish.tasks.PaketPush) {
  *         url = "https://www.nuget.com"
  *         apiKey = "NUGET_API_KEY"
  *         inputFile = file('path/to/package.nupkg')

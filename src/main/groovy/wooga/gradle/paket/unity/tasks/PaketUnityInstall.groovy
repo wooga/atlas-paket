@@ -31,27 +31,62 @@ import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
+/**
+ * A task to copy referenced NuGet packages into Unity3D projects.
+ * <p>
+ * This task will take as input a references and lock file to compute the files and directories to copy.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     task unityInstall(type:wooga.gradle.paket.unity.tasks.PaketUnityInstall) {
+ *         referencesFile = file('paket.unity3D.references')
+ *         lockFile = file('../paket.lock')
+ *         frameworks = ["net11", "net20", "net35"]
+ *         paketOutputDirectoryName = "PaketUnity3D"
+ *     }
+ * }
+ * </pre>
+ */
 class PaketUnityInstall extends ConventionTask {
 
+    /**
+     * @return the path to a {@code paket.unity3d.references} file
+     */
     @Input
     File referencesFile
 
+    /**
+     * @return the path to a {@code paket.lock} file
+     */
     @Input
     File lockFile
 
+    /**
+     * @return a list of .NET framework identifiers.
+     */
     @Input
     List<String> frameworks
 
+    /**
+     * The name of the output directory with the unity projects {@code Assets} folder.
+     */
     @Input
     String paketOutputDirectoryName
 
     File projectRoot
 
+    /**
+     * @return the installation output directory
+     */
     @OutputDirectory
     File getOutputDirectory() {
         new File(getProjectRoot(), "Assets/${getPaketOutputDirectoryName()}")
     }
 
+    /**
+     * @return the files to install into the Unity3D project.
+     */
     @InputFiles
     FileCollection getInputFiles() {
         Set<File> files = []

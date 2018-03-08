@@ -21,6 +21,7 @@ import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
+import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 
 class PaketUnityPluginActivationSpec extends PluginProjectSpec {
     @Override

@@ -29,7 +29,7 @@ import wooga.gradle.paket.base.utils.internal.PaketTemplate
  * Example:
  * <pre>
  * {@code
- *     task pack(type:wooga.gradle.paket.pack.tasks.PaketPack {
+ *     task pack(type:wooga.gradle.paket.pack.tasks.PaketPack) {
  *         templateFile = file('test/paket.template')
  *         version = "1.0.0"
  *         outputDir = file('build/out')

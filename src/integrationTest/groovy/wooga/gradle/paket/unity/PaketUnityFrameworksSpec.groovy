@@ -3,6 +3,7 @@ package wooga.gradle.paket.unity
 import nebula.test.IntegrationSpec
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketPlugin
+import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 
 class PaketUnityFrameworksSpec extends IntegrationSpec {
 
