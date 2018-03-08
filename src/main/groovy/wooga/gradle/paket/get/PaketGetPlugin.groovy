@@ -29,6 +29,18 @@ import wooga.gradle.paket.get.tasks.PaketOutdated
 import wooga.gradle.paket.get.tasks.PaketRestore
 import wooga.gradle.paket.get.tasks.PaketUpdate
 
+/**
+ * A {@link Plugin} which adds tasks to fetch and update nuget dependencies with {@code paket}.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     plugins {
+ *         id 'net.wooga.paket-get' version '0.10.1'
+ *     }
+ * }
+ * </pre>
+ */
 class PaketGetPlugin implements Plugin<Project> {
 
     Project project
