@@ -15,7 +15,7 @@
  *
  */
 
-package wooga.gradle.paket.publish.tasks
+package wooga.gradle.paket.publish.tasks.internal
 
 import org.gradle.api.tasks.Copy
 

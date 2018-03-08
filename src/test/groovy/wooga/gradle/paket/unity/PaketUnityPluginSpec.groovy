@@ -19,10 +19,8 @@ package wooga.gradle.paket.unity
 
 import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
-import org.gradle.api.Task
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
-import wooga.gradle.paket.publish.DefaultPaketPushPluginExtension
 
 class PaketUnityPluginActivationSpec extends PluginProjectSpec {
     @Override

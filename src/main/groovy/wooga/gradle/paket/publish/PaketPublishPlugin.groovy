@@ -31,11 +31,24 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
 import wooga.gradle.paket.base.PaketBasePlugin
+import wooga.gradle.paket.publish.internal.DefaultPaketPushPluginExtension
 import wooga.gradle.paket.publish.repository.internal.DefaultNugetRepositoryHandlerConvention
 import wooga.gradle.paket.publish.repository.internal.NugetRepository
-import wooga.gradle.paket.publish.tasks.PaketCopy
+import wooga.gradle.paket.publish.tasks.internal.PaketCopy
 import wooga.gradle.paket.publish.tasks.PaketPush
 
+/**
+ * A {@link Plugin} which adds tasks to publish nuget files with {@code paket}.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     plugins {
+ *         id 'net.wooga.paket-publish' version '0.10.1'
+ *     }
+ * }
+ * </pre>
+ */
 class PaketPublishPlugin implements Plugin<Project> {
 
     Project project

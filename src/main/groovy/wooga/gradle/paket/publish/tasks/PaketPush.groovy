@@ -24,13 +24,32 @@ import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 import java.util.concurrent.Callable
 
+/**
+ * A task to invoke {@code paket push} command with given {@code .nupgk} file.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     task push(type:wooga.gradle.paket.publish.tasks.PaketPush {
+ *         url = "https://www.nuget.com"
+ *         apiKey = "NUGET_API_KEY"
+ *         inputFile = file('path/to/package.nupkg')
+ *     }
+ * }
+ * </pre>
+ */
 class PaketPush extends AbstractPaketTask {
 
     static String COMMAND = "push"
 
-    @Input
     def url
 
+    /**
+     * Returns the URL of the NuGet feed.
+     *
+     * @return  Nuget feed URL
+     */
+    @Input
     String getUrl() {
         if( url == null)
         {
@@ -43,10 +62,16 @@ class PaketPush extends AbstractPaketTask {
         }
     }
 
-    @Optional
-    @Input
     def apiKey
 
+    /**
+     * Returns the API key for the feed URL.
+     *
+     * @return  API key for the feed URL
+     * @see     #getUrl()
+     */
+    @Optional
+    @Input
     String getApiKey() {
         if( apiKey == null)
         {
@@ -59,9 +84,14 @@ class PaketPush extends AbstractPaketTask {
         }
     }
 
-    @InputFile
     def inputFile
 
+    /**
+     * Returns the path to the .nupkg file
+     *
+     * @return  path to the .nupkg file
+     */
+    @InputFile
     File getinputFile() {
         project.file inputFile
     }
