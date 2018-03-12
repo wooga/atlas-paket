@@ -25,9 +25,4 @@ interface PaketUnityPluginExtension extends PaketPluginExtension {
      * @param directory name of the output directory
      */
     void setPaketOutputDirectoryName(String directory)
-
-    /**
-     * @return a {@link File} path to the {@code paket.lock} file in the project.
-     */
-    File getPaketLockFile()
 }
