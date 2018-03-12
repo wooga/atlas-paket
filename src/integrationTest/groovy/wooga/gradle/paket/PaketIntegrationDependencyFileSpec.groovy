@@ -19,7 +19,7 @@ package wooga.gradle.paket
 
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
-import wooga.gradle.paket.unity.DefaultPaketUnityPluginExtension
+import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
 abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSpec {

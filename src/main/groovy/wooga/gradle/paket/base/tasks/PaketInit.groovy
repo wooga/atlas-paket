@@ -23,6 +23,9 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * A helper task to create an empty {@code paket.dependencies} file.
+ */
 class PaketInit extends DefaultTask {
 
     static Logger logger = Logging.getLogger(PaketInit)
@@ -40,7 +43,7 @@ class PaketInit extends DefaultTask {
     }
 
     @TaskAction
-    void performPaketCommand() {
+    protected void performPaketCommand() {
         logger.info("Create empty file {}", getDependenciesFile().path)
         getDependenciesFile().createNewFile()
     }

@@ -15,9 +15,10 @@
  *
  */
 
-package wooga.gradle.paket.base
+package wooga.gradle.paket.base.internal
 
 import org.gradle.api.Project
+import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.base.utils.internal.PaketDependencies
 
 class DefaultPaketPluginExtension implements PaketPluginExtension {

@@ -20,6 +20,9 @@ package wooga.gradle.paket.get.tasks
 import wooga.gradle.paket.internal.PaketCommand
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
+/**
+ * A task to invoke {@code paket outdated} command.
+ */
 class PaketOutdated extends AbstractPaketTask {
 
 

@@ -19,6 +19,7 @@ package wooga.gradle.paket.base
 
 import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
+import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 
 class PaketBasePluginActivationSpec extends PluginProjectSpec {

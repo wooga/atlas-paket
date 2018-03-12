@@ -22,8 +22,16 @@ import org.gradle.api.tasks.Optional
 import wooga.gradle.paket.internal.PaketCommand
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
+/**
+ * A task to invoke {@code paket update} command.
+ */
 class PaketUpdate extends AbstractPaketTask {
 
+    /**
+     * Returns an optional nuget package id to update
+     *
+     * @returns  a package id or null
+     */
     @Optional
     @Input
     String nugetPackageId

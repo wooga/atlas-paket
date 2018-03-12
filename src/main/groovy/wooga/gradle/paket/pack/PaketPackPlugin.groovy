@@ -30,8 +30,25 @@ import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.base.utils.internal.PaketTemplate
 import wooga.gradle.paket.get.PaketGetPlugin
+import wooga.gradle.paket.pack.internal.DefaultPaketPackPluginExtension
+import wooga.gradle.paket.pack.internal.PaketPublishingArtifact
 import wooga.gradle.paket.pack.tasks.PaketPack
 
+/**
+ * A {@link Plugin} which adds tasks to pack nuget files with {@code paket}.
+ * <p>
+ * The plugin adds a pack task for each {@code paket.template} file found recursively in the project.
+ * All {@code pack} tasks will be added as a dependency to {@code assemble}.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     plugins {
+ *         id 'net.wooga.paket-get' version '0.10.1'
+ *     }
+ * }
+ * </pre>
+ */
 class PaketPackPlugin implements Plugin<Project> {
 
     static Logger logger = Logging.getLogger(PaketPackPlugin)

@@ -15,11 +15,12 @@
  *
  */
 
-package wooga.gradle.paket.unity
+package wooga.gradle.paket.unity.internal
 
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import wooga.gradle.paket.base.DefaultPaketPluginExtension
+import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
+import wooga.gradle.paket.unity.PaketUnityPluginExtension
 
 class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension implements PaketUnityPluginExtension {
 
@@ -39,12 +40,12 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     }
 
 
-    String getGetPaketOutputDirectoryName() {
+    String getPaketOutputDirectoryName() {
         return customPaketOutputDirectory ?: DEFAULT_PAKET_DIRECTORY
     }
 
 
-    void setGetPaketOutputDirectoryName(String directory) {
+    void setPaketOutputDirectoryName(String directory) {
         customPaketOutputDirectory = directory
     }
 

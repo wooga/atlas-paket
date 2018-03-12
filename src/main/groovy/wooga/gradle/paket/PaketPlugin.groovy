@@ -24,6 +24,17 @@ import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.pack.PaketPackPlugin
 import wooga.gradle.paket.publish.PaketPublishPlugin
 
+/**
+ * A {@link Plugin} which adds support to fetch, pack and publish {@code nupgk} packages with paket.
+ * <p>
+ * <pre>
+ * {@code
+ *     plugins {
+ *         id 'net.wooga.paket' version '0.10.1'
+ *     }
+ * }
+ * </pre>
+ */
 class PaketPlugin implements Plugin<Project> {
 
     @Override

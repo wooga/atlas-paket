@@ -19,6 +19,7 @@ package wooga.gradle.paket.publish
 
 import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
+import wooga.gradle.paket.publish.internal.DefaultPaketPushPluginExtension
 
 class PaketPublishPluginActivationSpec extends PluginProjectSpec {
     @Override

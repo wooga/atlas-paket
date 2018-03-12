@@ -22,8 +22,21 @@ import org.gradle.api.Project
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.get.tasks.PaketUpdate
+import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
+/**
+ * A {@link Plugin} which adds tasks to install NuGet packages into a Unity3D project.
+ * <p>
+ * Example:
+ * <pre>
+ * {@code
+ *     plugins {
+ *         id 'net.wooga.paket-unity' version '0.10.1'
+ *     }
+ * }
+ * </pre>
+ */
 class PaketUnityPlugin implements Plugin<Project> {
 
     Project project
@@ -65,7 +78,7 @@ class PaketUnityPlugin implements Plugin<Project> {
             task.with {
                 group = GROUP
                 description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
-                conventionMapping.map("paketOutputDirectoryName", { extension.getGetPaketOutputDirectoryName() })
+                conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
                 frameworks = extension.getPaketDependencies().getFrameworks()
                 lockFile = extension.getPaketLockFile()
                 referencesFile = referenceFile

@@ -21,10 +21,16 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
+import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 import wooga.gradle.paket.base.tasks.PaketInit
 
+/**
+ * The base {@link Plugin} for paket based plugins.
+ * <p>
+ * This plugin is applied by other paket plugins and adds basic shared functionality.
+ */
 class PaketBasePlugin implements Plugin<Project> {
 
     Project project
