@@ -32,6 +32,7 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
 
     private static final String DEFAULT_VERSION = ""
     private static final String DEFAULT_MONO_EXECUTABLE = "mono"
+    private static final String DEFAULT_PAKET_LOCK_FILE_NAME = "paket.lock"
 
     protected Project project
     protected File customPaketDirectory
@@ -166,5 +167,10 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
 
     protected String getBootstrapperExecutableName() {
         DEFAULT_PAKET_BOOTSTRAPPER_EXECUTION_NAME
+    }
+
+    @Override
+    File getPaketLockFile() {
+        return new File(project.projectDir, DEFAULT_PAKET_LOCK_FILE_NAME)
     }
 }

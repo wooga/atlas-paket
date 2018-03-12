@@ -183,6 +183,13 @@ interface PaketPluginExtension {
     File getPaketDependenciesFile()
 
     /**
+     * Returns the {@link File} path to the {@code paket.lock} file in the project.
+     *
+     * @return a {@link File} path to the {@code paket.lock} file in the project.
+     */
+    File getPaketLockFile()
+
+    /**
      * Returns the content of {@code paket.dependencies} parsed as {@link PaketDependencies} object.
      *
      * @return  the parsed {@code paket.dependencies} file

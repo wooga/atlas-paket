@@ -26,7 +26,6 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
     public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
-    private static final String DEFAULT_PAKET_LOCK_FILE_NAME = "paket.lock"
 
     protected String customPaketOutputDirectory
 
@@ -47,10 +46,5 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     void setPaketOutputDirectoryName(String directory) {
         customPaketOutputDirectory = directory
-    }
-
-    @Override
-    File getPaketLockFile() {
-        return new File(project.projectDir, DEFAULT_PAKET_LOCK_FILE_NAME)
     }
 }
