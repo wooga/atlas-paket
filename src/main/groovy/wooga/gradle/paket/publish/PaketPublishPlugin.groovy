@@ -142,6 +142,7 @@ class PaketPublishPlugin implements Plugin<Project> {
         PaketPush task = (PaketPush) tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketPush)
         task.url = repository.url
         task.apiKey = repository.apiKey
+        task.endpoint = repository.endpoint
         task.inputFile = artifact.file
         task.description = "Publishes ${artifact.file.name} to ${repository.url}"
         task
