@@ -39,15 +39,18 @@ import wooga.gradle.paket.base.utils.internal.PaketTemplate
  */
 class PaketPack extends AbstractPaketTask {
 
-    @Internal
-    def packageId
+    /**
+     * @return the packageId of the nuget to be packed.
+     */
+    String getPackageId() {
+        new PaketTemplate(getTemplateFile()).getPackageId()
+    }
 
     /**
      * The nuget package version.
      */
     @Input
     String version
-
 
     @Optional
     @InputFile
@@ -73,9 +76,7 @@ class PaketPack extends AbstractPaketTask {
      */
     @OutputFile
     File getOutputFile() {
-        def templateReader = new PaketTemplate(getTemplateFile())
-        def packageID = templateReader.getPackageId()
-        project.file({"$outputDir/${packageID}.${getVersion()}.nupkg"})
+        project.file({"$outputDir/${getPackageId()}.${getVersion()}.nupkg"})
     }
 
     PaketPack() {

@@ -27,7 +27,7 @@ class PaketPublishingArtifact implements PublishArtifact {
 
     @Override
     String getName() {
-        return task.packageId
+        return task.getPackageId()
     }
 
     @Override
