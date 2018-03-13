@@ -107,9 +107,8 @@ class PaketPackPlugin implements Plugin<Project> {
 
             packTask = tasks.create(taskName, PaketPack.class)
             packTask.group = BasePlugin.BUILD_GROUP
-            packTask.description = "Pack package ${templateReader.getPackageId()}"
+            packTask.description = "Pack package ${packageID}"
             packTask.templateFile = file
-            packTask.packageId = packageID
 
             PublishArtifact artifact = PaketPublishingArtifact.fromTask(packTask)
 
