@@ -23,6 +23,7 @@ class NugetRepository implements NugetArtifactRepository {
 
     String apiKey
     String url
+    String endpoint
     String name
     String path
 
@@ -40,6 +41,10 @@ class NugetRepository implements NugetArtifactRepository {
 
     def apiKey(String apiKey) {
         setApiKey(apiKey)
+    }
+
+    def endpoint(String endpoint) {
+        setEndpoint(endpoint)
     }
 
     def path(String path){

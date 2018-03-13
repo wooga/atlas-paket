@@ -33,6 +33,7 @@ publishing {
             name "internal name of the repository"
             url "url to repository"
             apiKey = "optional api key"
+            endpoint = "optional endpoint" //default /api/v2/package
         }
     }
 }

@@ -169,6 +169,51 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     }
 
     @Unroll
+    def "publish package with custom endpoint #endpoint"() {
+        given: "the future npkg artifact"
+        def nugetArtifact = new File(new File(new File(projectDir, 'build'), "outputs"), packageName)
+        assert !nugetArtifact.exists()
+
+        and: "paket.dependencies and paket.lock file"
+        createFile("paket.lock")
+        createFile("paket.dependencies")
+
+        and: "a build.gradle file with a custom nuget repo entry"
+        buildFile.text = ""
+        buildFile << """
+            group = 'test'
+            version = "$version"
+
+            ${applyPlugin(PaketPackPlugin)}
+            ${applyPlugin(PaketPublishPlugin)}
+
+            publishing {
+                repositories {
+                    nuget {
+                        name "$repoName"
+                        url "$repoUrl"
+                        endpoint "$endpoint"
+                    }
+                }
+            }
+            
+            paketPublish {
+                publishRepositoryName = "$repoName"
+            }
+        """.stripIndent()
+
+        when: "run the publish task"
+        def result = runTasks("publish")
+
+        then:
+        nugetArtifact.exists()
+        result.standardOutput.contains("endpoint $endpoint")
+
+        where:
+        endpoint << ["/api/v2/package", "some/random/path"]
+    }
+
+    @Unroll
     def 'builds package and publish locally #taskToRun'(String taskToRun) {
         given: "the future npkg artifact"
         def nugetArtifact = new File(new File(new File(projectDir, 'build'), "outputs"), packageName)

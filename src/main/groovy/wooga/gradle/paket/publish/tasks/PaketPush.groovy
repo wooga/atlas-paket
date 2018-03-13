@@ -96,6 +96,22 @@ class PaketPush extends AbstractPaketTask {
         project.file inputFile
     }
 
+    def endpoint
+
+    @Optional
+    @Input
+    String getEndpoint() {
+        if( endpoint == null)
+        {
+            null
+        }
+        else if (endpoint instanceof Callable) {
+            endpoint.call()
+        } else {
+            endpoint.toString()
+        }
+    }
+
     PaketPush() {
         super(PaketPush.class)
         description = "Pushes the given .nupkg file."
@@ -111,6 +127,11 @@ class PaketPush extends AbstractPaketTask {
         if(getApiKey() != null)
         {
             args << "apikey" << getApiKey()
+        }
+
+        if(getEndpoint() != null)
+        {
+            args << "endpoint" << getEndpoint()
         }
 
         args << "file" << getinputFile().path

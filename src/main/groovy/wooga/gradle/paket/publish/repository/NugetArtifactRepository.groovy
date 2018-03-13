@@ -26,4 +26,7 @@ interface NugetArtifactRepository extends ArtifactRepository {
 
     String getUrl()
     void setUrl(String url)
+
+    String getEndpoint()
+    void setEndpoint(String endpoint)
 }

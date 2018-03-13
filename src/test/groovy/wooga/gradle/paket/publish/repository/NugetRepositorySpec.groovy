@@ -14,11 +14,13 @@ class NugetRepositorySpec extends Specification {
         vo.url("url")
         vo.name("name")
         vo.apiKey("apiKey")
+        vo.endpoint("endpoint")
 
         then:
         vo.url == "url"
         vo.name == "name"
         vo.apiKey == "apiKey"
+        vo.endpoint == "endpoint"
     }
 
     def "applies all properties"(){
