@@ -21,6 +21,7 @@ import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
+import wooga.gradle.paket.get.PaketGetPlugin
 
 abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
 

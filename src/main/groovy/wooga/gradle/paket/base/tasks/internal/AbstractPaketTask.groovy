@@ -64,7 +64,53 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     @Internal
     protected ByteArrayOutputStream stdErr
 
-    protected Collection<String> args = []
+    protected ArrayList<String> arguments = []
+
+    /**
+     * Returns the arguments for the command to be executed. Defaults to an empty list.
+     */
+    List<String> getArgs() {
+        arguments
+    }
+
+    /**
+     * Adds arguments for the command to be executed.
+     *
+     * @param args args for the command
+     * @return this
+     */
+    T args(Object... args) {
+        args.each {
+            arguments.add(it.toString())
+        }
+
+        T.cast(this)
+    }
+
+    /**
+     * Adds arguments for the command to be executed.
+     *
+     * @param args args for the command
+     * @return this
+     */
+    T args(Iterable<?> args) {
+        args.each {
+            arguments.add(it.toString())
+        }
+
+        T.cast(this)
+    }
+
+    /**
+     * Sets the arguments for the command to be executed.
+     *
+     * @param args args for the command
+     * @return this
+     */
+    T setArgs(Iterable<?> args) {
+        arguments.clear()
+        this.args(args)
+    }
 
     AbstractPaketTask(Class<T> taskType) {
         super()
