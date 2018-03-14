@@ -99,6 +99,19 @@ if (location.href.indexOf('is-external=true') == -1) {
 
 
 
+    <p> A worker task to download the <CODE>paket.exe</CODE> file before executing any other paket tasks.
+ All paket tasks depend on this task to check for the availability and update of the <CODE>paket.exe</CODE>.
+ <p>
+ Example:
+ <pre>
+ <CODE>paketBootstrap {
+         paketVersion = "1.0.0"
+         bootstrapURL = "http://...."
+     </CODE>
+ }
+ </pre>
+ </p>
+
           </li>
     </ul>
 </div>
@@ -123,8 +136,8 @@ if (location.href.indexOf('is-external=true') == -1) {
                             <th class="colLast" scope="col">Fields</th>
                         </tr>
                                                 <tr class="altColor">
-                            <td class="colFirst"><strong><code>class <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html'>AbstractPaketTask</a></code></strong></td>
-                            <td class="colLast"><code><a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#args'>args</a></code></td>
+                            <td class="colFirst"><strong><code>class <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html'>AbstractPaketTask</a></code></strong></td>
+                            <td class="colLast"><code><a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#arguments'>arguments</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#paketCommand'>paketCommand</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#stdErr'>stdErr</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#stdOut'>stdOut</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#supportLogfile'>supportLogfile</a></code></td>
                         </tr>
                         <tr class="altColor">
                             <td class="colFirst"><strong><code>class org.gradle.api.internal.ConventionTask</code></strong></td>
@@ -152,7 +165,7 @@ if (location.href.indexOf('is-external=true') == -1) {
                         </tr>
                         
                         <tr class="altColor">
-                            <td class="colFirst"><code><strong>java.lang.Object</strong></code>&nbsp;</td>
+                            <td class="colFirst"><code><strong>java.lang.String</strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#bootstrapURL">bootstrapURL</a></code><br></td>
                         </tr>
                         
@@ -162,27 +175,7 @@ if (location.href.indexOf('is-external=true') == -1) {
                         </tr>
                         
                         <tr class="altColor">
-                            <td class="colFirst"><code><strong>java.lang.Object</strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#outputDir">outputDir</a></code><br></td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst"><code><strong>java.lang.Object</strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#paketBootstrapper">paketBootstrapper</a></code><br></td>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst"><code><strong>java.lang.Object</strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#paketBootstrapperFileName">paketBootstrapperFileName</a></code><br></td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst"><code><strong>java.lang.Object</strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#paketFile">paketFile</a></code><br></td>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst"><code><strong>java.lang.Object</strong></code>&nbsp;</td>
+                            <td class="colFirst"><code><strong>java.lang.String</strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#paketVersion">paketVersion</a></code><br></td>
                         </tr>
                         
@@ -216,7 +209,7 @@ if (location.href.indexOf('is-external=true') == -1) {
                         <tr class="rowColor">
                             <td class="colFirst">
                                 <code><a href="#PaketBootstrap(Class<AbstractPaketTask>)">PaketBootstrap</a>
-                                (java.lang.Class&lt;<a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html' title='AbstractPaketTask'>AbstractPaketTask</a>&gt; taskType)</code><br></td>
+                                (java.lang.Class&lt;<a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html' title='AbstractPaketTask'>AbstractPaketTask</a>&gt; taskType)</code><br></td>
                         </tr>
                         
                     </table>
@@ -254,56 +247,20 @@ if (location.href.indexOf('is-external=true') == -1) {
                         
                         <tr class="altColor">
                             <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.Object</code></td>
-                            <td class="colLast"><code><strong><a href="#getBootstrapURL()">getBootstrapURL</a></strong>()</code><br></td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.String</code></td>
-                            <td class="colLast"><code><strong><a href="#getExecutable()">getExecutable</a></strong>()</code><br></td>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.Object</code></td>
-                            <td class="colLast"><code><strong><a href="#getOutputDir()">getOutputDir</a></strong>()</code><br></td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst"><code></code></td>
                             <td class="colLast"><code>org.gradle.api.file.FileCollection</code></td>
                             <td class="colLast"><code><strong><a href="#getOutputFiles()">getOutputFiles</a></strong>()</code><br></td>
                         </tr>
                         
-                        <tr class="altColor">
-                            <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.Object</code></td>
-                            <td class="colLast"><code><strong><a href="#getPaketBootstrapper()">getPaketBootstrapper</a></strong>()</code><br></td>
-                        </tr>
-                        
                         <tr class="rowColor">
-                            <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.Object</code></td>
-                            <td class="colLast"><code><strong><a href="#getPaketBootstrapperFileName()">getPaketBootstrapperFileName</a></strong>()</code><br></td>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.Object</code></td>
-                            <td class="colLast"><code><strong><a href="#getPaketFile()">getPaketFile</a></strong>()</code><br></td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.lang.Object</code></td>
-                            <td class="colLast"><code><strong><a href="#getPaketVersion()">getPaketVersion</a></strong>()</code><br></td>
-                        </tr>
-                        
-                        <tr class="altColor">
                             <td class="colFirst"><code></code></td>
                             <td class="colLast"><code>protected&nbsp;void</code></td>
                             <td class="colLast"><code><strong><a href="#performPaketCommand(org.gradle.api.tasks.incremental.IncrementalTaskInputs)">performPaketCommand</a></strong>(org.gradle.api.tasks.incremental.IncrementalTaskInputs inputs)</code><br></td>
+                        </tr>
+                        
+                        <tr class="altColor">
+                            <td class="colFirst"><code></code></td>
+                            <td class="colLast"><code>void</code></td>
+                            <td class="colLast"><code><strong><a href="#setPaketVersion(java.lang.String)">setPaketVersion</a></strong>(java.lang.String value)</code><br></td>
                         </tr>
                         
                     </table>
@@ -321,12 +278,12 @@ if (location.href.indexOf('is-external=true') == -1) {
                         </tr>
                         
                         <tr class="altColor">
-                            <td class="colFirst"><code>class <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html'>AbstractPaketTask</a></code></td>
-                            <td class="colLast"><code><a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#configureArguments()'>configureArguments</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#exec()'>exec</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#getExecutable()'>getExecutable</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#getFileResolver()'>getFileResolver</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#getLogFile()'>getLogFile</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#getPaketExtension()'>getPaketExtension</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#logFile(java.lang.Object)'>logFile</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#performPaketCommand(org.gradle.api.tasks.incremental.IncrementalTaskInputs)'>performPaketCommand</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#setLogFile(java.lang.Object)'>setLogFile</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html#setPaketExtension(wooga.gradle.paket.base.PaketPluginExtension)'>setPaketExtension</a></code></td>
+                            <td class="colFirst"><code>class <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html'>AbstractPaketTask</a></code></td>
+                            <td class="colLast"><code><a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#args(java.lang.Object)'>args</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#args(Iterable<?>)'>args</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#configureArguments()'>configureArguments</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#exec()'>exec</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#getArgs()'>getArgs</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#getLogFile()'>getLogFile</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#performPaketCommand(org.gradle.api.tasks.incremental.IncrementalTaskInputs)'>performPaketCommand</a>, <a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html#setArgs(Iterable<?>)'>setArgs</a></code></td>
                         </tr>
                         <tr class="altColor">
                             <td class="colFirst"><code>class org.gradle.api.internal.ConventionTask</code></td>
-                            <td class="colLast"><code>org.gradle.api.internal.ConventionTask#getConventionMapping(), org.gradle.api.internal.ConventionTask#conventionMapping(java.lang.String, java.util.concurrent.Callable), org.gradle.api.internal.ConventionTask#conventionMapping(java.lang.String, groovy.lang.Closure), org.gradle.api.internal.ConventionTask#setProperty(java.lang.String, java.lang.Object), org.gradle.api.internal.ConventionTask#toString(), org.gradle.api.internal.ConventionTask#compareTo(java.lang.Object), org.gradle.api.internal.ConventionTask#compareTo(org.gradle.api.Task), org.gradle.api.internal.ConventionTask#getName(), org.gradle.api.internal.ConventionTask#getActions(), org.gradle.api.internal.ConventionTask#getState(), org.gradle.api.internal.ConventionTask#getState(), org.gradle.api.internal.ConventionTask#getLogger(), org.gradle.api.internal.ConventionTask#getPath(), org.gradle.api.internal.ConventionTask#getExtensions(), org.gradle.api.internal.ConventionTask#isEnabled(), org.gradle.api.internal.ConventionTask#hasProperty(java.lang.String), org.gradle.api.internal.ConventionTask#getGroup(), org.gradle.api.internal.ConventionTask#getInputs(), org.gradle.api.internal.ConventionTask#getInputs(), org.gradle.api.internal.ConventionTask#getMustRunAfter(), org.gradle.api.internal.ConventionTask#finalizedBy([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#setFinalizedBy(java.lang.Iterable), org.gradle.api.internal.ConventionTask#getFinalizedBy(), org.gradle.api.internal.ConventionTask#shouldRunAfter([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#setShouldRunAfter(java.lang.Iterable), org.gradle.api.internal.ConventionTask#getShouldRunAfter(), org.gradle.api.internal.ConventionTask#dependsOn([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#onlyIf(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#onlyIf(org.gradle.api.specs.Spec), org.gradle.api.internal.ConventionTask#setOnlyIf(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#setOnlyIf(org.gradle.api.specs.Spec), org.gradle.api.internal.ConventionTask#setActions(java.util.List), org.gradle.api.internal.ConventionTask#deleteAllActions(), org.gradle.api.internal.ConventionTask#getEnabled(), org.gradle.api.internal.ConventionTask#dependsOnTaskDidWork(), org.gradle.api.internal.ConventionTask#getOutputs(), org.gradle.api.internal.ConventionTask#getOutputs(), org.gradle.api.internal.ConventionTask#getDestroyables(), org.gradle.api.internal.ConventionTask#getTemporaryDir(), org.gradle.api.internal.ConventionTask#mustRunAfter([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#setMustRunAfter(java.lang.Iterable), org.gradle.api.internal.ConventionTask#getTaskDependencies(), org.gradle.api.internal.ConventionTask#getTaskDependencies(), org.gradle.api.internal.ConventionTask#getDependsOn(), org.gradle.api.internal.ConventionTask#setDependsOn(java.lang.Iterable), org.gradle.api.internal.ConventionTask#setDidWork(boolean), org.gradle.api.internal.ConventionTask#getDidWork(), org.gradle.api.internal.ConventionTask#doFirst(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#doFirst(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#doLast(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#doLast(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#getAsDynamicObject(), org.gradle.api.internal.ConventionTask#property(java.lang.String), org.gradle.api.internal.ConventionTask#setEnabled(boolean), org.gradle.api.internal.ConventionTask#setDescription(java.lang.String), org.gradle.api.internal.ConventionTask#getProject(), org.gradle.api.internal.ConventionTask#getStandardOutputCapture(), org.gradle.api.internal.ConventionTask#getIdentityPath(), org.gradle.api.internal.ConventionTask#setGroup(java.lang.String), org.gradle.api.internal.ConventionTask#getAnt(), org.gradle.api.internal.ConventionTask#getConvention(), org.gradle.api.internal.ConventionTask#getLogging(), org.gradle.api.internal.ConventionTask#getLogging(), org.gradle.api.internal.ConventionTask#configure(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#configure(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#getDescription(), org.gradle.api.internal.ConventionTask#getTaskActions(), org.gradle.api.internal.ConventionTask#getOnlyIf(), org.gradle.api.internal.ConventionTask#getImpliesSubProjects(), org.gradle.api.internal.ConventionTask#setImpliesSubProjects(boolean), org.gradle.api.internal.ConventionTask#getExecuter(), org.gradle.api.internal.ConventionTask#setExecuter(org.gradle.api.internal.tasks.TaskExecuter), org.gradle.api.internal.ConventionTask#getTemporaryDirFactory(), org.gradle.api.internal.ConventionTask#addValidator(org.gradle.api.internal.tasks.execution.TaskValidator), org.gradle.api.internal.ConventionTask#getValidators(), org.gradle.api.internal.ConventionTask#prependParallelSafeAction(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#appendParallelSafeAction(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#isHasCustomActions(), org.gradle.api.internal.ConventionTask#injectIntoNewInstance(org.gradle.api.internal.project.ProjectInternal, java.lang.String, java.lang.Class, java.util.concurrent.Callable), org.gradle.api.internal.ConventionTask#execute(), org.gradle.api.internal.ConventionTask#leftShift(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#wait(long, int), org.gradle.api.internal.ConventionTask#wait(long), org.gradle.api.internal.ConventionTask#wait(), org.gradle.api.internal.ConventionTask#equals(java.lang.Object), org.gradle.api.internal.ConventionTask#hashCode(), org.gradle.api.internal.ConventionTask#getClass(), org.gradle.api.internal.ConventionTask#notify(), org.gradle.api.internal.ConventionTask#notifyAll()</code></td>
+                            <td class="colLast"><code>org.gradle.api.internal.ConventionTask#conventionMapping(java.lang.String, groovy.lang.Closure), org.gradle.api.internal.ConventionTask#conventionMapping(java.lang.String, java.util.concurrent.Callable), org.gradle.api.internal.ConventionTask#getConventionMapping(), org.gradle.api.internal.ConventionTask#setProperty(java.lang.String, java.lang.Object), org.gradle.api.internal.ConventionTask#toString(), org.gradle.api.internal.ConventionTask#compareTo(java.lang.Object), org.gradle.api.internal.ConventionTask#compareTo(org.gradle.api.Task), org.gradle.api.internal.ConventionTask#getName(), org.gradle.api.internal.ConventionTask#execute(), org.gradle.api.internal.ConventionTask#getActions(), org.gradle.api.internal.ConventionTask#getState(), org.gradle.api.internal.ConventionTask#getState(), org.gradle.api.internal.ConventionTask#getPath(), org.gradle.api.internal.ConventionTask#getExtensions(), org.gradle.api.internal.ConventionTask#getTaskActions(), org.gradle.api.internal.ConventionTask#injectIntoNewInstance(org.gradle.api.internal.project.ProjectInternal, java.lang.String, java.lang.Class, java.util.concurrent.Callable), org.gradle.api.internal.ConventionTask#getOnlyIf(), org.gradle.api.internal.ConventionTask#getImpliesSubProjects(), org.gradle.api.internal.ConventionTask#setImpliesSubProjects(boolean), org.gradle.api.internal.ConventionTask#getExecuter(), org.gradle.api.internal.ConventionTask#setExecuter(org.gradle.api.internal.tasks.TaskExecuter), org.gradle.api.internal.ConventionTask#getTemporaryDirFactory(), org.gradle.api.internal.ConventionTask#addValidator(org.gradle.api.internal.tasks.execution.TaskValidator), org.gradle.api.internal.ConventionTask#getValidators(), org.gradle.api.internal.ConventionTask#prependParallelSafeAction(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#appendParallelSafeAction(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#isHasCustomActions(), org.gradle.api.internal.ConventionTask#property(java.lang.String), org.gradle.api.internal.ConventionTask#getDescription(), org.gradle.api.internal.ConventionTask#getProject(), org.gradle.api.internal.ConventionTask#getInputs(), org.gradle.api.internal.ConventionTask#getInputs(), org.gradle.api.internal.ConventionTask#setGroup(java.lang.String), org.gradle.api.internal.ConventionTask#getAnt(), org.gradle.api.internal.ConventionTask#getStandardOutputCapture(), org.gradle.api.internal.ConventionTask#getIdentityPath(), org.gradle.api.internal.ConventionTask#getConvention(), org.gradle.api.internal.ConventionTask#getLogging(), org.gradle.api.internal.ConventionTask#getLogging(), org.gradle.api.internal.ConventionTask#getLogger(), org.gradle.api.internal.ConventionTask#leftShift(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#isEnabled(), org.gradle.api.internal.ConventionTask#configure(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#configure(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#hasProperty(java.lang.String), org.gradle.api.internal.ConventionTask#setDescription(java.lang.String), org.gradle.api.internal.ConventionTask#deleteAllActions(), org.gradle.api.internal.ConventionTask#getEnabled(), org.gradle.api.internal.ConventionTask#dependsOnTaskDidWork(), org.gradle.api.internal.ConventionTask#getOutputs(), org.gradle.api.internal.ConventionTask#getOutputs(), org.gradle.api.internal.ConventionTask#getDestroyables(), org.gradle.api.internal.ConventionTask#getTemporaryDir(), org.gradle.api.internal.ConventionTask#mustRunAfter([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#setMustRunAfter(java.lang.Iterable), org.gradle.api.internal.ConventionTask#getMustRunAfter(), org.gradle.api.internal.ConventionTask#finalizedBy([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#setFinalizedBy(java.lang.Iterable), org.gradle.api.internal.ConventionTask#getFinalizedBy(), org.gradle.api.internal.ConventionTask#shouldRunAfter([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#setShouldRunAfter(java.lang.Iterable), org.gradle.api.internal.ConventionTask#getShouldRunAfter(), org.gradle.api.internal.ConventionTask#setActions(java.util.List), org.gradle.api.internal.ConventionTask#doFirst(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#doFirst(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#doLast(org.gradle.api.Action), org.gradle.api.internal.ConventionTask#doLast(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#getTaskDependencies(), org.gradle.api.internal.ConventionTask#getTaskDependencies(), org.gradle.api.internal.ConventionTask#getDependsOn(), org.gradle.api.internal.ConventionTask#setDependsOn(java.lang.Iterable), org.gradle.api.internal.ConventionTask#dependsOn([Ljava.lang.Object;), org.gradle.api.internal.ConventionTask#onlyIf(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#onlyIf(org.gradle.api.specs.Spec), org.gradle.api.internal.ConventionTask#setOnlyIf(org.gradle.api.specs.Spec), org.gradle.api.internal.ConventionTask#setOnlyIf(groovy.lang.Closure), org.gradle.api.internal.ConventionTask#setDidWork(boolean), org.gradle.api.internal.ConventionTask#getDidWork(), org.gradle.api.internal.ConventionTask#getAsDynamicObject(), org.gradle.api.internal.ConventionTask#getGroup(), org.gradle.api.internal.ConventionTask#setEnabled(boolean), org.gradle.api.internal.ConventionTask#wait(long, int), org.gradle.api.internal.ConventionTask#wait(long), org.gradle.api.internal.ConventionTask#wait(), org.gradle.api.internal.ConventionTask#equals(java.lang.Object), org.gradle.api.internal.ConventionTask#hashCode(), org.gradle.api.internal.ConventionTask#getClass(), org.gradle.api.internal.ConventionTask#notify(), org.gradle.api.internal.ConventionTask#notifyAll()</code></td>
                         </tr>
                     </table>
                    </ul>
@@ -357,7 +314,7 @@ if (location.href.indexOf('is-external=true') == -1) {
                         <ul class="blockListLast">
                             <li class="blockList">
                                 <h4>@org.gradle.api.tasks.Input
-java.lang.Object <strong>bootstrapURL</strong></h4>
+java.lang.String <strong>bootstrapURL</strong></h4>
                                 <p></p>
                             </li>
                         </ul>
@@ -370,47 +327,12 @@ java.lang.Object <strong>bootstrapURL</strong></h4>
                             </li>
                         </ul>
                     
-                        <a name="outputDir"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>outputDir</strong></h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="paketBootstrapper"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>@org.gradle.api.tasks.Input
-java.lang.Object <strong>paketBootstrapper</strong></h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="paketBootstrapperFileName"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>@org.gradle.api.tasks.Input
-java.lang.Object <strong>paketBootstrapperFileName</strong></h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="paketFile"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>@org.gradle.api.tasks.Input
-java.lang.Object <strong>paketFile</strong></h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
                         <a name="paketVersion"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
-                                <h4>@org.gradle.api.tasks.Optional
+                                <h4>@java.util.Optional
 @org.gradle.api.tasks.Input
-java.lang.Object <strong>paketVersion</strong></h4>
+java.lang.String <strong>paketVersion</strong></h4>
                                 <p></p>
                             </li>
                         </ul>
@@ -441,7 +363,7 @@ java.lang.Object <strong>paketVersion</strong></h4>
                         <a name="PaketBootstrap(Class<AbstractPaketTask>)"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
-                                <h4><strong>PaketBootstrap</strong>(java.lang.Class&lt;<a href='../../../../../wooga/gradle/paket/base/tasks/AbstractPaketTask.html' title='AbstractPaketTask'>AbstractPaketTask</a>&gt; taskType)</h4>
+                                <h4><strong>PaketBootstrap</strong>(java.lang.Class&lt;<a href='../../../../../wooga/gradle/paket/base/tasks/internal/AbstractPaketTask.html' title='AbstractPaketTask'>AbstractPaketTask</a>&gt; taskType)</h4>
                                 <p></p>
                             </li>
                         </ul>
@@ -476,31 +398,6 @@ protected&nbsp;void <strong>configureArguments</strong>()</h4>
                             </li>
                         </ul>
                     
-                        <a name="getBootstrapURL()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>getBootstrapURL</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="getExecutable()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>@java.lang.Override
-java.lang.String <strong>getExecutable</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="getOutputDir()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>getOutputDir</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
                         <a name="getOutputFiles()"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
@@ -510,43 +407,19 @@ org.gradle.api.file.FileCollection <strong>getOutputFiles</strong>()</h4>
                             </li>
                         </ul>
                     
-                        <a name="getPaketBootstrapper()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>getPaketBootstrapper</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="getPaketBootstrapperFileName()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>getPaketBootstrapperFileName</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="getPaketFile()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>getPaketFile</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="getPaketVersion()"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>java.lang.Object <strong>getPaketVersion</strong>()</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
                         <a name="performPaketCommand(org.gradle.api.tasks.incremental.IncrementalTaskInputs)"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
                                 <h4>@java.lang.Override
 protected&nbsp;void <strong>performPaketCommand</strong>(org.gradle.api.tasks.incremental.IncrementalTaskInputs inputs)</h4>
+                                <p></p>
+                            </li>
+                        </ul>
+                    
+                        <a name="setPaketVersion(java.lang.String)"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>void <strong>setPaketVersion</strong>(java.lang.String value)</h4>
                                 <p></p>
                             </li>
                         </ul>

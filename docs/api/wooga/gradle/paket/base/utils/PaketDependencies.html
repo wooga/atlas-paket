@@ -70,11 +70,11 @@ if (location.href.indexOf('is-external=true') == -1) {
     <div>
         <ul class="subNavList">
             <li>Summary:&nbsp;</li>
-            Nested&nbsp;&nbsp;&nbsp;Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#constructor_summary">Constructor</a></li>&nbsp;&nbsp;&nbsp;<li><a href="#method_summary">Method</a></li>&nbsp;&nbsp;&nbsp;
+            Nested&nbsp;&nbsp;&nbsp;Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#method_summary">Method</a></li>&nbsp;&nbsp;&nbsp;
         </ul>
         <ul class="subNavList">
             <li>&nbsp;|&nbsp;Detail:&nbsp;</li>
-            Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#constructor_detail">Constructor</a></li>&nbsp;&nbsp;&nbsp;<li><a href="#method_detail">Method</a></li>&nbsp;&nbsp;&nbsp;
+            Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#method_detail">Method</a></li>&nbsp;&nbsp;&nbsp;
         </ul>
     </div>
     <a name="skip-navbar_top">
@@ -87,17 +87,19 @@ if (location.href.indexOf('is-external=true') == -1) {
 
     <div class="subTitle">Package: <strong>wooga.gradle.paket.base.utils</strong></div>
 
-    <h2 title="[Groovy] Class PaketDependencies" class="title">[Groovy] Class PaketDependencies</h2>
+    <h2 title="[Groovy] Interface PaketDependencies" class="title">[Groovy] Interface PaketDependencies</h2>
 </div>
 <div class="contentContainer">
 <ul class="inheritance">
-<li><ul class="inheritance"></ul></li><li>wooga.gradle.paket.base.utils.internal.PaketDependencies
+
 </ul>
 <div class="description">
     <ul class="blockList">
         <li class="blockList">
 
 
+    <p> Object representation of a <CODE>paket.dependencies</CODE> file.
+ </p>
 
           </li>
     </ul>
@@ -121,34 +123,6 @@ if (location.href.indexOf('is-external=true') == -1) {
         
 
         
-        <!-- ======== CONSTRUCTOR SUMMARY ======== -->
-        <ul class="blockList">
-                <li class="blockList"><a name="constructor_summary"><!--   --></a>
-                    <h3>Constructor Summary</h3>
-                    <ul class="blockList">
-                    <table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructors Summary table">
-                        <caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
-                        <tr>
-                            <th class="colFirst" scope="col">Constructor and description</th>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst">
-                                <code><a href="#PaketDependencies(java.io.File)">PaketDependencies</a>
-                                (java.io.File dependenciesFile)</code><br></td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst">
-                                <code><a href="#PaketDependencies(java.lang.String)">PaketDependencies</a>
-                                (java.lang.String dependenciesContent)</code><br></td>
-                        </tr>
-                        
-                    </table>
-                   </ul>
-              </li>
-        </ul>
-        
 
         
         <!-- ========== METHOD SUMMARY =========== -->
@@ -167,38 +141,26 @@ if (location.href.indexOf('is-external=true') == -1) {
                         
                         <tr class="altColor">
                             <td class="colFirst"><code></code></td>
-                            <td class="colLast"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
-                            <td class="colLast"><code><strong><a href="#getNugetDependencies()">getNugetDependencies</a></strong>()</code><br></td>
+                            <td class="colLast"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+                            <td class="colLast"><code><strong><a href="#getFrameworks()">getFrameworks</a></strong>()</code><br>Returns a java.util.List&lt;java.lang.String&gt; of configured .NET frameworks.</td>
                         </tr>
                         
                         <tr class="rowColor">
                             <td class="colFirst"><code></code></td>
                             <td class="colLast"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
-                            <td class="colLast"><code><strong><a href="#getSources()">getSources</a></strong>()</code><br></td>
+                            <td class="colLast"><code><strong><a href="#getNugetDependencies()">getNugetDependencies</a></strong>()</code><br>Returns a java.util.Set&lt;java.lang.String&gt; of <CODE>nuget</CODE> dependencies configured <CODE>paket.dependencies</CODE> file.</td>
+                        </tr>
+                        
+                        <tr class="altColor">
+                            <td class="colFirst"><code></code></td>
+                            <td class="colLast"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
+                            <td class="colLast"><code><strong><a href="#getSources()">getSources</a></strong>()</code><br>Returns a java.util.Set&lt;java.lang.String&gt; of sources configured in <CODE>paket.dependencies</CODE> file.</td>
                         </tr>
                         
                     </table>
                    </ul>
               </li>
             
-            <li class="blockList"><a name="method_summary"><!--   --></a>
-                    <h3>Inherited Methods Summary</h3>
-                    <ul class="blockList">
-                    <table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Inherited Methods Summary table">
-                        <caption><span>Inherited Methods</span><span class="tabEnd">&nbsp;</span></caption>
-                        <tr>
-                            <th class="colFirst" scope="col">Methods inherited from class</th>
-                            <th class="colLast" scope="col">Name</th>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst"><code>class java.lang.Object</code></td>
-                            <td class="colLast"><code>java.lang.Object#wait(long, int), java.lang.Object#wait(long), java.lang.Object#wait(), java.lang.Object#equals(java.lang.Object), java.lang.Object#toString(), java.lang.Object#hashCode(), java.lang.Object#getClass(), java.lang.Object#notify(), java.lang.Object#notifyAll()</code></td>
-                        </tr>
-                    </table>
-                   </ul>
-              </li>
-                
         </ul>
         
     </li>
@@ -217,32 +179,6 @@ if (location.href.indexOf('is-external=true') == -1) {
             
 
             
-            <!-- =========== CONSTRUCTOR DETAIL =========== -->
-            <ul class="blockList">
-                <li class="blockList"><a name="constructor_detail">
-                    <!--   -->
-                </a>
-                    <h3>Constructor Detail</h3>
-                    
-                        <a name="PaketDependencies(java.io.File)"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4><strong>PaketDependencies</strong>(java.io.File dependenciesFile)</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                        <a name="PaketDependencies(java.lang.String)"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4><strong>PaketDependencies</strong>(java.lang.String dependenciesContent)</h4>
-                                <p></p>
-                            </li>
-                        </ul>
-                    
-                </li>
-            </ul>
-            
 
 
             
@@ -253,11 +189,21 @@ if (location.href.indexOf('is-external=true') == -1) {
                 </a>
                     <h3>Method Detail</h3>
                     
+                        <a name="getFrameworks()"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>java.util.List&lt;java.lang.String&gt; <strong>getFrameworks</strong>()</h4>
+                                <p> Returns a java.util.List&lt;java.lang.String&gt; of configured .NET frameworks.
+     <DL><DT><B>Returns:</B></DT><DD>list of .NET frameworks configured</DD></DL></p>
+                            </li>
+                        </ul>
+                    
                         <a name="getNugetDependencies()"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
                                 <h4>java.util.Set&lt;java.lang.String&gt; <strong>getNugetDependencies</strong>()</h4>
-                                <p></p>
+                                <p> Returns a java.util.Set&lt;java.lang.String&gt; of <CODE>nuget</CODE> dependencies configured <CODE>paket.dependencies</CODE> file.
+     <DL><DT><B>Returns:</B></DT><DD>all nuget dependencies in <CODE>paket.dependencies</CODE> file.</DD></DL></p>
                             </li>
                         </ul>
                     
@@ -265,7 +211,8 @@ if (location.href.indexOf('is-external=true') == -1) {
                         <ul class="blockListLast">
                             <li class="blockList">
                                 <h4>java.util.Set&lt;java.lang.String&gt; <strong>getSources</strong>()</h4>
-                                <p></p>
+                                <p> Returns a java.util.Set&lt;java.lang.String&gt; of sources configured in <CODE>paket.dependencies</CODE> file.
+     <DL><DT><B>Returns:</B></DT><DD>sources for paket to fetch dependencies from</DD></DL></p>
                             </li>
                         </ul>
                     
@@ -303,11 +250,11 @@ if (location.href.indexOf('is-external=true') == -1) {
     <div>
         <ul class="subNavList">
             <li>Summary:&nbsp;</li>
-            Nested&nbsp;&nbsp;&nbsp;Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#constructor_summary">Constructor</a></li>&nbsp;&nbsp;&nbsp;<li><a href="#method_summary">Method</a></li>&nbsp;&nbsp;&nbsp;
+            Nested&nbsp;&nbsp;&nbsp;Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#method_summary">Method</a></li>&nbsp;&nbsp;&nbsp;
         </ul>
         <ul class="subNavList">
             <li>&nbsp;|&nbsp;Detail:&nbsp;</li>
-            Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#constructor_detail">Constructor</a></li>&nbsp;&nbsp;&nbsp;<li><a href="#method_detail">Method</a></li>&nbsp;&nbsp;&nbsp;
+            Field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="#method_detail">Method</a></li>&nbsp;&nbsp;&nbsp;
         </ul>
     </div>
     <p>Gradle Paket plugin API</p>

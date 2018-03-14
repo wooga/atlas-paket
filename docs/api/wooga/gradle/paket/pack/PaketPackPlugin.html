@@ -111,6 +111,20 @@ extends java.lang.Object
 
 
 
+    <p> A org.gradle.api.Plugin which adds tasks to pack nuget files with <CODE>paket</CODE>.
+ <p>
+ The plugin adds a pack task for each <CODE>paket.template</CODE> file found recursively in the project.
+ All <CODE>pack</CODE> tasks will be added as a dependency to <CODE>assemble</CODE>.
+ <p>
+ Example:
+ <pre>
+ <CODE>plugins {
+         id 'net.wooga.paket-get' version '0.10.1'
+     </CODE>
+ }
+ </pre>
+ </p>
+
           </li>
     </ul>
 </div>
@@ -141,25 +155,30 @@ extends java.lang.Object
                         
                         <tr class="altColor">
                             <td class="colFirst"><code><strong>static&nbsp;java.lang.String</strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#PAKET_TEMPLATE_PATTERN">PAKET_TEMPLATE_PATTERN</a></code><br></td>
+                            <td class="colLast"><code><a href="#EXTENSION_NAME">EXTENSION_NAME</a></code><br></td>
                         </tr>
                         
                         <tr class="rowColor">
                             <td class="colFirst"><code><strong>static&nbsp;java.lang.String</strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#TASK_PACK_PREFIX">TASK_PACK_PREFIX</a></code><br></td>
+                            <td class="colLast"><code><a href="#PAKET_TEMPLATE_PATTERN">PAKET_TEMPLATE_PATTERN</a></code><br></td>
                         </tr>
                         
                         <tr class="altColor">
+                            <td class="colFirst"><code><strong>static&nbsp;java.lang.String</strong></code>&nbsp;</td>
+                            <td class="colLast"><code><a href="#TASK_PACK_PREFIX">TASK_PACK_PREFIX</a></code><br></td>
+                        </tr>
+                        
+                        <tr class="rowColor">
                             <td class="colFirst"><code><strong>static&nbsp;org.gradle.api.logging.Logger</strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#logger">logger</a></code><br></td>
                         </tr>
                         
-                        <tr class="rowColor">
+                        <tr class="altColor">
                             <td class="colFirst"><code><strong>org.gradle.api.Project</strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#project">project</a></code><br></td>
                         </tr>
                         
-                        <tr class="altColor">
+                        <tr class="rowColor">
                             <td class="colFirst"><code><strong>org.gradle.api.tasks.TaskContainer</strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#tasks">tasks</a></code><br></td>
                         </tr>
@@ -244,6 +263,14 @@ extends java.lang.Object
                     <!--   -->
                 </a>
                     <h3>Property Detail</h3>
+                    
+                        <a name="EXTENSION_NAME"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>static&nbsp;final&nbsp;java.lang.String <strong>EXTENSION_NAME</strong></h4>
+                                <p></p>
+                            </li>
+                        </ul>
                     
                         <a name="PAKET_TEMPLATE_PATTERN"><!-- --></a>
                         <ul class="blockListLast">
