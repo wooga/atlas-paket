@@ -41,13 +41,13 @@ plugins {
 Documentation
 =============
 
+- [API docs](https://wooga.github.io/atlas-paket/docs/api/)
 - [paket-base](docs/Base.md)
 - [paket-get](docs/Get.md)
 - [paket-pack](docs/Pack.md)
 - [paket-publish](docs/Publish.md)
 - [paket-unity](docs/Unity.md)
-
-- [API docs](https://wooga.github.io/atlas-paket/docs/api/)
+- [Release Notes](RELEASE_NOTES.md)
 
 Gradle and Java Compatibility
 =============================
@@ -59,6 +59,11 @@ Tested with Oracle JDK8
 | :------------: | :---: |
 | 3.4.1          | yes   |
 | 3.5            | yes   |
+
+Development
+===========
+
+[Code of Conduct](docs/CODE_OF_CONDUCT.md)
 
 LICENSE
 =======

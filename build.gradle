@@ -23,7 +23,7 @@ group 'net.wooga.gradle'
 description = 'Paket plugin for Gradle.'
 
 pluginBundle {
-    website = 'https://github.com/wooga/atlas-paket'
+    website = 'https://wooga.github.io/atlas-paket/'
     vcsUrl = 'https://github.com/wooga/atlas-paket'
     tags = ['Paket', 'c-sharp', 'nuget']
 
