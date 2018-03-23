@@ -63,7 +63,7 @@ Tested with Oracle JDK8
 Development
 ===========
 
-[Code of Conduct](CODE_OF_CONDUCT.md)
+[Code of Conduct](docs/Code-of-conduct.md)
 
 LICENSE
 =======

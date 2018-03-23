@@ -4,7 +4,7 @@
 
 At Wooga we are committed to providing a friendly, safe and welcoming environment for everyone who works here or with us, regardless to gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age, religion (or lack thereof) and game preferences.
 This code of conduct outlines our expectations for all those who work at or with Wooga, as well as the consequences for unacceptable behavior.
-We invite all those who participate in atlas-github to help us create safe and positive experiences for everyone.
+We invite all those who participate in atlas-paket to help us create safe and positive experiences for everyone.
 
 ## 2. Open Source Citizenship
 
