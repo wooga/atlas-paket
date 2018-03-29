@@ -22,6 +22,7 @@ import org.gradle.api.tasks.*
 import wooga.gradle.paket.internal.PaketCommand
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.utils.internal.PaketTemplate
+import java.util.concurrent.Callable
 
 /**
  * A task to invoke {@code paket pack} command with given {@code paket.template} file.
@@ -50,7 +51,23 @@ class PaketPack extends AbstractPaketTask {
      * The nuget package version.
      */
     @Input
-    String version
+    String getVersion() {
+        if (!version) {
+            return null
+        }
+
+        if (version instanceof Callable) {
+            version = version.call()
+        }
+
+        version.toString()
+    }
+
+    private Object version
+
+    void setVersion(Object value) {
+        this.version = value
+    }
 
     @Optional
     @InputFile
