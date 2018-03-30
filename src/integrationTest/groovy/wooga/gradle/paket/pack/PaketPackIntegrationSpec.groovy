@@ -204,6 +204,50 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
     }
 
+    //https://github.com/wooga/atlas-paket/issues/31
+    @Unroll
+    def "evaluates lazy version #taskToRun"(String taskToRun) {
+        given: "a custom template file without version"
+        paketTemplateFile.text = ""
+        paketTemplateFile << """
+            type file
+            id $packageID
+            authors Wooga
+            owners Wooga
+            description
+                Empty nuget package.
+        """.stripIndent()
+
+        and: "a build file with version set in pack task"
+        buildFile.text = ""
+        buildFile << """
+            group = 'test'
+            ${applyPlugin(PaketPackPlugin)}
+
+            project.tasks."paketPack-WoogaTest" {
+                version = {"$version"}
+            }
+        """.stripIndent()
+
+
+        and: "a future output file"
+        def outputFile = new File(new File(new File(projectDir, 'build'), "outputs"), "${packageID}.${version}.nupkg")
+        assert !outputFile.exists()
+
+        and: "a empty paket.dependencies file"
+        createFile("paket.dependencies")
+
+        when:
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        outputFile.exists()
+        result.wasExecuted("paketPack-WoogaTest")
+
+        where:
+        taskToRun << ["paketPack-WoogaTest", "buildNupkg", "assemble"]
+    }
+
     @Unroll
     def "fails #taskToRun when no version is set"(String taskToRun) {
         given: "a build file without version"
