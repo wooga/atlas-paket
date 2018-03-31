@@ -17,11 +17,9 @@
 
 package wooga.gradle.paket
 
-import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
-import wooga.gradle.paket.get.PaketGetPlugin
 
 abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
 
@@ -93,7 +91,7 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
     }
 
     boolean hasNoSource(ExecutionResult result, String taskName) {
-        containsOutput(result.standardOutput, taskName, "NO-SOURCE")
+        containsOutput(result.standardOutput, taskName, "NO-SOURCE") || result.standardOutput.contains("Skipping task ':$taskName'")
     }
 
     private boolean containsOutput(String stdout, String taskName, String stateIdentifier) {

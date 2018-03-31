@@ -28,7 +28,7 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     private static final String DEFAULT_PAKET_BOOTSTRAPPER_EXECUTION_NAME = "paket.bootstrapper.exe"
     private static final String DEFAULT_PAKET_DEPENDENCIES_FILE_NAME = "paket.dependencies"
     private static
-    final String DEFAULT_PAKET_BOOTSTRAPPER_URL = "https://github.com/fsprojects/Paket/releases/download/4.8.5/paket.bootstrapper.exe"
+    final String DEFAULT_PAKET_BOOTSTRAPPER_URL = "https://github.com/fsprojects/Paket/releases/download/5.155.0/paket.bootstrapper.exe"
 
     private static final String DEFAULT_VERSION = ""
     private static final String DEFAULT_MONO_EXECUTABLE = "mono"
