@@ -1,6 +1,5 @@
 package wooga.gradle.paket
 
-import nebula.test.IntegrationSpec
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 

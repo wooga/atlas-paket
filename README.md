@@ -55,10 +55,23 @@ Gradle and Java Compatibility
 Built with Oracle JDK7
 Tested with Oracle JDK8
 
-| Gradle Version | Works |
-| :------------: | :---: |
-| 3.4.1          | yes   |
-| 3.5            | yes   |
+| Gradle Version | Works  |
+| :------------: | :----: |
+| < 3.0          | ![no]  |
+| 3.0            | ![yes] |
+| 3.1            | ![yes] |
+| 3.2            | ![yes] |
+| 3.3            | ![yes] |
+| 3.4            | ![yes] |
+| 3.5            | ![yes] |
+| 3.5.1          | ![yes] |
+| 4.0            | ![yes] |
+| 4.1            | ![yes] |
+| 4.2            | ![yes] |
+| 4.3            | ![yes] |
+| 4.4            | ![yes] |
+| 4.5            | ![yes] |
+| 4.6            | ![yes] |
 
 Development
 ===========
@@ -92,3 +105,6 @@ limitations under the License.
 [gradle]:               https://gradle.org/ "Gradle"
 [gradle_finalizedBy]:   https://docs.gradle.org/3.5/dsl/org.gradle.api.Task.html#org.gradle.api.Task:finalizedBy
 [gradle_dependsOn]:     https://docs.gradle.org/3.5/dsl/org.gradle.api.Task.html#org.gradle.api.Task:dependsOn
+
+[yes]:              https://atlas-resources.wooga.com/icons/icon_check.svg "yes"
+[no]:               https://atlas-resources.wooga.com/icons/icon_uncheck.svg "no"
