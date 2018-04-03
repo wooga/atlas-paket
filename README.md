@@ -25,16 +25,16 @@ Applying the plugin
 **build.gradle**
 ```groovy
 plugins {
-    id 'net.wooga.paket' version '1.0.0'
+    id 'net.wooga.paket' version '1.0.1'
 }
 ```
 -or-
 ```groovy
 plugins {
-    id 'net.wooga.paket-get' version '1.0.0'
-    id 'net.wooga.paket-pack' version '1.0.0'
-    id 'net.wooga.paket-publish' version '1.0.0'
-    id 'net.wooga.paket-unity' version '1.0.0'
+    id 'net.wooga.paket-get' version '1.0.1'
+    id 'net.wooga.paket-pack' version '1.0.1'
+    id 'net.wooga.paket-publish' version '1.0.1'
+    id 'net.wooga.paket-unity' version '1.0.1'
 }
 ```
 
