@@ -17,19 +17,40 @@
 
 package wooga.gradle.paket.get.tasks
 
-import wooga.gradle.paket.internal.PaketCommand
+import org.gradle.api.specs.Spec
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputFile
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
+import wooga.gradle.paket.internal.PaketCommand
 
 /**
  * A task to invoke {@code paket restore} command.
  */
 class PaketRestore extends AbstractPaketTask {
 
+    @InputFile
+    File getPaketLock() {
+        project.file("paket.lock")
+    }
+
+    @OutputFile
+    File getRestoreCacheOut() {
+        project.file("paket-files/paket.restore.cached")
+    }
 
     PaketRestore() {
         super(PaketRestore.class)
         description = "Download the dependencies specified by the paket.lock file into the packages/ directory."
         paketCommand = PaketCommand.RESTORE
-        outputs.upToDateWhen { false }
+        outputs.upToDateWhen(new Spec<PaketRestore>() {
+            @Override
+            boolean isSatisfiedBy(PaketRestore restore) {
+                if(!restore.getRestoreCacheOut().exists() || !restore.getPaketLock().exists()) {
+                    return false
+                }
+
+                restore.getPaketLock().text == restore.getRestoreCacheOut().text
+            }
+        })
     }
 }

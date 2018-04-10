@@ -20,7 +20,10 @@ package wooga.gradle.paket.base
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.BasePlugin
+import org.gradle.api.tasks.Delete
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
@@ -45,12 +48,13 @@ class PaketBasePlugin implements Plugin<Project> {
         this.project = project
 
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension, project)
-
+        project.pluginManager.apply(LifecycleBasePlugin)
         configurePaketTasks(project, extension)
         addBootstrapTask(project, extension)
         addInitTask(project, extension)
         setConfigurations(project)
         setupPaketTasks(project)
+        setCleanTargets(project)
     }
 
     private static void setupPaketTasks(final Project project) {
@@ -106,12 +110,6 @@ class PaketBasePlugin implements Plugin<Project> {
         taskConvention.map("executable", { extension.getBootstrapperExecutable() })
         taskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
         taskConvention.map("paketVersion", { extension.getVersion() })
-
-        /*
-        taskConvention.map("outputFiles", {
-            project.files(extension.getExecutable(), extension.getBootstrapperExecutable())
-        })
-        */
     }
 
     private static void setConfigurations(final Project project) {
@@ -119,5 +117,10 @@ class PaketBasePlugin implements Plugin<Project> {
         def configuration = configurations.maybeCreate(PAKET_CONFIGURATION)
         configuration.description = "paket nupkg archive"
         configuration.transitive = false
+    }
+
+    private static void setCleanTargets(final Project project) {
+        final clean = project.tasks.getByName(LifecycleBasePlugin.CLEAN_TASK_NAME) as Delete
+        clean.delete(project.file("paket-files"), project.file("packages"), project.file(".paket"))
     }
 }

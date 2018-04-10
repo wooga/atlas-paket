@@ -17,6 +17,9 @@
 
 package wooga.gradle.paket.base
 
+import org.gradle.language.base.plugins.LifecycleBasePlugin
+import spock.lang.Shared
+import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationBaseSpec
 import wooga.gradle.paket.get.PaketGetPlugin
 
@@ -38,5 +41,24 @@ class PaketBaseIntegrationSpec extends PaketIntegrationBaseSpec {
         return [PaketBasePlugin.INIT_TASK_NAME]
     }
 
+    @Shared
+    private List<String> paketDirectories = ["packages", ".paket", "paket-files"]
+
+    @Unroll
+    def "task :#taskToRun deletes paket directories"() {
+        given: "a directory with paket directories"
+        def paketDirectories = paketDirectories.collect { new File(projectDir, it) }
+        paketDirectories.each { it.mkdirs() }
+        assert paketDirectories.every { it.exists() && it.isDirectory() }
+
+        when:
+        runTasksSuccessfully(taskToRun)
+
+        then:
+        paketDirectories.every { !it.exists() }
+
+        where:
+        taskToRun = LifecycleBasePlugin.CLEAN_TASK_NAME
+    }
 
 }
