@@ -114,7 +114,6 @@ class PaketUnityInstall extends ConventionTask {
             fileTree.include("packages/${nuget}/lib/${it}/**")
         })
 
-        fileTree.exclude("**/*.meta")
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
         fileTree.files
@@ -133,7 +132,7 @@ class PaketUnityInstall extends ConventionTask {
         if (!inputs.incremental) {
             if (getOutputDirectory().exists()) {
                 getOutputDirectory().deleteDir()
-                logger.quiet("delete target directory: ${getOutputDirectory()}")
+                logger.info("delete target directory: ${getOutputDirectory()}")
                 assert !getOutputDirectory().exists()
             }
         }
@@ -142,7 +141,7 @@ class PaketUnityInstall extends ConventionTask {
             @Override
             void execute(InputFileDetails outOfDate) {
                 def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
-                logger.quiet("${outOfDate.added ? "install" : "update"}: ${outputPath}")
+                logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
                 FileUtils.copyFile(outOfDate.file, outputPath)
                 assert outputPath.exists()
             }
@@ -151,14 +150,14 @@ class PaketUnityInstall extends ConventionTask {
         inputs.removed(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails removed) {
-                logger.quiet("remove: ${removed.file}")
+                logger.info("remove: ${removed.file}")
                 removed.file.delete()
                 def outputPath = transformInputToOutputPath(removed.file, project.file("packages"))
                 outputPath.delete()
 
                 File parent = outputPath.parentFile
                 while (parent.isDirectory() && parent.listFiles().toList().empty) {
-                    logger.quiet("Garbage collecting: ${removed.file}")
+                    logger.info("Garbage collecting: ${removed.file}")
                     parent.deleteDir()
                     parent = parent.parentFile
                 }
