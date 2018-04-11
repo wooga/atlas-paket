@@ -42,7 +42,7 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
         def paketDir = new File(projectDir, '.paket')
         def paketBootstrap = new File(paketDir, bootstrapperFileName)
         def paket = new File(paketDir, 'paket.exe')
-
+        cleanupPaketDirectory()
         assert !paketDir.exists()
 
         when:
@@ -67,6 +67,7 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
         createFile("paket.lock")
 
         and: "a first run of #taskToRun"
+        cleanupPaketDirectory()
         runTasksSuccessfully(taskToRun)
 
         when: "running a second time without changes"
