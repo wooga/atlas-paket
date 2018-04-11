@@ -43,7 +43,7 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
     private List<String> paketDirectories = ["packages", ".paket", "paket-files"]
 
     @Unroll
-    def "task :#taskToRun restores when deleting paket dir: #dirToDelete"() {
+    def "restores when #dirToDelete is missing"() {
         given: "a paket dependency file"
         createFile("paket.dependencies") << """
             source https://nuget.org/api/v2
