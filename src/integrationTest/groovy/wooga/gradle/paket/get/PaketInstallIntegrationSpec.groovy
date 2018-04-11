@@ -35,7 +35,6 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         return [
                 PaketGetPlugin.INSTALL_TASK_NAME,
                 PaketGetPlugin.UPDATE_TASK_NAME,
-                PaketGetPlugin.RESTORE_TASK_NAME,
                 PaketGetPlugin.OUTDATED_TASK_NAME
         ]
     }
@@ -58,7 +57,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         assert !packagesDir.exists()
 
         when:
-        def result = runTasksSuccessfully('paketInstall')
+        def result = runTasksSuccessfully(taskToRun)
 
         then: "paket runs and creates the packages directory"
         packagesDir.exists()
@@ -67,7 +66,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         result.standardOutput =~ /(?ms)Resolving packages for group Main:.*- $nuget/
 
         where:
-        taskToRun << bootstrapTestCases
+        taskToRun << [PaketGetPlugin.INSTALL_TASK_NAME, PaketGetPlugin.UPDATE_TASK_NAME]
     }
 
     @Unroll
