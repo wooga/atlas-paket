@@ -42,8 +42,7 @@ class PaketLock {
 
         def currentSourceType
         def currentPackageName
-        def currentIndent = 0
-        def currentLeadingWhitespaces = 0
+        int currentIndent = 0
         def currentLineData
 
         lockContent.eachLine { line ->
@@ -52,13 +51,10 @@ class PaketLock {
                 return
             }
 
-            def newLeadingWhitespaces = (line =~ /\s/).size()
-            if (newLeadingWhitespaces > currentLeadingWhitespaces) {
-                currentIndent++
-            } else if (newLeadingWhitespaces < currentLeadingWhitespaces) {
-                currentIndent--
+            if((line =~ /^[\s]+/)) {
+                currentIndent = (line =~ /^[\s]+/)[0].size() / 2
             }
-            currentLeadingWhitespaces = newLeadingWhitespaces
+
             currentLineData = line.trim()
 
             if (currentIndent == LineType.TYPE.value && isValidSourceType(currentLineData)) {
@@ -89,22 +85,14 @@ class PaketLock {
     }
 
     List<String> getDependencies(SourceType source, String id) {
-        content[source.getValue()] && content[source.getValue()][id] ? content[source.getValue()][id] as List<String> : null
+        content[source.getValue()] && content[source.getValue()][id] ? content[source.getValue()][id] as List<String> : []
     }
 
     List<String> getAllDependencies(List<String> references) {
-        def result = []
-        for (def referenceDependency in references) {
-            result.add(referenceDependency)
-            def referenceDependencies = getDependencies(SourceType.NUGET, referenceDependency)
-            if (referenceDependencies) {
-                result.addAll(referenceDependencies)
-                def dependencies = getAllDependencies(referenceDependencies)
-                if (dependencies) {
-                    result.addAll(dependencies)
-                }
-            }
+        def ref = references.collect { reference ->
+            [reference, getAllDependencies(getDependencies(SourceType.NUGET, reference))]
         }
-        result.unique()
+
+        ref.flatten().unique()
     }
 }
