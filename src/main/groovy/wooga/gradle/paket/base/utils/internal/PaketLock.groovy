@@ -40,43 +40,49 @@ class PaketLock {
     PaketLock(String lockContent) {
         content = [:]
 
-        def currentSourceType
-        def currentPackageName
+        String currentSourceType
+        String currentPackageName
         int currentIndent = 0
-        def currentLineData
+        String currentLineData
 
         lockContent.eachLine { line ->
 
-            if (!line.trim()) {
-                return
-            }
-
-            if((line =~ /^[\s]+/)) {
-                currentIndent = (line =~ /^[\s]+/)[0].size() / 2
-            }
-
             currentLineData = line.trim()
+            if (currentLineData.trim().empty) {
+                return
+            }
 
-            if (currentIndent == LineType.TYPE.value && isValidSourceType(currentLineData)) {
-                currentSourceType = currentLineData
-                content[currentSourceType] = [:]
-                return
-            }
-            if (currentIndent == LineType.REMOTE.value) {
-                return
-            }
-            if (currentIndent == LineType.NAME.value) {
-                currentPackageName = currentLineData.split(" ")[0]
-                content["${currentSourceType}"][currentPackageName] = []
-                return
-            }
-            if (currentIndent == LineType.DEPENDENCY.value) {
-                (content["${currentSourceType}"]["${currentPackageName}"] as List<String>) << currentLineData.split(" ")[0]
+            def match = (line =~ /^[\s]+/)
+            currentIndent = !match ? 0 : match[0].size() / 2
+
+            switch (currentIndent) {
+                case LineType.TYPE.value:
+                    if(isValidSourceType(currentLineData)) {
+                        currentSourceType = currentLineData
+                        content[currentSourceType] = [:]
+                    }
+                    break
+                case LineType.NAME.value:
+                    currentPackageName = currentLineData.split(/\s/)[0]
+                    if(currentSourceType && currentPackageName) {
+                        content[currentSourceType][currentPackageName] = []
+                    }
+                    break
+
+                case LineType.DEPENDENCY.value:
+                    if(currentSourceType && currentPackageName) {
+                        (content[currentSourceType][currentPackageName] as List<String>) << currentLineData.split(/\s/)[0]
+                    }
+                    break
+
+                case LineType.REMOTE.value:
+                default:
+                    break
             }
         }
     }
 
-    boolean isValidSourceType(String value) {
+    static boolean isValidSourceType(String value) {
 
         for (SourceType type in SourceType.values()) {
             if (type.value == value) return true
