@@ -40,47 +40,49 @@ class PaketLock {
     PaketLock(String lockContent) {
         content = [:]
 
-        def currentSourceType
-        def currentPackageName
-        def currentIndent = 0
-        def currentLeadingWhitespaces = 0
-        def currentLineData
+        String currentSourceType
+        String currentPackageName
+        int currentIndent = 0
+        String currentLineData
 
         lockContent.eachLine { line ->
 
-            if (!line.trim()) {
-                return
-            }
-
-            def newLeadingWhitespaces = (line =~ /\s/).size()
-            if (newLeadingWhitespaces > currentLeadingWhitespaces) {
-                currentIndent++
-            } else if (newLeadingWhitespaces < currentLeadingWhitespaces) {
-                currentIndent--
-            }
-            currentLeadingWhitespaces = newLeadingWhitespaces
             currentLineData = line.trim()
+            if (currentLineData.trim().empty) {
+                return
+            }
 
-            if (currentIndent == LineType.TYPE.value && isValidSourceType(currentLineData)) {
-                currentSourceType = currentLineData
-                content[currentSourceType] = [:]
-                return
-            }
-            if (currentIndent == LineType.REMOTE.value) {
-                return
-            }
-            if (currentIndent == LineType.NAME.value) {
-                currentPackageName = currentLineData.split(" ")[0]
-                content["${currentSourceType}"][currentPackageName] = []
-                return
-            }
-            if (currentIndent == LineType.DEPENDENCY.value) {
-                (content["${currentSourceType}"]["${currentPackageName}"] as List<String>) << currentLineData.split(" ")[0]
+            def match = (line =~ /^[\s]+/)
+            currentIndent = !match ? 0 : match[0].size() / 2
+
+            switch (currentIndent) {
+                case LineType.TYPE.value:
+                    if(isValidSourceType(currentLineData)) {
+                        currentSourceType = currentLineData
+                        content[currentSourceType] = [:]
+                    }
+                    break
+                case LineType.NAME.value:
+                    currentPackageName = currentLineData.split(/\s/)[0]
+                    if(currentSourceType && currentPackageName) {
+                        content[currentSourceType][currentPackageName] = []
+                    }
+                    break
+
+                case LineType.DEPENDENCY.value:
+                    if(currentSourceType && currentPackageName) {
+                        (content[currentSourceType][currentPackageName] as List<String>) << currentLineData.split(/\s/)[0]
+                    }
+                    break
+
+                case LineType.REMOTE.value:
+                default:
+                    break
             }
         }
     }
 
-    boolean isValidSourceType(String value) {
+    static boolean isValidSourceType(String value) {
 
         for (SourceType type in SourceType.values()) {
             if (type.value == value) return true
@@ -89,22 +91,14 @@ class PaketLock {
     }
 
     List<String> getDependencies(SourceType source, String id) {
-        content[source.getValue()] && content[source.getValue()][id] ? content[source.getValue()][id] as List<String> : null
+        content[source.getValue()] && content[source.getValue()][id] ? content[source.getValue()][id] as List<String> : []
     }
 
     List<String> getAllDependencies(List<String> references) {
-        def result = []
-        for (def referenceDependency in references) {
-            result.add(referenceDependency)
-            def referenceDependencies = getDependencies(SourceType.NUGET, referenceDependency)
-            if (referenceDependencies) {
-                result.addAll(referenceDependencies)
-                def dependencies = getAllDependencies(referenceDependencies)
-                if (dependencies) {
-                    result.addAll(dependencies)
-                }
-            }
+        def ref = references.collect { reference ->
+            [reference, getAllDependencies(getDependencies(SourceType.NUGET, reference))]
         }
-        result.unique()
+
+        ref.flatten().unique()
     }
 }
