@@ -34,8 +34,8 @@ import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.publish.internal.DefaultPaketPushPluginExtension
 import wooga.gradle.paket.publish.repository.internal.DefaultNugetRepositoryHandlerConvention
 import wooga.gradle.paket.publish.repository.internal.NugetRepository
-import wooga.gradle.paket.publish.tasks.internal.PaketCopy
 import wooga.gradle.paket.publish.tasks.PaketPush
+import wooga.gradle.paket.publish.tasks.internal.PaketCopy
 
 /**
  * A {@link Plugin} which adds tasks to publish nuget files with {@code paket}.

@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.base
 
+import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
 import wooga.gradle.paket.base.utils.PaketDependencies
 
 /**
@@ -196,4 +197,6 @@ interface PaketPluginExtension {
      * @see     PaketDependencies
      */
     PaketDependencies getPaketDependencies()
+
+    PaketDependencyHandler getDependencyHandler()
 }

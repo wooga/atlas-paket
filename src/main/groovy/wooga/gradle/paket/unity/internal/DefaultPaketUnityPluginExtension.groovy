@@ -19,6 +19,7 @@ package wooga.gradle.paket.unity.internal
 
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
+import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.unity.PaketUnityPluginExtension
 
@@ -29,8 +30,8 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     protected String customPaketOutputDirectory
 
-    DefaultPaketUnityPluginExtension(Project project) {
-        super(project)
+    DefaultPaketUnityPluginExtension(Project project,final PaketDependencyHandler dependencyHandler) {
+        super(project, dependencyHandler)
     }
 
     @Override

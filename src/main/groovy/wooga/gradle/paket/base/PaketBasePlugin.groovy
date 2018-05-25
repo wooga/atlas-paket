@@ -20,11 +20,19 @@ package wooga.gradle.paket.base
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.BasePlugin
+import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
+import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.internal.plugins.DslObject
+import org.gradle.api.internal.project.ProjectInternal
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.Delete
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
+import org.gradle.internal.reflect.Instantiator
 import org.gradle.language.base.plugins.LifecycleBasePlugin
+import wooga.gradle.paket.base.dependencies.internal.DefaultPaketDependencyHandler
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
+import wooga.gradle.paket.base.repository.internal.DefaultNugetArtifactRepositoryHandlerConvention
+import wooga.gradle.paket.base.tasks.PaketDependenciesTask
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 import wooga.gradle.paket.base.tasks.PaketInit
@@ -41,15 +49,31 @@ class PaketBasePlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = 'paket'
     static final String BOOTSTRAP_TASK_NAME = "paketBootstrap"
     static final String INIT_TASK_NAME = "paketInit"
+    static final String PAKET_DEPENDENCIES_TASK_NAME = "paketDependencies"
     static final String PAKET_CONFIGURATION = "nupkg"
 
     @Override
     void apply(Project project) {
         this.project = project
 
-        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension, project)
+        def services = (project as ProjectInternal).getServices()
+        def injector = services.get(Instantiator.class)
+        def fileResolver = services.get(FileResolver.class)
+
+        def paketDependencyHandler = new DefaultPaketDependencyHandler(project)
+        ExtensionAware.cast(project.dependencies).extensions.add(EXTENSION_NAME, paketDependencyHandler)
+
+        DefaultRepositoryHandler handler = (DefaultRepositoryHandler) project.repositories
+
+        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector)
+        new DslObject(handler).getConvention().getPlugins().put("net.wooga.paket-base", repositoryConvention)
+
+
+        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPluginExtension, project, paketDependencyHandler)
         project.pluginManager.apply(LifecycleBasePlugin)
+
         configurePaketTasks(project, extension)
+        addDependenciesTask(project)
         addBootstrapTask(project, extension)
         addInitTask(project, extension)
         setConfigurations(project)
@@ -98,6 +122,10 @@ class PaketBasePlugin implements Plugin<Project> {
         })
     }
 
+    private static void addDependenciesTask(final Project project) {
+        project.tasks.create(name: PAKET_DEPENDENCIES_TASK_NAME, type: PaketDependenciesTask)
+    }
+
     private static void addInitTask(final Project project, PaketPluginExtension extension) {
         final task = project.tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TaskConfiguration.GROUP)
         task.conventionMapping.map("dependenciesFile", { extension.getPaketDependenciesFile() })
@@ -105,6 +133,7 @@ class PaketBasePlugin implements Plugin<Project> {
 
     private static void addBootstrapTask(final Project project, PaketPluginExtension extension) {
         PaketBootstrap task = project.tasks.create(name: BOOTSTRAP_TASK_NAME, type: PaketBootstrap)
+        task.dependsOn(project.tasks.getByName(PAKET_DEPENDENCIES_TASK_NAME))
 
         final taskConvention = task.conventionMapping
         taskConvention.map("executable", { extension.getBootstrapperExecutable() })

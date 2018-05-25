@@ -19,6 +19,7 @@ package wooga.gradle.paket.base.internal
 
 import org.gradle.api.Project
 import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
 import wooga.gradle.paket.base.utils.internal.PaketDependencies
 
 class DefaultPaketPluginExtension implements PaketPluginExtension {
@@ -34,6 +35,8 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     private static final String DEFAULT_MONO_EXECUTABLE = "mono"
     private static final String DEFAULT_PAKET_LOCK_FILE_NAME = "paket.lock"
 
+    private final PaketDependencyHandler dependencyHandler
+
     protected Project project
     protected File customPaketDirectory
     protected File customMonoExecutable
@@ -42,8 +45,9 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     protected String customVersion
     protected String customPaketBootstrapperUrl
 
-    DefaultPaketPluginExtension(final Project project) {
+    DefaultPaketPluginExtension(final Project project, final PaketDependencyHandler dependencyHandler) {
         this.project = project
+        this.dependencyHandler = dependencyHandler
     }
 
     @Override
@@ -172,5 +176,10 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     @Override
     File getPaketLockFile() {
         return new File(project.projectDir, DEFAULT_PAKET_LOCK_FILE_NAME)
+    }
+
+    @Override
+    PaketDependencyHandler getDependencyHandler() {
+        dependencyHandler
     }
 }
