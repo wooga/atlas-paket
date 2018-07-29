@@ -15,8 +15,15 @@
  *
  */
 
-package wooga.gradle.paket.publish.repository
+package wooga.gradle.paket.base.repository
 
-interface NugetRepositoryHandlerConvention extends wooga.gradle.paket.base.repository.NugetRepositoryHandlerConvention<NugetArtifactRepository> {
+import org.gradle.api.Action
+import org.gradle.api.artifacts.repositories.ArtifactRepository
 
+interface NugetRepositoryHandlerConvention<T extends ArtifactRepository> {
+    static final String NUGET_REPO_DEFAULT_NAME = "nuget"
+
+    T nuget()
+    T nuget(Action<? super T> action)
+    T nuget(Closure configureClosure)
 }

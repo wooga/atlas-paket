@@ -20,6 +20,7 @@ package wooga.gradle.paket.unity
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import wooga.gradle.paket.base.PaketBasePlugin
+import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.get.tasks.PaketUpdate
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
@@ -50,8 +51,9 @@ class PaketUnityPlugin implements Plugin<Project> {
         this.project = project
 
         project.pluginManager.apply(PaketBasePlugin.class)
+        final PaketPluginExtension baseExtension = project.extensions.getByName(PaketBasePlugin.EXTENSION_NAME) as PaketPluginExtension
 
-        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketUnityPluginExtension, project)
+        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketUnityPluginExtension, project, baseExtension.dependencyHandler)
         createPaketUnityInstallTasks(project, extension)
 
         project.tasks.matching({ it.name.startsWith("paketUnity") }).each { task ->

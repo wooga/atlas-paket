@@ -155,7 +155,5 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         then: "evaluate incremental task execution"
         result.wasExecuted("paketInstall")
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
-
-
     }
 }

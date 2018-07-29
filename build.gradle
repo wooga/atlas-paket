@@ -68,4 +68,6 @@ dependencies {
     testCompile('org.jfrog.artifactory.client:artifactory-java-client-services:2.+') {
         exclude module: 'logback-classic'
     }
+
+    compile('com.google.guava:guava:19.0')
 }

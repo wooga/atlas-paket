@@ -24,4 +24,5 @@ interface PaketDependencies {
      * @return list of .NET frameworks configured
      */
     List<String> getFrameworks()
+
 }

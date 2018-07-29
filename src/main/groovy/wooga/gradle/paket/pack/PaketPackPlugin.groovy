@@ -69,8 +69,8 @@ class PaketPackPlugin implements Plugin<Project> {
 
         project.pluginManager.apply(BasePlugin.class)
         project.pluginManager.apply(PaketBasePlugin.class)
-
-        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPackPluginExtension, project)
+        final PaketPluginExtension baseExtension = project.extensions.getByName(PaketBasePlugin.EXTENSION_NAME) as PaketPluginExtension
+        final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPackPluginExtension, project, baseExtension.dependencyHandler)
 
         final configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
         final templateFiles = project.fileTree(project.projectDir)

@@ -18,12 +18,25 @@
 package wooga.gradle.paket
 
 import org.apache.commons.io.FileUtils
+import org.apache.commons.lang.StringEscapeUtils
 import spock.lang.Shared
 
 class IntegrationSpec extends nebula.test.IntegrationSpec{
 
     @Shared
     File cachedPaketDir
+
+    def escapedPath(String path) {
+        String osName = System.getProperty("os.name").toLowerCase()
+        if (osName.contains("windows")) {
+            return StringEscapeUtils.escapeJava(path)
+        }
+        path
+    }
+
+    def convertToWindowsPath(String path) {
+        new File(path).toString()
+    }
 
     def setupSpec() {
         cachedPaketDir = File.createTempDir("paket","cache")

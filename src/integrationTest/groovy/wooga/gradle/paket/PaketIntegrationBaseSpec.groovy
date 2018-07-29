@@ -20,6 +20,7 @@ package wooga.gradle.paket
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
+import wooga.gradle.paket.base.PaketBasePlugin
 
 abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
 
@@ -53,6 +54,18 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
         paketDir.exists()
         paketBootstrap.exists()
         paket.exists()
+
+        where:
+        taskToRun << bootstrapTestCases
+    }
+
+    @Unroll
+    def "task :paketBootstrap calls :paketDependencies when runing #taskToRun"(String taskToRun) {
+        when:
+        def result = runTasksSuccessfully(taskToRun)
+
+        then:
+        result.wasExecuted(PaketBasePlugin.PAKET_DEPENDENCIES_TASK_NAME)
 
         where:
         taskToRun << bootstrapTestCases
