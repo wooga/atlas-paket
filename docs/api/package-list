@@ -1,6 +1,10 @@
 wooga.gradle.paket
 wooga.gradle.paket.base
+wooga.gradle.paket.base.dependencies
+wooga.gradle.paket.base.dependencies.internal
 wooga.gradle.paket.base.internal
+wooga.gradle.paket.base.repository
+wooga.gradle.paket.base.repository.internal
 wooga.gradle.paket.base.tasks
 wooga.gradle.paket.base.tasks.internal
 wooga.gradle.paket.base.utils
