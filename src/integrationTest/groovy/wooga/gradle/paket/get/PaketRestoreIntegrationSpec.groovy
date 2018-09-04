@@ -33,7 +33,7 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
         def result = runTasksWithFailure(taskToRun)
 
         then:
-        result.standardError.contains("specified for property 'paketLock' does not exist")
+        outputContains(result,"specified for property 'paketLock' does not exist")
 
         where:
         taskToRun << [PaketGetPlugin.RESTORE_TASK_NAME]

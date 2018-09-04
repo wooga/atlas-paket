@@ -279,8 +279,8 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         def result = runTasksWithFailure(taskToRun)
 
         then:
-        result.standardError.contains("A problem was found with the configuration of task ':paketPack-WoogaTest'")
-        result.standardError.contains("No value has been specified for property 'version'")
+        outputContains(result, "A problem was found with the configuration of task ':paketPack-WoogaTest'")
+        outputContains(result, "No value has been specified for property 'version'")
         !outputFile.exists()
         result.wasExecuted("paketPack-WoogaTest")
 
