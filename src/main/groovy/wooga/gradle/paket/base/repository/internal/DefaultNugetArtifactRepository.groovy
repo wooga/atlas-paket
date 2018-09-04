@@ -28,11 +28,12 @@ import org.gradle.internal.reflect.Instantiator
 import wooga.gradle.paket.base.repository.NugetArtifactRepository
 
 @EqualsAndHashCode(includeFields=true)
-class DefaultNugetArtifactRepository extends AbstractArtifactRepository implements NugetArtifactRepository {
+class DefaultNugetArtifactRepository implements NugetArtifactRepository {
 
     private final FileResolver fileResolver
     private Object url
     private List<Object> dirs = new ArrayList<Object>()
+    private String name
 
     @Delegate
     private final AuthenticationSupporter delegate
@@ -96,5 +97,15 @@ class DefaultNugetArtifactRepository extends AbstractArtifactRepository implemen
         {
             throw new Exception("url already set")
         }
+    }
+
+    @Override
+    String getName() {
+        return name
+    }
+
+    @Override
+    void setName(String name) {
+        this.name = name
     }
 }
