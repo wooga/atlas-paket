@@ -20,11 +20,10 @@ package wooga.gradle.paket.base.repository.internal
 import com.google.common.collect.Lists
 import groovy.transform.EqualsAndHashCode
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
-import org.gradle.api.internal.artifacts.repositories.AbstractArtifactRepository
 import org.gradle.api.internal.artifacts.repositories.AuthenticationSupporter
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.internal.reflect.Instantiator
 import wooga.gradle.paket.base.repository.NugetArtifactRepository
 
@@ -46,6 +45,7 @@ class DefaultNugetArtifactRepository extends AbstractArtifactRepository implemen
     }
 
     @Input
+    @Optional
     @Override
     URI getUrl() {
         return url == null ? null : fileResolver.resolveUri(url)
