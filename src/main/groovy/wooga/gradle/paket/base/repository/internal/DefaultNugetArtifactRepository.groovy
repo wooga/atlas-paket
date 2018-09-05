@@ -20,20 +20,20 @@ package wooga.gradle.paket.base.repository.internal
 import com.google.common.collect.Lists
 import groovy.transform.EqualsAndHashCode
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
-import org.gradle.api.internal.artifacts.repositories.AbstractArtifactRepository
 import org.gradle.api.internal.artifacts.repositories.AuthenticationSupporter
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.internal.reflect.Instantiator
 import wooga.gradle.paket.base.repository.NugetArtifactRepository
 
 @EqualsAndHashCode(includeFields=true)
-class DefaultNugetArtifactRepository extends AbstractArtifactRepository implements NugetArtifactRepository {
+class DefaultNugetArtifactRepository implements NugetArtifactRepository {
 
     private final FileResolver fileResolver
     private Object url
     private List<Object> dirs = new ArrayList<Object>()
+    private String name
 
     @Delegate
     private final AuthenticationSupporter delegate
@@ -46,6 +46,7 @@ class DefaultNugetArtifactRepository extends AbstractArtifactRepository implemen
     }
 
     @Input
+    @Optional
     @Override
     URI getUrl() {
         return url == null ? null : fileResolver.resolveUri(url)
@@ -96,5 +97,15 @@ class DefaultNugetArtifactRepository extends AbstractArtifactRepository implemen
         {
             throw new Exception("url already set")
         }
+    }
+
+    @Override
+    String getName() {
+        return name
+    }
+
+    @Override
+    void setName(String name) {
+        this.name = name
     }
 }

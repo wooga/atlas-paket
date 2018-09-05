@@ -401,7 +401,7 @@ class PaketNugetDependenciesIntegrationSpec extends IntegrationSpec {
 
         expect:
         def result = runTasksWithFailure(PaketBasePlugin.PAKET_DEPENDENCIES_TASK_NAME)
-        result.standardError.contains("No signature of method")
+        outputContains(result, "No signature of method")
     }
 
     @Unroll

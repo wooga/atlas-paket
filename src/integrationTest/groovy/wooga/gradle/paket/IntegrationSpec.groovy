@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket
 
+import nebula.test.functional.ExecutionResult
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.StringEscapeUtils
 import spock.lang.Shared
@@ -83,5 +84,9 @@ class IntegrationSpec extends nebula.test.IntegrationSpec{
         if( isValidPaketDirectory(paketDir) ) {
             FileUtils.copyDirectory(paketDir, cachedPaketDir)
         }
+    }
+
+    Boolean outputContains(ExecutionResult result, String message) {
+        result.standardOutput.contains(message) || result.standardError.contains(message)
     }
 }
