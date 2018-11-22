@@ -20,6 +20,9 @@ package wooga.gradle.paket.unity.tasks
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTreeElement
+import org.gradle.api.file.FileVisitDetails
+import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -131,9 +134,7 @@ class PaketUnityInstall extends ConventionTask {
 
         if (!inputs.incremental) {
             if (getOutputDirectory().exists()) {
-                getOutputDirectory().deleteDir()
-                logger.info("delete target directory: ${getOutputDirectory()}")
-                assert !getOutputDirectory().exists()
+                cleanOutputDirectory()
             }
         }
 
@@ -166,6 +167,33 @@ class PaketUnityInstall extends ConventionTask {
                 assert !outputPath.exists()
             }
         })
+    }
+
+    protected void cleanOutputDirectory() {
+        def tree = project.fileTree(getOutputDirectory()) {
+            exclude("**/*.asmdef")
+            exclude("**/*.asmdef.meta")
+        }
+
+        logger.info("delete files in directory: ${getOutputDirectory()}")
+        project.delete(tree)
+
+        def emptyDirs = []
+        project.fileTree(getOutputDirectory()).visit(new FileVisitor() {
+            @Override
+            void visitDir(FileVisitDetails dirDetails) {
+                File f = dirDetails.file
+                def children = project.fileTree(f).filter { it.isFile() }.files
+                if (children.size() == 0) {
+                    emptyDirs << f
+                }
+            }
+
+            @Override
+            void visitFile(FileVisitDetails fileDetails) {
+            }
+        })
+        emptyDirs.reverseEach { it.delete() }
     }
 
     private File transformInputToOutputPath(File inputFile, File baseDirectory) {
