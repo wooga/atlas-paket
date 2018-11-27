@@ -310,6 +310,73 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         out2.exists()
     }
 
+    @Unroll
+    def "task :paketInstall keeps files with #filePattern in #location paket install directory"() {
+        given:
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file"
+        createDependencies(project3References)
+        createFile("packages/${project3References[0]}/content/ContentFile.cs")
+        createFile("packages/${project3References[1]}/content/ContentFile.cs")
+
+        def paketDir = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}")
+
+        and: "unity project #unityProjectName with references #projectReferences"
+        createOrUpdateReferenceFile(project1Name, project3References)
+
+        and: "a file matching the file pattern"
+        def baseDir = (location == "root") ? paketDir : new File(paketDir, "some/nested/directory")
+        baseDir.mkdirs()
+        def fileToKeep = createFile("test${filePattern}", baseDir) << "random content"
+
+        when:
+        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        fileToKeep.exists()
+
+        where:
+        filePattern    | location
+        ".asmdef"      | "root"
+        ".asmdef"      | "nested"
+        ".asmdef.meta" | "root"
+        ".asmdef.meta" | "nested"
+    }
+
+    def "task :paketInstall deletes empty directories"() {
+        given:
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "paket dependency file"
+        createDependencies(project3References)
+        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+
+        def paketDir = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}")
+
+        and: "unity project #unityProjectName with references #projectReferences"
+        createOrUpdateReferenceFile(project1Name, project3References)
+
+        and: "some empty directories in output directory"
+        def rootDir = new File(paketDir, "dirAtRoot")
+        def secondLevel = new File(rootDir, "dirAtSecondLevel")
+        def thirdLevel = new File(secondLevel, "dirAtThirdLevel")
+        thirdLevel.mkdirs()
+
+        when:
+        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        !rootDir.exists()
+        !secondLevel.exists()
+        !thirdLevel.exists()
+    }
+
     def containsHasChangedOrDeletedOutput(String stdOut, String filePath) {
         containsHasChangedOutput(stdOut, filePath) || containsHasRemovedOutput(stdOut, filePath)
     }
