@@ -19,62 +19,52 @@ package wooga.gradle.paket.unity
 
 import nebula.test.IntegrationSpec
 import spock.lang.Unroll
+import wooga.gradle.extensions.PaketDependency
+import wooga.gradle.extensions.PaketDependencySetup
+import wooga.gradle.extensions.PaketUnity
+import wooga.gradle.extensions.PaketUnitySetup
 import wooga.gradle.paket.get.PaketGetPlugin
-import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 
 class PaketUnityChangeSpec extends IntegrationSpec {
 
     final static String STD_OUT_ALL_OUT_OF_DATE = "All input files are considered out-of-date for incremental task"
 
-    String project1Name = "Project.1"
-    String project2Name = "Project.2"
-    String project3Name = "Project.3"
+    @PaketDependency(projectDependencies = ["D1", "D2", "D3"])
+    PaketDependencySetup paketSetup
 
-    File project1ReferencesFile
-    File project2ReferencesFile
-    File project3ReferencesFile
+    @PaketUnity(projectReferences = ["D1", "D2", "D3"])
+    PaketUnitySetup unityProject1
 
-    List<String> project1References
-    List<String> project2References
-    List<String> project3References
+    @PaketUnity(projectReferences = ["D2", "D4"])
+    PaketUnitySetup unityProject2
+
+    @PaketUnity(projectReferences = ["D3", "D4"])
+    PaketUnitySetup unityProject3
+
 
     def setup() {
         buildFile << """
             group = 'test'
+            ${applyPlugin(PaketGetPlugin)}
             ${applyPlugin(PaketUnityPlugin)}
         """.stripIndent()
-
-        and: "define default project references"
-        project1References = ["D1", "D2", "D3"]
-        project2References = ["D2", "D4"]
-        project3References = ["D3", "D4"]
-
-        and: "create multiple projects"
-        project1ReferencesFile = createOrUpdateReferenceFile(project1Name, project1References)
-        project2ReferencesFile = createOrUpdateReferenceFile(project2Name, project2References)
-        project3ReferencesFile = createOrUpdateReferenceFile(project3Name, project3References)
     }
 
     @Unroll
     def "task :paketUnityInstall when #message was up to date #wasUpToDate"() {
-        given: "a root project with a unity project  called #unityProjectName"
-
-        and: "apply paket get plugin to get paket install task"
-        buildFile << """
-            ${applyPlugin(PaketGetPlugin)}
-        """.stripIndent()
+        given: "a root project with a unity project"
 
         and: "paket dependency file"
-        createDependencies(rootDependencies)
+        paketSetup.createDependencies(rootDependencies)
 
         and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile(unityProjectName, projectReferences)
+        unityProject1.createOrUpdateReferenceFile(projectReferences)
 
         and: "paketUnityInstall is executed"
         runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
 
         and:
-        createOrUpdateReferenceFile(unityProjectName, projectReferenceUpdate)
+        unityProject1.createOrUpdateReferenceFile(projectReferenceUpdate)
 
         when: "paketUnityInstall is executed again"
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -83,63 +73,55 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
         result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME) == wasUpToDate
 
-        fileExists("${unityProjectName}/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}")
+        unityProject1.projectReferencesFile.exists()
 
         appliedReferencesAfterUpdate.every { ref ->
-            fileExists("${unityProjectName}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
+            new File(unityProject1.installDirectory, ref as String).exists()
         }
 
         where:
-        unityProjectName | rootDependencies   | projectReferences | projectReferenceUpdate | wasUpToDate | message
-        "Project"        | ["D1"]             | ["D1"]            | []                     | false       | "change remove all"
-        "Project"        | ["D1"]             | ["D1"]            | ["D1"]                 | true        | "mime time change"
-        "Project"        | ["D1", "D2"]       | ["D1"]            | ["D2"]                 | false       | "change remove one dependency"
-        "Project"        | ["D1", "D2"]       | ["D1", "D2"]      | ["D2"]                 | false       | "change remove one dependency"
-        "Project"        | ["D1", "D2"]       | ["D1", "D2"]      | ["D1", "D2"]           | true        | "mime time change"
-        "Project"        | ["D1", "D2"]       | ["D1", "D2"]      | []                     | false       | "change remove all multiple"
-        "Project"        | ["D1", "D2", "D3"] | ["D3"]            | ["D1", "D2", "D4"]     | false       | "remove and change and ignore not available"
+        rootDependencies   | projectReferences | projectReferenceUpdate | wasUpToDate | message
+        ["D1"]             | ["D1"]            | []                     | false       | "change remove all"
+        ["D1"]             | ["D1"]            | ["D1"]                 | true        | "mime time change"
+        ["D1", "D2"]       | ["D1"]            | ["D2"]                 | false       | "change remove one dependency"
+        ["D1", "D2"]       | ["D1", "D2"]      | ["D2"]                 | false       | "change remove one dependency"
+        ["D1", "D2"]       | ["D1", "D2"]      | ["D1", "D2"]           | true        | "mime time change"
+        ["D1", "D2"]       | ["D1", "D2"]      | []                     | false       | "change remove all multiple"
+        ["D1", "D2", "D3"] | ["D3"]            | ["D1", "D2", "D4"]     | false       | "remove and change and ignore not available"
 
         appliedReferences = rootDependencies.intersect(projectReferences)
         appliedReferencesAfterUpdate = rootDependencies.intersect(projectReferenceUpdate)
     }
 
     def "run paketUnityInstall a root project with multiple unity projects"() {
-        given: "a dependencies file"
-        def dependencies = ["D1", "D2", "D4"]
-        createDependencies(dependencies)
-
         when: "paketUnityInstall is executed"
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
 
         then: "evaluate incremental task execution"
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
 
-        project1References.intersect(dependencies).each { ref ->
-            assert fileExists("${project1Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
+        unityProject1.projectReferences.intersect(paketSetup.projectDependencies).each { ref ->
+            assert new File(unityProject1.installDirectory, ref as String).exists()
         }
 
-        project2References.intersect(dependencies).each { ref ->
-            assert fileExists("${project2Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
+        unityProject2.projectReferences.intersect(paketSetup.projectDependencies).each { ref ->
+            assert new File(unityProject2.installDirectory, ref as String).exists()
         }
 
-        project3References.intersect(dependencies).each { ref ->
-            assert fileExists("${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${ref}")
+        unityProject3.projectReferences.intersect(paketSetup.projectDependencies).each { ref ->
+            assert new File(unityProject3.installDirectory, ref as String).exists()
         }
     }
 
     def "task :paketInstall is incremental"() {
-        given:
-        buildFile << """
-            ${applyPlugin(PaketGetPlugin)}
-        """.stripIndent()
-
+        given: "a root project with a unity project"
         and: "paket dependency file"
-        createDependencies(["D1", "D2"])
+        paketSetup.createDependencies(["D1", "D2"])
         def dep1 = createFile("packages/D1/content/ContentFile.cs")
         def dep2 = createFile("packages/D2/content/ContentFile.cs")
 
         and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile("Test", ["D1", "D2"])
+        unityProject1.createOrUpdateReferenceFile(["D1", "D2"])
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -163,24 +145,16 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     }
 
     def "task :paketInstall removes incrementally with changed source"() {
-        given:
-        buildFile << """
-            ${applyPlugin(PaketGetPlugin)}
-        """.stripIndent()
+        given: "a root project with a unity project"
+        and: "some source and destination files"
+        def dep1 = createFile("packages/${unityProject3.projectReferences[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${unityProject3.projectReferences[1]}/content/ContentFile.cs")
 
-        and: "paket dependency file"
-        createDependencies(project3References)
-        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
-        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
-
-        def out1 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
-        def out2 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+        def out1 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[0]}/ContentFile.cs")
+        def out2 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[1]}/ContentFile.cs")
 
         assert !out1.exists()
         assert !out2.exists()
-
-        and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile(project1Name, project3References)
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -211,24 +185,20 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     }
 
     def "task :paketInstall adds with change in target directory"() {
-        given:
+        given: "a root project with a unity project"
         buildFile << """
             ${applyPlugin(PaketGetPlugin)}
         """.stripIndent()
 
-        and: "paket dependency file"
-        createDependencies(project3References)
-        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
-        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+        and: "some source and destination files"
+        def dep1 = createFile("packages/${unityProject3.projectReferences[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${unityProject3.projectReferences[1]}/content/ContentFile.cs")
 
-        def out1 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
-        def out2 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+        def out1 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[0]}/ContentFile.cs")
+        def out2 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[1]}/ContentFile.cs")
 
         assert !out1.exists()
         assert !out2.exists()
-
-        and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile(project1Name, project3References)
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -261,24 +231,20 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     }
 
     def "task :paketInstall adds incrementally with changed target content"() {
-        given:
+        given: "a root project with a unity project"
         buildFile << """
             ${applyPlugin(PaketGetPlugin)}
         """.stripIndent()
 
-        and: "paket dependency file"
-        createDependencies(project3References)
-        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
-        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+        and: "some source and destination files"
+        def dep1 = createFile("packages/${unityProject3.projectReferences[0]}/content/ContentFile.cs")
+        def dep2 = createFile("packages/${unityProject3.projectReferences[1]}/content/ContentFile.cs")
 
-        def out1 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[0]}/ContentFile.cs")
-        def out2 = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${project3References[1]}/ContentFile.cs")
+        def out1 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[0]}/ContentFile.cs")
+        def out2 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[1]}/ContentFile.cs")
 
         assert !out1.exists()
         assert !out2.exists()
-
-        and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile(project1Name, project3References)
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -312,23 +278,8 @@ class PaketUnityChangeSpec extends IntegrationSpec {
 
     @Unroll
     def "task :paketInstall keeps files with #filePattern in #location paket install directory"() {
-        given:
-        buildFile << """
-            ${applyPlugin(PaketGetPlugin)}
-        """.stripIndent()
-
-        and: "paket dependency file"
-        createDependencies(project3References)
-        createFile("packages/${project3References[0]}/content/ContentFile.cs")
-        createFile("packages/${project3References[1]}/content/ContentFile.cs")
-
-        def paketDir = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}")
-
-        and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile(project1Name, project3References)
-
-        and: "a file matching the file pattern"
-        def baseDir = (location == "root") ? paketDir : new File(paketDir, "some/nested/directory")
+        given: "a file matching the file pattern"
+        def baseDir = (location == "root") ? unityProject1.installDirectory : new File(unityProject1.installDirectory, "some/nested/directory")
         baseDir.mkdirs()
         def fileToKeep = createFile("test${filePattern}", baseDir) << "random content"
 
@@ -347,20 +298,16 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     }
 
     def "task :paketInstall deletes empty directories"() {
-        given:
+        given: "a root project with a unity project"
         buildFile << """
             ${applyPlugin(PaketGetPlugin)}
         """.stripIndent()
 
         and: "paket dependency file"
-        createDependencies(project3References)
-        def dep1 = createFile("packages/${project3References[0]}/content/ContentFile.cs")
-        def dep2 = createFile("packages/${project3References[1]}/content/ContentFile.cs")
+        createFile("packages/${unityProject3.projectReferences[0]}/content/ContentFile.cs")
+        createFile("packages/${unityProject3.projectReferences[1]}/content/ContentFile.cs")
 
-        def paketDir = new File(projectDir, "${project3Name}/Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}")
-
-        and: "unity project #unityProjectName with references #projectReferences"
-        createOrUpdateReferenceFile(project1Name, project3References)
+        def paketDir = unityProject1.installDirectory
 
         and: "some empty directories in output directory"
         def rootDir = new File(paketDir, "dirAtRoot")
@@ -392,33 +339,4 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     def allFilesOutOfDate(String stdOut) {
         stdOut.contains(STD_OUT_ALL_OUT_OF_DATE)
     }
-
-    private File createOrUpdateReferenceFile(String projectName, List<String> references) {
-        def path = "${projectName}/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}"
-        def referencesFile = createFile(path)
-        referencesFile.text = """${references.join("\r")}""".stripIndent()
-        referencesFile
-    }
-
-    private File createDependencies(List<String> dependencies) {
-        def dependenciesFile = createFile("paket.dependencies")
-        dependenciesFile << """source https://nuget.org/api/v2
-nuget ${dependencies.join("\nnuget ")}""".stripIndent()
-
-        dependencies.each { dependency ->
-            createFile("packages/${dependency}/content/ContentFile.cs")
-        }
-        createLockFile(dependencies)
-        dependenciesFile
-    }
-
-    private File createLockFile(List<String> dependencies) {
-        def lockFile = createFile("paket.lock")
-        lockFile << """
-NUGET
-    remote: https://wooga.artifactoryonline.com/wooga/api/nuget/atlas-nuget
-        ${dependencies.join("\n")}""".stripIndent()
-        lockFile
-    }
-
 }
