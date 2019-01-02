@@ -23,6 +23,7 @@ import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.get.tasks.PaketUpdate
+import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
@@ -55,6 +56,7 @@ class PaketUnityPlugin implements Plugin<Project> {
 
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketUnityPluginExtension, project, baseExtension.dependencyHandler)
         createPaketUnityInstallTasks(project, extension)
+        extension.assemblyDefinitionFileStrategy = AssemblyDefinitionFileStrategy.manual
 
         project.tasks.matching({ it.name.startsWith("paketUnity") }).each { task ->
             task.onlyIf {
@@ -81,6 +83,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 group = GROUP
                 description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
                 conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
+                conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
                 frameworks = extension.getPaketDependencies().getFrameworks()
                 lockFile = extension.getPaketLockFile()
                 referencesFile = referenceFile

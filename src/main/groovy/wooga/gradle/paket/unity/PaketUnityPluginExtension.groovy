@@ -19,9 +19,10 @@ package wooga.gradle.paket.unity
 
 import org.gradle.api.file.FileCollection
 import wooga.gradle.paket.base.PaketPluginExtension
+import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 
 /**
- * A extension point for paket unity
+ * A extensions point for paket unity
  */
 interface PaketUnityPluginExtension extends PaketPluginExtension {
 
@@ -42,4 +43,16 @@ interface PaketUnityPluginExtension extends PaketPluginExtension {
      * @param directory name of the output directory
      */
     void setPaketOutputDirectoryName(String directory)
+
+    /**
+     * @return the assembly definition file strategy
+     */
+    AssemblyDefinitionFileStrategy getAssemblyDefinitionFileStrategy()
+
+    /**
+     * Sets the assembly definition strategy to be used during install.
+     *
+     * @param strategy the strategy to be used
+     */
+    void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy)
 }
