@@ -27,7 +27,7 @@ class PaketDependencySetupExtension extends AbstractAnnotationDrivenExtension<Pa
     @Override
     void visitFieldAnnotation(PaketDependency annotation, FieldInfo field) {
         def interceptor
-        interceptor = new PaketDependencyInterceptor(field.name, annotation.projectDependencies())
+        interceptor = new PaketDependencyInterceptor(field.name, annotation.projectDependencies(), annotation.dependencyFiles())
         interceptor.install(field.parent.getTopSpec())
         interceptor.install(field.parent.getBottomSpec())
     }
@@ -37,13 +37,19 @@ class PaketDependencySetupExtension extends AbstractAnnotationDrivenExtension<Pa
 class PaketDependencyInterceptor extends GradleIntegrationSpecInterceptor implements PaketDependencySetup {
 
     List<String> projectDependencies
+    List<String> dependencyFiles
 
     protected File paketDependencies
     protected File paketLock
 
-    PaketDependencyInterceptor(String fieldName, String[] projectDependencies) {
+    void setDependencyFiles(List<String> files) {
+        dependencyFiles = files
+    }
+
+    PaketDependencyInterceptor(String fieldName, String[] projectDependencies, String[] dependencyFiles) {
         super(fieldName)
         this.projectDependencies = projectDependencies.toList()
+        this.dependencyFiles = dependencyFiles.toList()
     }
 
     @Override
@@ -67,8 +73,11 @@ class PaketDependencyInterceptor extends GradleIntegrationSpecInterceptor implem
 nuget ${projectDependencies.join("\nnuget ")}""".stripIndent()
 
         projectDependencies.each { dependency ->
-            createFile("packages/${dependency}/content/ContentFile.cs")
+            dependencyFiles.each {
+                createFile("packages/${dependency}/content/${it}")
+            }
         }
+
         createLockFile(projectDependencies)
         paketDependencies = dependenciesFile
         dependenciesFile

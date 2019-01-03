@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Wooga GmbH
+ * Copyright 2019 Wooga GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,9 @@
 
 package wooga.gradle.paket.unity.internal
 
-enum AssemblyDefinitionFileStrategy implements wooga.gradle.paket.unity.AssemblyDefinitionStrategy {
-
-    manual(new NoOpAssemblyDefinitionStrategy()),
-    disabled(new NoOpAssemblyDefinitionStrategy()),
-    auto(new AutoAssemblyDefinitionStrategy())
-
-    final AssemblyDefinitionStrategy strategy
-
-    AssemblyDefinitionFileStrategy(AssemblyDefinitionStrategy strategy) {
-        this.strategy = strategy
-    }
-
+class NoOpAssemblyDefinitionStrategy extends AssemblyDefinitionStrategy {
     @Override
     void execute(File installDirectory) {
-        this.strategy.execute(installDirectory)
+        logger.info("execute no-op assembly definition strategy")
     }
 }

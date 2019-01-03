@@ -27,10 +27,12 @@ import wooga.gradle.paket.get.PaketGetPlugin
 
 class PaketUnityAssemblyDefinitionStrategySpec extends IntegrationSpec {
 
-    @PaketDependency
-    PaketDependencySetup _paketSetup
+    @PaketDependency(
+            projectDependencies = ["D1", "D2", "D3"]
+    )
+    PaketDependencySetup paketSetup
 
-    @PaketUnity
+    @PaketUnity(projectReferences = ["D1", "D2", "D3"])
     PaketUnitySetup unityProject
 
     def setup() {
@@ -70,5 +72,52 @@ class PaketUnityAssemblyDefinitionStrategySpec extends IntegrationSpec {
         ".asmdef.meta" | "root"   | "disabled" | false
         ".asmdef.meta" | "nested" | "disabled" | false
         message = (expectFileToExist) ? "keeps files with $filePattern" : "cleans assembly definition files"
+    }
+
+    def "task :paketInstall generates .asmdef file for install directory when assembly definition strategy is set to #strategy"() {
+        given:
+        buildFile << """
+        paketUnity.assemblyDefinitionFileStrategy = "$strategy"
+        """.stripIndent()
+
+        when:
+        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        new File(unityProject.installDirectory, "${unityProject.installDirectory.name}.asmdef").exists()
+
+        where:
+        strategy | _
+        "auto"   | _
+    }
+
+    @Unroll
+    def "task :paketInstall generates .asmdef file for #contentFiles when strategy is set to #strategy"() {
+        given:
+        buildFile << """
+        paketUnity.assemblyDefinitionFileStrategy = "$strategy"
+        """.stripIndent()
+
+        and: "Editor directories in dependencies"
+        paketSetup.dependencyFiles = ["ContentFile.cs"] + contentFiles
+        paketSetup.createDependencies()
+
+        when:
+        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        contentFiles.each { contentFile ->
+            def contentPath = new File(contentFile).parentFile
+            new File(unityProject.installDirectory, "${unityProject.installDirectory.name}.asmdef").exists()
+            paketSetup.projectDependencies.each {
+                new File(unityProject.installDirectory, "${it}/${contentPath.path}/${contentPath.name}.asmdef").exists()
+            }
+        }
+
+        where:
+        strategy | contentFiles                                                            | _
+        "auto"   | ["Nested/Editor/ContentFile.cs"]                                        | _
+        "auto"   | ["Nested/Editor/ContentFile.cs", "Nested/Deeper/Editor/ContentFile.cs"] | _
+        "auto"   | ["Editor/ContentFile.cs"]                                               | _
     }
 }
