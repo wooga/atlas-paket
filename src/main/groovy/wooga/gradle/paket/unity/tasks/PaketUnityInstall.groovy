@@ -170,6 +170,8 @@ class PaketUnityInstall extends ConventionTask {
                 assert !outputPath.exists()
             }
         })
+
+        getAssemblyDefinitionFileStrategy().execute(getOutputDirectory())
     }
 
     protected void cleanOutputDirectory() {

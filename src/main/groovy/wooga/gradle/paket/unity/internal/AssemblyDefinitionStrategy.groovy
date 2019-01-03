@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Wooga GmbH
+ * Copyright 2019 Wooga GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,21 @@
 
 package wooga.gradle.paket.unity.internal
 
-enum AssemblyDefinitionFileStrategy implements wooga.gradle.paket.unity.AssemblyDefinitionStrategy {
+import org.gradle.api.Task
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
-    manual(new NoOpAssemblyDefinitionStrategy()),
-    disabled(new NoOpAssemblyDefinitionStrategy()),
-    auto(new AutoAssemblyDefinitionStrategy())
+abstract class AssemblyDefinitionStrategy implements wooga.gradle.paket.unity.AssemblyDefinitionStrategy {
 
-    final AssemblyDefinitionStrategy strategy
+    private static final Logger BUILD_LOGGER = Logging.getLogger(Task.class);
 
-    AssemblyDefinitionFileStrategy(AssemblyDefinitionStrategy strategy) {
-        this.strategy = strategy
+    abstract void execute(File installDirectory)
+
+    Logger getLogger() {
+        BUILD_LOGGER
     }
 
-    @Override
-    void execute(File installDirectory) {
-        this.strategy.execute(installDirectory)
+    File assemblyDefinitionPathForDirectory(File directory) {
+        AssemblyDefinition.assemblyDefinitionPathForDirectory(directory)
     }
 }

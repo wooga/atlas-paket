@@ -49,6 +49,7 @@ interface PaketUnitySetup {
 @ExtensionAnnotation(PaketDependencySetupExtension)
 @interface PaketDependency {
     String[] projectDependencies() default []
+    String[] dependencyFiles() default ["ContentFile.cs"]
 }
 
 interface PaketDependencySetup {
@@ -56,6 +57,9 @@ interface PaketDependencySetup {
     File getPaketLock()
 
     List<String> getProjectDependencies()
+
+    List<String> getDependencyFiles()
+    void setDependencyFiles(List<String> files)
 
     File createDependencies()
     File createDependencies(List<String> dependencies)
