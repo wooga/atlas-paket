@@ -28,12 +28,17 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
     public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
 
+    protected final List<File> installDefinitions
+    protected final List<File> editorInstallDefinitions
+
     protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
 
     DefaultPaketUnityPluginExtension(Project project,final PaketDependencyHandler dependencyHandler) {
         super(project, dependencyHandler)
-        assemblyDefinitionFileStrategy
+        assemblyDefinitionFileStrategy = AssemblyDefinitionFileStrategy.manual
+        installDefinitions = []
+        editorInstallDefinitions = []
     }
 
     @Override
@@ -59,5 +64,47 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     @Override
     void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy) {
         assemblyDefinitionFileStrategy = strategy
+    }
+
+    @Override
+    void referenceAssemblyDefintionFilesIn(File pathToDefinition) {
+        installDefinitions.add(pathToDefinition)
+    }
+
+    @Override
+    void referenceAssemblyDefintionFilesIn(FileCollection definitions) {
+        installDefinitions.addAll(definitions.files)
+    }
+
+    @Override
+    List<File> getAssemblyDefinitionFilesToAddReferences() {
+        installDefinitions.collect()
+    }
+
+    @Override
+    void setAssemblyDefinitionFilesToAddReferences(List<File> definitions) {
+        installDefinitions.removeAll()
+        installDefinitions.addAll(definitions)
+    }
+
+    @Override
+    void referenceEditorAssemblyDefintionFilesIn(File definition) {
+        editorInstallDefinitions.add(definition)
+    }
+
+    @Override
+    void referenceEditorAssemblyDefintionFilesIn(FileCollection definitions) {
+        editorInstallDefinitions.addAll(definitions.files)
+    }
+
+    @Override
+    List<File> getEditorAssemblyDefinitionFilesToAddReferences() {
+        return editorInstallDefinitions.collect()
+    }
+
+    @Override
+    void setEditorAssemblyDefinitionFilesToAddReferences(List<File> definitions) {
+        editorInstallDefinitions.removeAll()
+        editorInstallDefinitions.addAll(definitions)
     }
 }

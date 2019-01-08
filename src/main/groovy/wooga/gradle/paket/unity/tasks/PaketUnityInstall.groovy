@@ -80,6 +80,12 @@ class PaketUnityInstall extends ConventionTask {
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
+    @Input
+    FileCollection assemblyDefinitionFilesToReference
+
+    @Input
+    FileCollection editorAssemblyDefinitionFilesToReference
+
     File projectRoot
 
     /**
@@ -123,6 +129,23 @@ class PaketUnityInstall extends ConventionTask {
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
         fileTree.files
+    }
+
+    Map<String, Set<String>> getDependencyTree() {
+        def references = new PaketUnityReferences(getReferencesFile())
+
+        if (!getLockFile().exists()) {
+            return null
+        }
+        def deps = [:]
+        def locks = new PaketLock(getLockFile())
+        def dependencies = locks.getAllDependencies(references.nugets)
+
+        dependencies.each {
+            def refs = locks.getDependencies(PaketLock.SourceType.NUGET, it)
+            deps[it] = refs.toSet()
+        }
+        deps
     }
 
     PaketUnityInstall() {
@@ -171,7 +194,8 @@ class PaketUnityInstall extends ConventionTask {
             }
         })
 
-        getAssemblyDefinitionFileStrategy().execute(getOutputDirectory())
+        def dependencyTree = getDependencyTree()
+        getAssemblyDefinitionFileStrategy().execute(getOutputDirectory(), dependencyTree, getAssemblyDefinitionFilesToReference().files, getEditorAssemblyDefinitionFilesToReference().files)
     }
 
     protected void cleanOutputDirectory() {

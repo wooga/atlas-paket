@@ -19,7 +19,7 @@ package wooga.gradle.paket.unity.internal
 
 class NoOpAssemblyDefinitionStrategy extends AssemblyDefinitionStrategy {
     @Override
-    void execute(File installDirectory) {
+    void execute(File _installDirectory, Map<String, Set<String>> _tree, Set<File> _references, Set<File> _editorReferences) {
         logger.info("execute no-op assembly definition strategy")
     }
 }

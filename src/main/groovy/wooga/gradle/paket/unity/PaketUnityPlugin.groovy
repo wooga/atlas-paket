@@ -84,6 +84,9 @@ class PaketUnityPlugin implements Plugin<Project> {
                 description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
                 conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
                 conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
+                conventionMapping.map("assemblyDefinitionFilesToReference", { project.files(extension.getAssemblyDefinitionFilesToAddReferences()) })
+                conventionMapping.map("editorAssemblyDefinitionFilesToReference", { project.files(extension.getEditorAssemblyDefinitionFilesToAddReferences()) })
+
                 frameworks = extension.getPaketDependencies().getFrameworks()
                 lockFile = extension.getPaketLockFile()
                 referencesFile = referenceFile

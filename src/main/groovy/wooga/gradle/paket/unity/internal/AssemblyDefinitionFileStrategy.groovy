@@ -30,7 +30,7 @@ enum AssemblyDefinitionFileStrategy implements wooga.gradle.paket.unity.Assembly
     }
 
     @Override
-    void execute(File installDirectory) {
-        this.strategy.execute(installDirectory)
+    void execute(File installDirectory, Map<String, Set<String>> tree, Set<File> references = [], Set<File> editorReferences = []) {
+        this.strategy.execute(installDirectory, tree, references, editorReferences)
     }
 }

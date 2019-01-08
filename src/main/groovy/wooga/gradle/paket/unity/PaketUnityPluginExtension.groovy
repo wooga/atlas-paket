@@ -55,4 +55,21 @@ interface PaketUnityPluginExtension extends PaketPluginExtension {
      * @param strategy the strategy to be used
      */
     void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy)
+
+    void referenceAssemblyDefintionFilesIn(File definition)
+
+    void referenceAssemblyDefintionFilesIn(FileCollection definitions)
+
+    List<File> getAssemblyDefinitionFilesToAddReferences()
+
+    void setAssemblyDefinitionFilesToAddReferences(List<File> definitions)
+
+
+    void referenceEditorAssemblyDefintionFilesIn(File definition)
+
+    void referenceEditorAssemblyDefintionFilesIn(FileCollection definitions)
+
+    List<File> getEditorAssemblyDefinitionFilesToAddReferences()
+
+    void setEditorAssemblyDefinitionFilesToAddReferences(List<File> definitions)
 }

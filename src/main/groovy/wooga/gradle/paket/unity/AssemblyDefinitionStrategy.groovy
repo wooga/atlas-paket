@@ -18,5 +18,5 @@
 package wooga.gradle.paket.unity
 
 interface AssemblyDefinitionStrategy {
-    void execute(File installDirectory)
+    void execute(File installDirectory, Map<String, Set<String>> tree, Set<File> references, Set<File> editorReferences)
 }
