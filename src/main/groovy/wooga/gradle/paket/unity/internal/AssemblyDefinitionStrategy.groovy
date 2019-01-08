@@ -17,21 +17,25 @@
 
 package wooga.gradle.paket.unity.internal
 
-import org.gradle.api.Task
+
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 abstract class AssemblyDefinitionStrategy implements wooga.gradle.paket.unity.AssemblyDefinitionStrategy {
 
-    private static final Logger BUILD_LOGGER = Logging.getLogger(Task.class);
+    private static final Logger BUILD_LOGGER = Logging.getLogger(AssemblyDefinitionStrategy.class)
 
-    abstract void execute(File installDirectory)
+    abstract void execute(File installDirectory, Map<String, Set<String>> tree, Set<File> references, Set<File> editorReferences)
 
     Logger getLogger() {
         BUILD_LOGGER
     }
 
-    File assemblyDefinitionPathForDirectory(File directory) {
+    static File assemblyDefinitionPathForDirectory(File directory) {
         AssemblyDefinition.assemblyDefinitionPathForDirectory(directory)
+    }
+
+    static File assemblyDefinitionPathForDirectory(File directory, String postFix) {
+        AssemblyDefinition.assemblyDefinitionPathForDirectory(directory, postFix)
     }
 }

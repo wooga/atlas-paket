@@ -77,6 +77,14 @@ class AssemblyDefinition {
     }
 
     static File assemblyDefinitionPathForDirectory(File directory) {
-        new File(directory, "${directory.name}.asmdef")
+        assemblyDefinitionPathForDirectory(directory, null)
+    }
+
+    static File assemblyDefinitionPathForDirectory(File directory, String postFix) {
+        def name = directory.name
+        if(postFix) {
+            name += ".${postFix}"
+        }
+        new File(directory, "${name}.asmdef")
     }
 }

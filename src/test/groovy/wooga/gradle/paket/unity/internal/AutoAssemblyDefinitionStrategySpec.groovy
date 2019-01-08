@@ -51,7 +51,7 @@ class AutoAssemblyDefinitionStrategySpec extends Specification {
 
     def "generates base definition file"() {
         expect:
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, [:])
         strategy.assemblyDefinitionPathForDirectory(paketInstallDir).exists()
     }
 
@@ -62,21 +62,21 @@ class AutoAssemblyDefinitionStrategySpec extends Specification {
         editorDir.mkdirs()
 
         expect:
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, ["Dependency.1": [].toSet()])
         strategy.assemblyDefinitionPathForDirectory(paketInstallDir).exists()
-        strategy.assemblyDefinitionPathForDirectory(editorDir).exists()
+        definitionFileForDirectory(editorDir).exists()
 
         where:
-        editorDirPath             | _
-        "Editor"                  | _
-        "Nested/Directory/Editor" | _
-        "Nested/Editor"           | _
+        editorDirPath                          | _
+        "Dependency.1/Editor"                  | _
+        "Dependency.1/Nested/Directory/Editor" | _
+        "Dependency.1/Nested/Editor"           | _
     }
 
     def "sets name of base definition file to install directory name"() {
         when:
         def jsonSlurper = new JsonSlurper()
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, [:])
         def definition = jsonSlurper.parse(strategy.assemblyDefinitionPathForDirectory(paketInstallDir))
 
         then:
@@ -91,24 +91,23 @@ class AutoAssemblyDefinitionStrategySpec extends Specification {
         editorDir.mkdirs()
 
         when:
-        def jsonSlurper = new JsonSlurper()
-        strategy.execute(paketInstallDir)
-        def definition = jsonSlurper.parse(strategy.assemblyDefinitionPathForDirectory(editorDir))
+        strategy.execute(paketInstallDir, ["Dependency.1": [].toSet()])
+        def definition = readDefinition(editorDir)
 
         then:
         definition["name"] == expectedDefinitionName
 
         where:
-        editorDirPath             | expectedDefinitionName
-        "Editor"                  | "${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}Editor"
-        "Nested/Directory/Editor" | "${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}NestedDirectoryEditor"
-        "Nested/Editor"           | "${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}NestedEditor"
+        editorDirPath                          | expectedDefinitionName
+        "Dependency.1/Editor"                  | "Dependency.1.Editor"
+        "Dependency.1/Nested/Directory/Editor" | "Dependency.1.Nested.Directory.Editor"
+        "Dependency.1/Nested/Editor"           | "Dependency.1.Nested.Editor"
     }
 
     def "base definition has no references"() {
         when:
         def jsonSlurper = new JsonSlurper()
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, [:])
         def definition = jsonSlurper.parse(strategy.assemblyDefinitionPathForDirectory(paketInstallDir))
 
         then:
@@ -122,23 +121,23 @@ class AutoAssemblyDefinitionStrategySpec extends Specification {
         editorDir.mkdirs()
 
         when:
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, ["Dependency.1": [].toSet()])
         def definition = readDefinition(editorDir)
 
         then:
-        definition["references"] == [DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY]
+        definition["references"] == ["Dependency.1"]
 
         where:
-        editorDirPath             | _
-        "Editor"                  | _
-        "Nested/Directory/Editor" | _
-        "Nested/Editor"           | _
+        editorDirPath                          | _
+        "Dependency.1/Editor"                  | _
+        "Dependency.1/Nested/Directory/Editor" | _
+        "Dependency.1/Nested/Editor"           | _
     }
 
     def "base definition sets no platforms"() {
         when:
         def jsonSlurper = new JsonSlurper()
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, [:])
         def definition = jsonSlurper.parse(strategy.assemblyDefinitionPathForDirectory(paketInstallDir))
 
         then:
@@ -153,21 +152,91 @@ class AutoAssemblyDefinitionStrategySpec extends Specification {
         editorDir.mkdirs()
 
         when:
-        strategy.execute(paketInstallDir)
+        strategy.execute(paketInstallDir, ["Dependency.1": [].toSet()])
         def definition = readDefinition(editorDir)
 
         then:
         definition["includePlatforms"] == ["Editor"]
 
         where:
-        editorDirPath             | _
-        "Editor"                  | _
-        "Nested/Directory/Editor" | _
-        "Nested/Editor"           | _
+        editorDirPath                          | _
+        "Dependency.1/Editor"                  | _
+        "Dependency.1/Nested/Directory/Editor" | _
+        "Dependency.1/Nested/Editor"           | _
     }
 
-    def readDefinition(File definition) {
+    def "creates cross references based on dependency tree"() {
+        given: "A paket install"
+        File depenency1 = new File(paketInstallDir, "Dependency.1")
+        File depenency2 = new File(paketInstallDir, "Dependency.2")
+        File depenency3 = new File(paketInstallDir, "Dependency.3")
+
+        [depenency1, depenency2, depenency3].each { it.mkdirs() }
+
+        when:
+        strategy.execute(paketInstallDir, [
+                "Dependency.1": [].toSet(),
+                "Dependency.2": ["Dependency.1"].toSet(),
+                "Dependency.3": ["Dependency.1", "Dependency.2"].toSet()
+        ])
+
+        then:
+        def definition1 = readDefinition(depenency1)
+        def definition2 = readDefinition(depenency2)
+        def definition3 = readDefinition(depenency3)
+
+        definition1["references"] == []
+        definition2["references"] == ["Dependency.1"]
+        definition3["references"] == ["Dependency.1", "Dependency.2"]
+    }
+
+    def "creates cross references based on dependency tree with Editor assemblies"() {
+        given: "A paket install"
+        File depenency1 = new File(paketInstallDir, "Dependency.1")
+        File depenency2 = new File(paketInstallDir, "Dependency.2")
+        File depenency3 = new File(paketInstallDir, "Dependency.3")
+        File depenency4 = new File(paketInstallDir, "Dependency.4")
+        File depenency1Editor = new File(depenency1, "Editor")
+        File depenency2Editor = new File(depenency2, "Editor")
+        File depenency4Editor = new File(depenency4, "Editor")
+
+        [depenency1Editor, depenency2Editor, depenency3, depenency4Editor].each { it.mkdirs() }
+
+        when:
+        strategy.execute(paketInstallDir, [
+                "Dependency.1": [].toSet(),
+                "Dependency.2": ["Dependency.1"].toSet(),
+                "Dependency.3": ["Dependency.1", "Dependency.2"].toSet(),
+                "Dependency.4": ["Dependency.1", "Dependency.3"].toSet()
+        ])
+
+        then:
+        def definition1 = readDefinition(depenency1Editor)
+        def definition2 = readDefinition(depenency2Editor)
+        def definition3 = readDefinition(depenency3)
+        def definition4 = readDefinition(depenency4Editor)
+
+        definition1["references"] == ["Dependency.1"]
+        definition2["references"] == ["Dependency.2", "Dependency.1", "Dependency.1.Editor"]
+        definition3["references"] == ["Dependency.1", "Dependency.2"]
+        definition4["references"] == ["Dependency.4", "Dependency.1", "Dependency.3", "Dependency.1.Editor"]
+    }
+
+
+    String generateDefinitionNameForDirectory(File directory) {
+        def dirUri = directory.toURI()
+        def installDirUri = paketInstallDir.toURI()
+        def relativeDirUri = installDirUri.relativize(dirUri)
+
+        relativeDirUri.toString().split('/').collect({ it.capitalize() }).join(".")
+    }
+
+    File definitionFileForDirectory(File directory) {
+        new File(directory, "${generateDefinitionNameForDirectory(directory)}.asmdef")
+    }
+
+    def readDefinition(File directory) {
         def jsonSlurper = new JsonSlurper()
-        jsonSlurper.parse(strategy.assemblyDefinitionPathForDirectory(definition))
+        jsonSlurper.parse(definitionFileForDirectory(directory))
     }
 }
