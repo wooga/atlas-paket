@@ -20,7 +20,6 @@ package wooga.gradle.paket.unity.tasks
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileTreeElement
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
@@ -33,6 +32,7 @@ import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
+import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 
 /**
  * A task to copy referenced NuGet packages into Unity3D projects.
@@ -76,6 +76,9 @@ class PaketUnityInstall extends ConventionTask {
      */
     @Input
     String paketOutputDirectoryName
+
+    @Input
+    AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
     File projectRoot
 
@@ -170,9 +173,11 @@ class PaketUnityInstall extends ConventionTask {
     }
 
     protected void cleanOutputDirectory() {
-        def tree = project.fileTree(getOutputDirectory()) {
-            exclude("**/*.asmdef")
-            exclude("**/*.asmdef.meta")
+        def tree = project.fileTree(getOutputDirectory())
+
+        if(getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
+            tree.exclude("**/*.asmdef")
+            tree.exclude("**/*.asmdef.meta")
         }
 
         logger.info("delete files in directory: ${getOutputDirectory()}")

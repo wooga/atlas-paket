@@ -28,10 +28,12 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
     public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
 
+    protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
 
     DefaultPaketUnityPluginExtension(Project project,final PaketDependencyHandler dependencyHandler) {
         super(project, dependencyHandler)
+        assemblyDefinitionFileStrategy
     }
 
     @Override
@@ -47,5 +49,15 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     void setPaketOutputDirectoryName(String directory) {
         customPaketOutputDirectory = directory
+    }
+
+    @Override
+    AssemblyDefinitionFileStrategy getAssemblyDefinitionFileStrategy() {
+        return assemblyDefinitionFileStrategy
+    }
+
+    @Override
+    void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy) {
+        assemblyDefinitionFileStrategy = strategy
     }
 }
