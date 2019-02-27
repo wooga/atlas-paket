@@ -120,6 +120,8 @@ class PaketUnityInstall extends ConventionTask {
             fileTree.include("packages/${nuget}/lib/${it}/**")
         })
 
+        fileTree.include("packages/${nuget}/lib/*.dll")
+
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
         fileTree.files
