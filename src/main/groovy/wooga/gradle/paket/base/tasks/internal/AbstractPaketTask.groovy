@@ -120,7 +120,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     }
 
     @TaskAction
-    protected void performPaketCommand(IncrementalTaskInputs inputs) {
+    protected void performPaketCommand() {
         configureArguments()
         exec()
     }

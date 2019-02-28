@@ -74,7 +74,7 @@ class PaketBootstrap extends AbstractPaketTask {
     }
 
     @Override
-    protected void performPaketCommand(IncrementalTaskInputs inputs) {
+    protected void performPaketCommand() {
         checkBootstrapper()
         super.performPaketCommand(inputs)
     }
