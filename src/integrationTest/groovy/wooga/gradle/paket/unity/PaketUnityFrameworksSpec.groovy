@@ -34,13 +34,13 @@ class PaketUnityFrameworksSpec extends IntegrationSpec {
 
     @Unroll("task:paketUnityInstall wf")
     def "task:paketUnityInstall with frameworks:#includeFrameworks"() {
-        given: "a project with a unity project"
-        def dependency = "Newtonsoft.Json"
-
-        and: "a dependency file with json.net"
+        given: "a dependency file with json.net"
         def dependenciesFile = createFile("paket.dependencies")
-        dependenciesFile << """source https://nuget.org/api/v2
-        nuget ${dependency} = 11.0.1""".stripIndent()
+        dependenciesFile << """
+            source https://nuget.org/api/v2
+            nuget ${dependency} = ${dependencyVersion}
+        """.stripIndent()
+
         dependenciesFile << "\n${frameworksString}"
 
         and: "a reference file"
@@ -51,20 +51,47 @@ class PaketUnityFrameworksSpec extends IntegrationSpec {
         runTasksSuccessfully("paketInstall")
 
         then:
-        includeFrameworks.each {
+        includeFrameworks.every {
             def out1 = new File(projectDir, "Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${dependency}/${it}")
             out1.exists()
         }
-        excludedFrameworks.each {
+
+        !excludedFrameworks.every {
             def out2 = new File(projectDir, "Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${dependency}/${it}")
-            !out2.exists()
+            out2.exists()
         }
 
         where:
-        includeFrameworks           | excludedFrameworks
-        ["net20"]                   | ["net35", "net46"]
-        ["net20", "net35", "net45"] | ["net46"]
+        includeFrameworks           | excludedFrameworks | dependency        | dependencyVersion
+        ["net20"]                   | ["net35", "net46"] | "Newtonsoft.Json" | "11.0.1"
+        ["net20", "net35", "net45"] | ["net46"]          | "Newtonsoft.Json" | "11.0.1"
+
         frameworksString = includeFrameworks ? "framework: ${includeFrameworks.join(",")}" : ""
+    }
+
+    @Unroll("task:paketUnityInstall dlls")
+    def "task:paketUnityInstall installs dlls without framework specification"() {
+        given: "a dependency file with json.net"
+        def dependenciesFile = createFile("paket.dependencies")
+        dependenciesFile << """
+            source https://nuget.org/api/v2
+            nuget ${dependency} = ${dependencyVersion}
+        """.stripIndent()
+
+        and: "a reference file"
+        def referencesFile = createFile("${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}")
+        referencesFile << """${dependency}""".stripIndent()
+
+        when: "running task:PaketInstall"
+        runTasksSuccessfully("paketInstall")
+
+        then:
+        def out1 = new File(projectDir, "Assets/${DefaultPaketUnityPluginExtension.DEFAULT_PAKET_DIRECTORY}/${dependency}/${expectedDLL}")
+        out1.exists()
+
+        where:
+        dependency     | dependencyVersion | expectedDLL
+        "BouncyCastle" | "1.8.4"           | "BouncyCastle.Crypto.dll"
     }
 
 }

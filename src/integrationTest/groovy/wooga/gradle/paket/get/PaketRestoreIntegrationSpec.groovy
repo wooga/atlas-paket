@@ -76,7 +76,6 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
         runTasksSuccessfully("paketInstall")
 
         assert paketDirectories.every {it.exists()}
-        assert !restoreCacheFile.exists()
 
         when: "deleting packages directory"
         new File(projectDir, dirToDelete).delete()
@@ -86,7 +85,6 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
 
         then:
         paketDirectories.every {it.exists()}
-        restoreCacheFile.exists()
 
         where:
         taskToRun = PaketGetPlugin.RESTORE_TASK_NAME
