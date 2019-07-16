@@ -61,4 +61,36 @@ class PaketBaseIntegrationSpec extends PaketIntegrationBaseSpec {
         taskToRun = LifecycleBasePlugin.CLEAN_TASK_NAME
     }
 
+    def "paketBootstrap is [UP-TO-DATE] when paket version is still the same"() {
+        given: "a paket dependency file"
+        createFile("paket.dependencies")
+
+        and: "a empty lock file"
+        createFile("paket.lock")
+
+        and: "a first run of #taskToRun"
+        cleanupPaketDirectory()
+        runTasksSuccessfully(taskToRun)
+
+        when: "running a second time without changes"
+        def result = runTasksSuccessfully(taskToRun)
+
+        then: "bootstrap task was [UP-TO-DATE]"
+        result.wasUpToDate(bootstrapTaskName)
+
+        when: "delete bootstrapper"
+        def paketDir = new File(projectDir, '.paket')
+        def paketBootstrap = new File(paketDir, bootstrapperFileName)
+        paketBootstrap.delete()
+
+        and: "run the task again"
+        def result2 = runTasksSuccessfully(taskToRun)
+
+        then:
+        result2.wasUpToDate(bootstrapTaskName)
+
+        where:
+        taskToRun = "paketBootstrap"
+    }
+
 }

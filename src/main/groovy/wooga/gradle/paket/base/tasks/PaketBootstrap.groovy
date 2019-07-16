@@ -53,9 +53,12 @@ class PaketBootstrap extends AbstractPaketTask {
     @Input
     String paketVersion
 
+    @Input
+    File paketExecutable
+
     @OutputFiles
     FileCollection getOutputFiles() {
-        return project.files(getExecutable())
+        return project.files(getExecutable(), getPaketExecutable())
     }
     
     void setPaketVersion(String value) {
