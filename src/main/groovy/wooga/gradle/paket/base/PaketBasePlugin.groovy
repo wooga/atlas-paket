@@ -20,11 +20,13 @@ package wooga.gradle.paket.base
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.Delete
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
 import org.gradle.internal.reflect.Instantiator
@@ -137,8 +139,38 @@ class PaketBasePlugin implements Plugin<Project> {
 
         final taskConvention = task.conventionMapping
         taskConvention.map("executable", { extension.getBootstrapperExecutable() })
+        taskConvention.map("paketExecutable", { extension.getExecutable() })
         taskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
         taskConvention.map("paketVersion", { extension.getVersion() })
+
+        task.outputs.upToDateWhen(new Spec<PaketBootstrap>() {
+            @Override
+            boolean isSatisfiedBy(PaketBootstrap t) {
+                if(t.paketExecutable.exists()) {
+                    ByteArrayOutputStream stdOut = new ByteArrayOutputStream()
+
+                    String osName = System.getProperty("os.name").toLowerCase()
+
+                    def paketArgs = []
+
+                    if (!osName.contains("windows")) {
+                        paketArgs << t.getMonoExecutable()
+                    }
+
+                    paketArgs << t.paketExecutable
+                    paketArgs << "--version"
+
+                    def execResult = project.exec {
+                        commandLine = paketArgs
+                        standardOutput = stdOut
+                        ignoreExitValue = true
+                    }
+
+                    return execResult.exitValue == 0 && stdOut.toString().contains(t.paketVersion)
+                }
+                return false
+            }
+        })
     }
 
     private static void setConfigurations(final Project project) {

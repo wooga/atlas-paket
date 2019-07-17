@@ -98,7 +98,7 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
         def result2 = runTasksSuccessfully(taskToRun)
 
         then:
-        !result2.wasUpToDate(bootstrapTaskName)
+        result2.wasUpToDate(bootstrapTaskName)
 
         where:
         taskToRun << bootstrapTestCases

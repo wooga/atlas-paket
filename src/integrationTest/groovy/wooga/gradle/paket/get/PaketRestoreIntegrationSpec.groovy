@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.get
 
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.paket.PaketIntegrationBaseSpec
@@ -91,6 +92,8 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
         dirToDelete << paketDirectories
     }
 
+
+    @Ignore //reason see issue https://github.com/wooga/atlas-paket/issues/53
     @Unroll
     def "task :#taskToRun caches last restore state"() {
         given: "a paket dependency file"
