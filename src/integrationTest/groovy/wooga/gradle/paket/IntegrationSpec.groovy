@@ -20,9 +20,14 @@ package wooga.gradle.paket
 import nebula.test.functional.ExecutionResult
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.StringEscapeUtils
+import org.junit.Rule
+import org.junit.contrib.java.lang.system.ProvideSystemProperty
 import spock.lang.Shared
 
 class IntegrationSpec extends nebula.test.IntegrationSpec{
+
+    @Rule
+    ProvideSystemProperty properties = new ProvideSystemProperty("ignoreDeprecations", "true")
 
     @Shared
     File cachedPaketDir
