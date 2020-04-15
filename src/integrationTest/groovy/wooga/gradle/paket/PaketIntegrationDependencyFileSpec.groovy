@@ -131,7 +131,7 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         fork=true
         def dependenciesFile = createFile("paket.dependencies")
         dependenciesFile << """
-            source https://nuget.org/api/v2
+            source https://api.nuget.org/v3/index.json
             nuget Mini
             nuget Wooga.Lambda
         """.stripIndent().trim()
