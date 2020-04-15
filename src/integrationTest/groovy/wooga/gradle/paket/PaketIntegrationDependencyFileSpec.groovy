@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket
 
+import spock.lang.Requires
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
@@ -125,7 +126,8 @@ abstract class PaketIntegrationDependencyFileSpec extends PaketIntegrationBaseSp
         taskToRun << bootstrapTestCases
     }
 
-    //run paketUnityInstall on a real project with dependencies
+    //run paketUnityInstall on a real project with
+    @Requires({os.macOs})
     def "rpIoarpwd"() {
         given: "a dependencies file"
         fork=true
