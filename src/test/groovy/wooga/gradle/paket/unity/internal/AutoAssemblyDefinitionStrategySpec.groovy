@@ -222,6 +222,43 @@ class AutoAssemblyDefinitionStrategySpec extends Specification {
         definition4["references"] == ["Dependency.4", "Dependency.1", "Dependency.3", "Dependency.1.Editor"]
     }
 
+    def "uses existing asmdef files when available"() {
+        given: "A paket install"
+        File depenency1 = new File(paketInstallDir, "Dependency.1")
+        File depenency2 = new File(paketInstallDir, "Dependency.2")
+        File depenency3 = new File(paketInstallDir, "Dependency.3")
+        File depenency4 = new File(paketInstallDir, "Dependency.4")
+        File depenency1Editor = new File(depenency1, "Editor")
+        File depenency2Editor = new File(depenency2, "Editor")
+        File dependency2AsmDef = new File(depenency2, "SomeName.asmdef")
+        File dependency2EditorAsmDef = new File(depenency2Editor, "SomeName.Editor.asmdef")
+        File depenency4Editor = new File(depenency4, "Editor")
+
+        [depenency1Editor, depenency2Editor, depenency3, depenency4Editor].each { it.mkdirs() }
+
+        new AssemblyDefinition(dependency2AsmDef, ["Dependency.1"]).export()
+        new AssemblyDefinition(dependency2EditorAsmDef, ["Dependency.1", generateDefinitionNameForDirectory(depenency1Editor)]).export()
+
+        when:
+        strategy.execute(paketInstallDir, [
+                "Dependency.1": [].toSet(),
+                "Dependency.2": ["Dependency.1"].toSet(),
+                "Dependency.3": ["Dependency.1", "Dependency.2"].toSet(),
+                "Dependency.4": ["Dependency.1", "Dependency.3"].toSet()
+        ])
+
+        then:
+        def definition1 = readDefinition(depenency1Editor)
+        def definition2 = readDefinition(depenency2Editor)
+        def definition3 = readDefinition(depenency3)
+        def definition4 = readDefinition(depenency4Editor)
+
+        definition1["references"] == ["Dependency.1"]
+        definition2["references"] == ["Dependency.2", "Dependency.1", "Dependency.1.Editor"]
+        definition3["references"] == ["Dependency.1", "Dependency.2"]
+        definition4["references"] == ["Dependency.4", "Dependency.1", "Dependency.3", "Dependency.1.Editor"]
+    }
+
 
     String generateDefinitionNameForDirectory(File directory) {
         def dirUri = directory.toURI()

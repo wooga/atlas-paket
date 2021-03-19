@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.unity.internal
 
+import groovy.json.JsonOutput
 import org.apache.commons.io.FilenameUtils
 
 import java.beans.Transient
@@ -74,6 +75,15 @@ class AssemblyDefinition {
         excludePlatforms = []
         precompiledReferences = []
         defineConstraints = []
+    }
+
+    void export() {
+        export(this)
+    }
+
+    static void export(AssemblyDefinition definition) {
+        def output = JsonOutput.toJson(definition.model)
+        definition.filePath.text = JsonOutput.prettyPrint(output)
     }
 
     static File assemblyDefinitionPathForDirectory(File directory) {
