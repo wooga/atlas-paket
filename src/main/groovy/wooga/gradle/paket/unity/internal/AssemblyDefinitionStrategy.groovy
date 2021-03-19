@@ -25,6 +25,12 @@ abstract class AssemblyDefinitionStrategy implements wooga.gradle.paket.unity.As
 
     private static final Logger BUILD_LOGGER = Logging.getLogger(AssemblyDefinitionStrategy.class)
 
+    void execute(File installDirectory, Map<String, Set<String>> tree) {
+        Set<File> references = [].toSet() as Set<File>
+        Set<File> editorReferences = [].toSet() as Set<File>
+        execute(installDirectory, tree, references, editorReferences)
+    }
+
     abstract void execute(File installDirectory, Map<String, Set<String>> tree, Set<File> references, Set<File> editorReferences)
 
     Logger getLogger() {
