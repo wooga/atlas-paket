@@ -77,10 +77,18 @@ class PaketUnityInstall extends ConventionTask {
     @Input
     String paketOutputDirectoryName
 
+    /**
+     * Whether assembly definition files (.asmdef) should be included during installation
+     */
+    @Input
+    Boolean includeAssemblyDefinitions = false
+
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
     File projectRoot
+
+    public final static String assemblyDefinitionFileExtension = "asmdef"
 
     /**
      * @return the installation output directory
@@ -124,7 +132,13 @@ class PaketUnityInstall extends ConventionTask {
 
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
-        fileTree.files
+
+        if (!getIncludeAssemblyDefinitions()) {
+            fileTree.exclude("**/*.${assemblyDefinitionFileExtension}")
+        }
+
+        def files = fileTree.files
+        return files
     }
 
     PaketUnityInstall() {

@@ -55,4 +55,15 @@ interface PaketUnityPluginExtension extends PaketPluginExtension {
      * @param strategy the strategy to be used
      */
     void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy)
+
+    /**
+     * Sets whether assembly definition files should be included during installation
+     * @param value
+     */
+    void setIncludeAssemblyDefinitions(Boolean value)
+
+    /**
+     * @return Whether assembly definition files should be included during installation
+     */
+    Boolean getIncludeAssemblyDefinitions()
 }
