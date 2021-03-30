@@ -33,10 +33,8 @@ import wooga.gradle.paket.unity.tasks.PaketUnityInstall
  * Example:
  * <pre>
  * {@code
- *     plugins {
- *         id 'net.wooga.paket-unity' version '0.10.1'
- *     }
- * }
+ *     plugins {*         id 'net.wooga.paket-unity' version '0.10.1'
+ *}*}
  * </pre>
  */
 class PaketUnityPlugin implements Plugin<Project> {
@@ -46,6 +44,8 @@ class PaketUnityPlugin implements Plugin<Project> {
     static final String GROUP = "PaketUnity"
     static final String EXTENSION_NAME = 'paketUnity'
     static final String INSTALL_TASK_NAME = "paketUnityInstall"
+
+    static final String taskNameSeparator = "_"
 
     @Override
     void apply(Project project) {
@@ -78,7 +78,7 @@ class PaketUnityPlugin implements Plugin<Project> {
         }
 
         extension.paketReferencesFiles.each { referenceFile ->
-            def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall)
+            def task = project.tasks.create(generateProjectTaskName(referenceFile.parentFile.name), PaketUnityInstall)
             task.with {
                 group = GROUP
                 description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
@@ -109,5 +109,10 @@ class PaketUnityPlugin implements Plugin<Project> {
 
             [paketInstall, paketRestore].each configClosure
         }
+    }
+
+    static String generateProjectTaskName(name) {
+        return (INSTALL_TASK_NAME + name)
+                .replaceAll(/\./, taskNameSeparator)
     }
 }

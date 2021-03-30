@@ -171,7 +171,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         "project.tasks.getByName(#taskName%%)" | false
 
         unityProjectName = "Test.Project"
-        taskName = PaketUnityPlugin.INSTALL_TASK_NAME + unityProjectName
+        taskName = PaketUnityPlugin.generateProjectTaskName(unityProjectName)
         dependencyName = "Wooga.TestDependency"
         configurationString = baseConfigurationString.replace("#taskName%%", "'${taskName}'")
     }
