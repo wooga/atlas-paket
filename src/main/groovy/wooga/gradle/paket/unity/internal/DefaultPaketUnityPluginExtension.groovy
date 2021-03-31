@@ -30,8 +30,6 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
-    protected Boolean includeAssemblyDefinitions
-
 
     DefaultPaketUnityPluginExtension(Project project,final PaketDependencyHandler dependencyHandler) {
         super(project, dependencyHandler)
@@ -61,15 +59,5 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     @Override
     void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy) {
         assemblyDefinitionFileStrategy = strategy
-    }
-
-    @Override
-    void setIncludeAssemblyDefinitions(Boolean value) {
-        includeAssemblyDefinitions = value
-    }
-
-    @Override
-    Boolean getIncludeAssemblyDefinitions() {
-        includeAssemblyDefinitions
     }
 }

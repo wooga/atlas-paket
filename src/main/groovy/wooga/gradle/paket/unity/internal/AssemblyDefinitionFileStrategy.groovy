@@ -19,5 +19,4 @@ package wooga.gradle.paket.unity.internal
 
 enum AssemblyDefinitionFileStrategy {
     manual, disabled
-
 }

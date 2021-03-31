@@ -22,7 +22,6 @@ import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
-import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
 class PaketUnityIntegrationSpec extends IntegrationSpec {
 
@@ -117,68 +116,15 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
             ${applyPlugin(PaketGetPlugin)}
         """.stripIndent()
 
-        and: "setup paket configuration"
-        setupPaketProject(dependencyName, unityProjectName)
-
-        when:
-        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
-        def packagesDir = new File(projectDir, "${unityProjectName}/Assets/Paket.Unity3D/${dependencyName}")
-        assert packagesDir.exists()
-
-        then:
-        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
-    }
-
-    @Unroll("Copy assembly definitions when includeAssemblyDefinitions is #includeAssemblyDefinitions and set in #configurationString")
-    def "copy assembly definition files"() {
-
-        given: "apply paket get plugin to get paket install task"
+        and: "apply paket unity plugin to get paket unity install task"
         buildFile << """
-            ${applyPlugin(PaketGetPlugin)}
+            ${applyPlugin(PaketUnityPlugin)}
         """.stripIndent()
 
-        buildFile << """
-            ${configurationString} {                 
-                    includeAssemblyDefinitions = ${includeAssemblyDefinitions}                  
-            }      
-        """.stripIndent()
-
-        and: "setup paket configuration"
-        setupPaketProject(dependencyName, unityProjectName)
-
-        and: "setup assembly definition file in package"
-        def asmdefFileName = "${dependencyName}.${PaketUnityInstall.assemblyDefinitionFileExtension}"
-        def inputAsmdefFile = createFile("packages/${dependencyName}/content/${asmdefFileName}")
-        assert inputAsmdefFile.exists()
-
-        when:
-        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
-        def outputDir = "${unityProjectName}/Assets/Paket.Unity3D/${dependencyName}"
-        def packagesDir = new File(projectDir, outputDir)
-        assert packagesDir.exists()
-
-        then:
-        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
-        def outputAsmdefFilePath = "${packagesDir}/${asmdefFileName}"
-        def outputAsmdefFile = new File(outputAsmdefFilePath)
-        includeAssemblyDefinitions == outputAsmdefFile.exists()
-
-        where:
-        baseConfigurationString | includeAssemblyDefinitions
-        "paketUnity" | true
-        "paketUnity" | false
-        "project.tasks.getByName(#taskName%%)" | true
-        "project.tasks.getByName(#taskName%%)" | false
-
-        unityProjectName = "Test.Project"
-        taskName = PaketUnityPlugin.INSTALL_TASK_NAME + unityProjectName
-        dependencyName = "Wooga.TestDependency"
-        configurationString = baseConfigurationString.replace("#taskName%%", "'${taskName}'")
-    }
-
-    private void setupPaketProject(dependencyName, unityProjectName) {
-
+        and: "paket dependency file and lock"
         def dependencies = createFile("paket.dependencies")
+
+
         dependencies << """
         source https://nuget.org/api/v2
         nuget ${dependencyName}
@@ -187,12 +133,22 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         def lockFile = createFile("paket.lock")
         lockFile << """${dependencyName}""".stripIndent()
 
+        and: "paket unity references file "
         def references = createFile("${unityProjectName}/paket.unity3d.references")
         references << """
         ${dependencyName}
         """.stripIndent()
 
+        and: "dependency package with file"
         createFile("packages/${dependencyName}/content/${dependencyName}.cs")
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+        def packagesDir = new File(projectDir, "${unityProjectName}/Assets/Paket.Unity3D/${dependencyName}")
+        assert packagesDir.exists()
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
     }
 
     static boolean hasNoSource(ExecutionResult result, String taskName) {
