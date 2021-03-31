@@ -17,8 +17,10 @@
 
 package wooga.gradle.paket.unity.tasks
 
+import groovy.transform.Internal
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
+import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
@@ -82,10 +84,17 @@ class PaketUnityInstall extends ConventionTask {
     @Input
     Boolean includeAssemblyDefinitions = false
 
+    /**
+     * Whether test assemblies (in $PACKAGE/Tests) should be included during installation
+     */
+    @Input
+    Boolean includeTests = false
+
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
     public final static String assemblyDefinitionFileExtension = "asmdef"
+    public final static String testsDirectoryName = "Tests"
 
     /**
      * @return the installation output directory
@@ -101,34 +110,77 @@ class PaketUnityInstall extends ConventionTask {
     @InputFiles
     FileCollection getInputFiles() {
         Set<File> files = []
+
+
+        // By convention, the root of the Unity project will have a
+        // paket.references file that we use to decide what files from the packages we will copy
+        // into the project
         def references = new PaketUnityReferences(getReferencesFile())
 
+        // If there's no lock file, do nothing
         if (!getLockFile().exists()) {
             return null
         }
 
+        // Retrieve all dependencies by using the lock file,
+        // filtering them and giving only unique entries
         def locks = new PaketLock(getLockFile())
-        def dependencies = locks.getAllDependencies(references.nugets)
+        def dependencies = locks.getAllDependencies(references.referenceNames)
         dependencies.each { nuget ->
+
             if (!PaketUnwrapUPMPackages.isUPMWrapper(nuget, project)) {
-                def depFiles = getFilesForPackage(nuget)
-                files << depFiles
+
+                // An optional action to invoke while packaging files
+                Action<? super ConfigurableFileTree> onPackage = null
+                // TODO: Include logging for when tests/assemblies are included
+
+                // If it's an unity wdk package, we have additional properties for it
+                // which we can use to further filter the files
+                if (references.containsReference(nuget)) {
+
+                    def ref = references.getReference(nuget)
+                    onPackage = { fileTree ->
+
+                        // TESTS
+                        if (!ref.includeTests && !getIncludeTests()) {
+                            // Exclude the Tests directory on the second level of the project,
+                            // since wdks conventionally have the layout:
+                            // $WDK/Runtime
+                            // $WDK/Editor
+                            // $WDK/Tests
+                            fileTree.exclude("**/${nuget}/content/*/${testsDirectoryName}/**/*")
+                        }
+                        else{
+                            logger.info("Including tests from ${nuget}")
+                        }
+
+                        // ASSEMBLY DEFINITION FILES
+                        if (!ref.includeAssemblies && !getIncludeAssemblyDefinitions()) {
+                            // Exclude all assembly definition files from the project
+                            fileTree.exclude("**/${nuget}/content/*.${assemblyDefinitionFileExtension}")
+                        }
+                        else{
+                            logger.info("Including assembly definition files from ${nuget}")
+                        }
+                    }
+                }
+
+                def packageFiles = getFilesForPackage(nuget, onPackage)
+                    files << packageFiles
             }
         }
 
         project.files(files)
     }
 
-    PaketUnityInstall() {
-        description = 'Copy paket dependencies into unity projects'
-        group = PaketUnityPlugin.GROUP
-    }
-
     /**
-     * @param nuget The name of the package
-     * @return The files to be copied over from this package
+     * @param nuget The name of the nuget package's directory
+     * @return Given the name of a (downloaded) nuget package, returns the path to all
+     * the applicable files from it that should be copied to the project
      */
-    Set<File> getFilesForPackage(String nuget) {
+    Set<File> getFilesForPackage(String nuget, Action<? super ConfigurableFileTree> action = null) {
+
+        logger.info("Including files from nuget package: ${nuget}")
         def fileTree = project.fileTree(dir: project.projectDir)
         fileTree.include("packages/${nuget}/content/**")
 
@@ -141,14 +193,18 @@ class PaketUnityInstall extends ConventionTask {
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
 
-        if (!getIncludeAssemblyDefinitions()) {
-            fileTree.exclude("**/*.${assemblyDefinitionFileExtension}")
+        if (action != null) {
+            action.execute(fileTree)
         }
 
         def files = fileTree.files
         return files
     }
 
+    /**
+     * Copies all the resolved nuget package files from their source directories
+     * onto the project
+     */
     @TaskAction
     protected performCopy(IncrementalTaskInputs inputs) {
 
@@ -196,8 +252,7 @@ class PaketUnityInstall extends ConventionTask {
     protected void cleanOutputDirectory() {
         def tree = project.fileTree(getOutputDirectory())
 
-        // If the strategy is manual, do not delete asmdefs
-        if (getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
+        if(getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
             tree.exclude("**/*.asmdef")
             tree.exclude("**/*.asmdef.meta")
         }

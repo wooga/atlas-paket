@@ -166,8 +166,8 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
         }
 
         if (execResult.exitValue != 0) {
-            logger.error(stdErr.toString())
-            throw new GradleException("Paket task ${name} failed" + stdErr.toString())
+            String msg = stdErr.size() > 0 ? stdErr : stdOut
+            throw new GradleException("Paket task ${name} failed with message:\n${msg}")
         }
 
         logger.info(stdOut.toString())
