@@ -110,7 +110,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     def "run paketUnityInstall with dependencies"() {
         given: "a small project with a unity project dir"
         def unityProjectName = "Test.Project"
-        def dependencyName = "Wooga.TestDependency"
+        def packageName = "TestDependency"
+        def dependencyName = "Wooga.${packageName}"
 
         and: "apply paket get plugin to get paket install task"
         buildFile << """
@@ -118,7 +119,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         """.stripIndent()
 
         and: "setup paket configuration"
-        setupPaketProject(dependencyName, unityProjectName)
+        setupPaketProject(dependencyName, unityProjectName, packageName)
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -129,8 +130,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
     }
 
-    @Unroll("Copy assembly definitions when includeAssemblyDefinitions is #includeAssemblyDefinitions and set in #configurationString")
-    def "copy assembly definition files"() {
+    @Unroll("#includeStr assembly definitions when includeAssemblies is #includeAssemblies in reference and #includeAssembliesInTask in #configurationString")
+    def "include assembly definition files"() {
 
         given: "apply paket get plugin to get paket install task"
         buildFile << """
@@ -139,12 +140,13 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         buildFile << """
             ${configurationString} {                 
-                    includeAssemblyDefinitions = ${includeAssemblyDefinitions}                  
+                    includeAssemblyDefinitions = ${includeAssembliesInTask}                  
             }      
         """.stripIndent()
 
         and: "setup paket configuration"
-        setupPaketProject(dependencyName, unityProjectName)
+        def nugetReference = "${dependencyName} [includeAssemblies:${includeAssemblies}]"
+        setupPaketProject(dependencyName, unityProjectName, packageName, nugetReference)
 
         and: "setup assembly definition file in package"
         def asmdefFileName = "${dependencyName}.${PaketUnityInstall.assemblyDefinitionFileExtension}"
@@ -161,22 +163,78 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
         def outputAsmdefFilePath = "${packagesDir}/${asmdefFileName}"
         def outputAsmdefFile = new File(outputAsmdefFilePath)
-        includeAssemblyDefinitions == outputAsmdefFile.exists()
+        included == outputAsmdefFile.exists()
 
         where:
-        baseConfigurationString | includeAssemblyDefinitions
-        "paketUnity" | true
-        "paketUnity" | false
-        "project.tasks.getByName(#taskName%%)" | true
-        "project.tasks.getByName(#taskName%%)" | false
+        baseConfigurationString                | includeAssemblies | includeAssembliesInTask | included
+        "paketUnity"                           | true              | true                    | true
+        "paketUnity"                           | true              | false                   | true
+        "paketUnity"                           | false             | true                    | true
+        "paketUnity"                           | false             | false                   | false
+        "project.tasks.getByName(#taskName%%)" | true              | true                    | true
+        "project.tasks.getByName(#taskName%%)" | true              | false                   | true
+        "project.tasks.getByName(#taskName%%)" | false             | true                    | true
+        "project.tasks.getByName(#taskName%%)" | false             | false                   | false
+
 
         unityProjectName = "Test.Project"
         taskName = PaketUnityPlugin.INSTALL_TASK_NAME + unityProjectName
-        dependencyName = "Wooga.TestDependency"
+        packageName = "TestDependency"
+        dependencyName = "Wooga.${packageName}"
         configurationString = baseConfigurationString.replace("#taskName%%", "'${taskName}'")
+        includeStr = included ? "Include" : "Exclude"
     }
 
-    private void setupPaketProject(dependencyName, unityProjectName) {
+    @Unroll("#includeStr tests when includeTests is #includeTests in reference and #includeTestsInTask in #configurationString")
+    def "include test files"() {
+
+        given: "apply paket get plugin to get paket install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        buildFile << """
+            ${configurationString} {                 
+                    includeTests = ${includeTestsInTask}                  
+            }      
+        """.stripIndent()
+
+        and: "setup paket package, add tests"
+        def nugetReference = "${dependencyName} [includeTests:${includeTests}]"
+        setupPaketProject(dependencyName, unityProjectName, packageName, nugetReference)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+        def outputDir = "${unityProjectName}/Assets/Paket.Unity3D/${dependencyName}"
+        def packagesDir = new File(projectDir, outputDir)
+        assert packagesDir.exists()
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        def testDirectoryPath = "${packagesDir}/${packageName}/${PaketUnityInstall.testsDirectoryName}"
+        def testDirectory = new File(testDirectoryPath)
+        included == testDirectory.exists()
+
+        where:
+        baseConfigurationString                | includeTests | includeTestsInTask | included
+        "paketUnity"                           | true         | true               | true
+        "paketUnity"                           | true         | false              | true
+        "paketUnity"                           | false        | true               | true
+        "paketUnity"                           | false        | false              | false
+        "project.tasks.getByName(#taskName%%)" | true         | true               | true
+        "project.tasks.getByName(#taskName%%)" | true         | false              | true
+        "project.tasks.getByName(#taskName%%)" | false        | true               | true
+        "project.tasks.getByName(#taskName%%)" | false        | false              | false
+
+        unityProjectName = "Test.Project"
+        taskName = PaketUnityPlugin.INSTALL_TASK_NAME + unityProjectName
+        packageName = "TestDependency"
+        dependencyName = "Wooga.${packageName}"
+        configurationString = baseConfigurationString.replace("#taskName%%", "'${taskName}'")
+        includeStr = included ? "Include" : "Exclude"
+    }
+
+    private void setupPaketProject(dependencyName, unityProjectName, String packageName, String nugetReference = null) {
 
         def dependencies = createFile("paket.dependencies")
         dependencies << """
@@ -187,12 +245,20 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         def lockFile = createFile("paket.lock")
         lockFile << """${dependencyName}""".stripIndent()
 
+        // Custom file used by our system to decide which files from an unity package
+        // get copied to the project
         def references = createFile("${unityProjectName}/paket.unity3d.references")
         references << """
-        ${dependencyName}
+        ${nugetReference ?: dependencyName}
         """.stripIndent()
 
-        createFile("packages/${dependencyName}/content/${dependencyName}.cs")
+        def useConvention = true
+        if (useConvention) {
+            createFile("packages/${dependencyName}/content/${packageName}/Runtime/RuntimeScript.cs")
+            createFile("packages/${dependencyName}/content/${packageName}/Editor/EditorScript.cs")
+            createFile("packages/${dependencyName}/content/${packageName}/${PaketUnityInstall.testsDirectoryName}/Editor/TestScript.cs")
+            createFile("packages/${dependencyName}/content/${packageName}/${PaketUnityInstall.testsDirectoryName}/Runtime/EditorTestScript.cs")
+        }
     }
 
     static boolean hasNoSource(ExecutionResult result, String taskName) {
