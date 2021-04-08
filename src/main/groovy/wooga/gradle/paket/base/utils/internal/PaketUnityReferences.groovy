@@ -30,7 +30,7 @@ class PaketUnityReferences {
         referencesContent.eachLine { line ->
 
             if(!line.empty){
-                nugets << line
+                nugets << line.trim()
             }
         }
     }
