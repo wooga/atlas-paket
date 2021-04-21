@@ -35,7 +35,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     @Internal
     protected Boolean supportLogfile = true
 
-    @Input
+    @InputFile
     File executable
 
     @Optional
@@ -43,7 +43,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     String monoExecutable
 
     @Optional
-    @Input
+    @InputFile
     File getLogFile() {
         return logFile ? project.file(logFile) : null
     }

@@ -28,7 +28,6 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.Delete
-import org.gradle.buildinit.tasks.internal.TaskConfiguration
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import wooga.gradle.paket.base.dependencies.internal.DefaultPaketDependencyHandler
@@ -53,6 +52,8 @@ class PaketBasePlugin implements Plugin<Project> {
     static final String INIT_TASK_NAME = "paketInit"
     static final String PAKET_DEPENDENCIES_TASK_NAME = "paketDependencies"
     static final String PAKET_CONFIGURATION = "nupkg"
+
+    static final String TASK_GROUP_NAME = "Build Setup"
 
     @Override
     void apply(Project project) {
@@ -129,7 +130,7 @@ class PaketBasePlugin implements Plugin<Project> {
     }
 
     private static void addInitTask(final Project project, PaketPluginExtension extension) {
-        final task = project.tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TaskConfiguration.GROUP)
+        final task = project.tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TASK_GROUP_NAME)
         task.conventionMapping.map("dependenciesFile", { extension.getPaketDependenciesFile() })
     }
 

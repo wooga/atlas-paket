@@ -19,7 +19,10 @@ package wooga.gradle.paket.base.repository.internal
 
 import com.google.common.collect.Lists
 import groovy.transform.EqualsAndHashCode
+import org.gradle.api.Action
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
+import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor
+import org.gradle.api.credentials.Credentials
 import org.gradle.api.internal.artifacts.repositories.AuthenticationSupporter
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.Input
@@ -107,5 +110,15 @@ class DefaultNugetArtifactRepository implements NugetArtifactRepository {
     @Override
     void setName(String name) {
         this.name = name
+    }
+
+    @Override
+    void content(Action<? super RepositoryContentDescriptor> action) {
+
+    }
+
+    @Override
+    void credentials(Class<? extends Credentials> aClass) {
+
     }
 }

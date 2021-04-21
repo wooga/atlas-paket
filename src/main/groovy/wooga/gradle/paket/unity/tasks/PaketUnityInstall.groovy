@@ -24,6 +24,7 @@ import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
@@ -56,13 +57,13 @@ class PaketUnityInstall extends ConventionTask {
     /**
      * @return the path to a {@code paket.unity3d.references} file
      */
-    @Input
+    @InputFile
     File referencesFile
 
     /**
      * @return the path to a {@code paket.lock} file
      */
-    @Input
+    @InputFile
     File lockFile
 
     /**

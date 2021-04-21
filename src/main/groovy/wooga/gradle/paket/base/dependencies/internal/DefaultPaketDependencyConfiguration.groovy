@@ -20,6 +20,7 @@ package wooga.gradle.paket.base.dependencies.internal
 import org.gradle.api.Action
 import org.gradle.api.Named
 import org.gradle.api.internal.AbstractNamedDomainObjectContainer
+import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.internal.Actions
 import org.gradle.internal.reflect.DirectInstantiator
 import org.gradle.internal.reflect.Instantiator
@@ -34,7 +35,7 @@ class DefaultPaketDependencyConfiguration extends AbstractNamedDomainObjectConta
     private final PaketDependencyFactory dependencyFactory
 
     DefaultPaketDependencyConfiguration(final String name, Instantiator instantiator = null) {
-        super(PaketDependency.class, instantiator ?: DirectInstantiator.INSTANCE)
+        super(PaketDependency.class, instantiator ?: DirectInstantiator.INSTANCE, CollectionCallbackActionDecorator.NOOP)
         this.name = name
         this.dependencyFactory = instantiator.newInstance(PaketDependencyFactory, instantiator)
     }

@@ -27,8 +27,10 @@ import org.gradle.internal.authentication.DefaultAuthenticationContainer
 import org.gradle.internal.authentication.DefaultBasicAuthentication
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.ConfigureUtil
+import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import wooga.gradle.paket.base.repository.NugetRepositoryHandlerConvention
 import wooga.gradle.paket.base.repository.NugetArtifactRepository
+
 
 class DefaultNugetArtifactRepositoryHandlerConvention implements NugetRepositoryHandlerConvention<NugetArtifactRepository> {
 
@@ -62,7 +64,7 @@ class DefaultNugetArtifactRepositoryHandlerConvention implements NugetRepository
     }
 
     protected AuthenticationContainer createAuthenticationContainer() {
-        DefaultAuthenticationContainer container = instantiator.newInstance(DefaultAuthenticationContainer.class, instantiator)
+        DefaultAuthenticationContainer container = instantiator.newInstance(DefaultAuthenticationContainer.class, instantiator, CollectionCallbackActionDecorator.NOOP)
 
         container.registerBinding(BasicAuthentication.class, DefaultBasicAuthentication.class)
         return container

@@ -73,7 +73,7 @@ class PaketPackPlugin implements Plugin<Project> {
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPackPluginExtension, project, baseExtension.dependencyHandler)
 
         final configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
-        final templateFiles = project.fileTree(project.projectDir)
+        def templateFiles = project.fileTree(project.projectDir)
         templateFiles.include PAKET_TEMPLATE_PATTERN
         templateFiles = templateFiles.sort()
         templateFiles = templateFiles.sort(true, new Comparator<File>() {
