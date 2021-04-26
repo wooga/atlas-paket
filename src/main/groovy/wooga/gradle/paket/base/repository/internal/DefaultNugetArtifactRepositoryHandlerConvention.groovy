@@ -22,6 +22,8 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
 import org.gradle.api.internal.artifacts.DefaultArtifactRepositoryContainer
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.authentication.http.BasicAuthentication
 import org.gradle.internal.authentication.DefaultAuthenticationContainer
 import org.gradle.internal.authentication.DefaultBasicAuthentication
@@ -37,11 +39,15 @@ class DefaultNugetArtifactRepositoryHandlerConvention implements NugetRepository
     private final DefaultArtifactRepositoryContainer handler
     private final Instantiator instantiator
     private final FileResolver fileResolver
+    private final ObjectFactory objectFactory
+    private final ProviderFactory providerFactory
 
-    DefaultNugetArtifactRepositoryHandlerConvention(RepositoryHandler handler, FileResolver fileResolver, Instantiator instantiator) {
+    DefaultNugetArtifactRepositoryHandlerConvention(RepositoryHandler handler, FileResolver fileResolver, Instantiator instantiator, ObjectFactory objectFactory, ProviderFactory providerFactory) {
         this.handler = handler
         this.instantiator = instantiator
         this.fileResolver = fileResolver
+        this.objectFactory = objectFactory
+        this.providerFactory = providerFactory
     }
 
     @Override
@@ -60,7 +66,7 @@ class DefaultNugetArtifactRepositoryHandlerConvention implements NugetRepository
     }
 
     protected NugetArtifactRepository createNugetRepository() {
-        instantiator.newInstance(DefaultNugetArtifactRepository.class, fileResolver, instantiator, createAuthenticationContainer())
+        instantiator.newInstance(DefaultNugetArtifactRepository.class, fileResolver, instantiator, objectFactory, createAuthenticationContainer(), providerFactory)
     }
 
     protected AuthenticationContainer createAuthenticationContainer() {

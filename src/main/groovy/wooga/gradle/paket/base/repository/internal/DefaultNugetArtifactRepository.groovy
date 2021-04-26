@@ -20,17 +20,20 @@ package wooga.gradle.paket.base.repository.internal
 import com.google.common.collect.Lists
 import groovy.transform.EqualsAndHashCode
 import org.gradle.api.Action
+import org.gradle.api.PathValidation
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
 import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor
 import org.gradle.api.credentials.Credentials
 import org.gradle.api.internal.artifacts.repositories.AuthenticationSupporter
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.internal.reflect.Instantiator
 import wooga.gradle.paket.base.repository.NugetArtifactRepository
 
-@EqualsAndHashCode(includeFields=true)
+@EqualsAndHashCode(includeFields = true)
 class DefaultNugetArtifactRepository implements NugetArtifactRepository {
 
     private final FileResolver fileResolver
@@ -43,8 +46,11 @@ class DefaultNugetArtifactRepository implements NugetArtifactRepository {
 
     DefaultNugetArtifactRepository(FileResolver fileResolver,
                                    Instantiator instantiator,
-                                   AuthenticationContainer authenticationContainer) {
-        this.delegate = new AuthenticationSupporter(instantiator, authenticationContainer)
+                                   ObjectFactory objectFactory,
+                                   AuthenticationContainer authenticationContainer,
+                                   ProviderFactory providerFactory
+    ) {
+        this.delegate = new AuthenticationSupporter(instantiator, objectFactory, authenticationContainer, providerFactory)
         this.fileResolver = fileResolver
     }
 
@@ -68,7 +74,11 @@ class DefaultNugetArtifactRepository implements NugetArtifactRepository {
     @Input
     @Override
     Set<File> getDirs() {
-        return fileResolver.resolveFiles(dirs).getFiles()
+        Set<File> resolvedDirs = new HashSet<File>()
+        for (Object dir in dirs) {
+            resolvedDirs << fileResolver.resolve(dir)
+        }
+        resolvedDirs
     }
 
     @Override
@@ -96,8 +106,7 @@ class DefaultNugetArtifactRepository implements NugetArtifactRepository {
     }
 
     private assertURL() {
-        if(url != null)
-        {
+        if (url != null) {
             throw new Exception("url already set")
         }
     }

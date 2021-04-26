@@ -77,8 +77,8 @@ class PaketUnityPlugin implements Plugin<Project> {
             description = "Installs dependencies for all Unity3d projects"
         }
 
-        extension.paketReferencesFiles.each { referenceFile ->
-            def task = project.tasks.create(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall)
+        extension.paketReferencesFiles.files.each { referenceFile ->
+            def task = project.tasks.maybeCreate(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall)
             task.with {
                 group = GROUP
                 description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
@@ -88,7 +88,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 frameworks = extension.getPaketDependencies().getFrameworks()
                 lockFile = extension.getPaketLockFile()
                 referencesFile = referenceFile
-                projectRoot = referenceFile.parentFile
+                //projectRoot = referenceFile.parentFile
             }
             lifecycleTask.dependsOn task
         }

@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.unity.tasks
 
+import groovy.transform.Internal
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
@@ -24,6 +25,7 @@ import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -87,8 +89,6 @@ class PaketUnityInstall extends ConventionTask {
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
-    File projectRoot
-
     public final static String assemblyDefinitionFileExtension = "asmdef"
 
     /**
@@ -96,7 +96,7 @@ class PaketUnityInstall extends ConventionTask {
      */
     @OutputDirectory
     File getOutputDirectory() {
-        new File(getProjectRoot(), "Assets/${getPaketOutputDirectoryName()}")
+        new File(getReferencesFile().getParentFile(), "Assets/${getPaketOutputDirectoryName()}")
     }
 
     /**
@@ -161,10 +161,12 @@ class PaketUnityInstall extends ConventionTask {
         inputs.outOfDate(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails outOfDate) {
-                def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
-                logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
-                FileUtils.copyFile(outOfDate.file, outputPath)
-                assert outputPath.exists()
+                if(inputFiles.contains(outOfDate.file)) {
+                    def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
+                    logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
+                    FileUtils.copyFile(outOfDate.file, outputPath)
+                    assert outputPath.exists()
+                }
             }
         })
 

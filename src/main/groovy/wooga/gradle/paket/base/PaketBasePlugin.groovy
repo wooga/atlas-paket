@@ -33,6 +33,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin
 import wooga.gradle.paket.base.dependencies.internal.DefaultPaketDependencyHandler
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.repository.internal.DefaultNugetArtifactRepositoryHandlerConvention
+import wooga.gradle.paket.base.tasks.DownloadPaketBootstrapper
 import wooga.gradle.paket.base.tasks.PaketDependenciesTask
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
@@ -68,7 +69,7 @@ class PaketBasePlugin implements Plugin<Project> {
 
         DefaultRepositoryHandler handler = (DefaultRepositoryHandler) project.repositories
 
-        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector)
+        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector, project.objects, project.providers)
         new DslObject(handler).getConvention().getPlugins().put("net.wooga.paket-base", repositoryConvention)
 
 
@@ -135,13 +136,17 @@ class PaketBasePlugin implements Plugin<Project> {
     }
 
     private static void addBootstrapTask(final Project project, PaketPluginExtension extension) {
+        DownloadPaketBootstrapper d = project.tasks.create("downloadPaketBootstrapper", DownloadPaketBootstrapper)
+        final dTaskConvention = d.conventionMapping
+        dTaskConvention.map("paketBootstrapperExecutable", { extension.getBootstrapperExecutable() })
+        dTaskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
+
         PaketBootstrap task = project.tasks.create(name: BOOTSTRAP_TASK_NAME, type: PaketBootstrap)
-        task.dependsOn(project.tasks.getByName(PAKET_DEPENDENCIES_TASK_NAME))
+        task.dependsOn(d, project.tasks.getByName(PAKET_DEPENDENCIES_TASK_NAME))
 
         final taskConvention = task.conventionMapping
         taskConvention.map("executable", { extension.getBootstrapperExecutable() })
         taskConvention.map("paketExecutable", { extension.getExecutable() })
-        taskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
         taskConvention.map("paketVersion", { extension.getVersion() })
 
         task.outputs.upToDateWhen(new Spec<PaketBootstrap>() {

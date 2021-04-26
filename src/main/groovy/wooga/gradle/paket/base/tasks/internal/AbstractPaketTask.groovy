@@ -42,13 +42,17 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     @Input
     String monoExecutable
 
+    private Object logFile
+
     @Optional
-    @InputFile
+    @OutputFile
     File getLogFile() {
         return logFile ? project.file(logFile) : null
     }
 
-    def logFile
+    void setLogFile(Object value) {
+        this.logFile = value
+    }
 
     @Optional
     @Input
@@ -69,6 +73,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     /**
      * Returns the arguments for the command to be executed. Defaults to an empty list.
      */
+    @Input
     List<String> getArgs() {
         arguments
     }
