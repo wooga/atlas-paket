@@ -18,6 +18,7 @@
 package wooga.gradle.paket.base.dependencies.internal
 
 import org.gradle.api.internal.AbstractNamedDomainObjectContainer
+import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.internal.reflect.Instantiator
@@ -29,7 +30,7 @@ class DefaultPaketDependencyConfigurationContainer extends AbstractNamedDomainOb
     private final Instantiator instantiator
 
     DefaultPaketDependencyConfigurationContainer(final Instantiator instantiator) {
-        super(PaketDependencyConfiguration.class, instantiator)
+        super(PaketDependencyConfiguration.class, instantiator, CollectionCallbackActionDecorator.NOOP)
         this.instantiator = instantiator
     }
 

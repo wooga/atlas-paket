@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.unity.tasks
 
+import groovy.transform.Internal
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
@@ -24,6 +25,8 @@ import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
@@ -56,13 +59,13 @@ class PaketUnityInstall extends ConventionTask {
     /**
      * @return the path to a {@code paket.unity3d.references} file
      */
-    @Input
+    @InputFile
     File referencesFile
 
     /**
      * @return the path to a {@code paket.lock} file
      */
-    @Input
+    @InputFile
     File lockFile
 
     /**
@@ -77,17 +80,23 @@ class PaketUnityInstall extends ConventionTask {
     @Input
     String paketOutputDirectoryName
 
+    /**
+     * Whether assembly definition files (.asmdef) should be included during installation
+     */
+    @Input
+    Boolean includeAssemblyDefinitions = false
+
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
-    File projectRoot
+    public final static String assemblyDefinitionFileExtension = "asmdef"
 
     /**
      * @return the installation output directory
      */
     @OutputDirectory
     File getOutputDirectory() {
-        new File(getProjectRoot(), "Assets/${getPaketOutputDirectoryName()}")
+        new File(getReferencesFile().getParentFile(), "Assets/${getPaketOutputDirectoryName()}")
     }
 
     /**
@@ -124,7 +133,13 @@ class PaketUnityInstall extends ConventionTask {
 
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
-        fileTree.files
+
+        if (!getIncludeAssemblyDefinitions()) {
+            fileTree.exclude("**/*.${assemblyDefinitionFileExtension}")
+        }
+
+        def files = fileTree.files
+        return files
     }
 
     PaketUnityInstall() {
@@ -146,10 +161,12 @@ class PaketUnityInstall extends ConventionTask {
         inputs.outOfDate(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails outOfDate) {
-                def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
-                logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
-                FileUtils.copyFile(outOfDate.file, outputPath)
-                assert outputPath.exists()
+                if(inputFiles.contains(outOfDate.file)) {
+                    def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
+                    logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
+                    FileUtils.copyFile(outOfDate.file, outputPath)
+                    assert outputPath.exists()
+                }
             }
         })
 

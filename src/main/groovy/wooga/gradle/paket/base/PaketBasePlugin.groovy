@@ -28,12 +28,12 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.Delete
-import org.gradle.buildinit.tasks.internal.TaskConfiguration
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import wooga.gradle.paket.base.dependencies.internal.DefaultPaketDependencyHandler
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.repository.internal.DefaultNugetArtifactRepositoryHandlerConvention
+import wooga.gradle.paket.base.tasks.DownloadPaketBootstrapper
 import wooga.gradle.paket.base.tasks.PaketDependenciesTask
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
@@ -54,6 +54,8 @@ class PaketBasePlugin implements Plugin<Project> {
     static final String PAKET_DEPENDENCIES_TASK_NAME = "paketDependencies"
     static final String PAKET_CONFIGURATION = "nupkg"
 
+    static final String TASK_GROUP_NAME = "Build Setup"
+
     @Override
     void apply(Project project) {
         this.project = project
@@ -67,7 +69,7 @@ class PaketBasePlugin implements Plugin<Project> {
 
         DefaultRepositoryHandler handler = (DefaultRepositoryHandler) project.repositories
 
-        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector)
+        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector, project.objects, project.providers)
         new DslObject(handler).getConvention().getPlugins().put("net.wooga.paket-base", repositoryConvention)
 
 
@@ -129,18 +131,22 @@ class PaketBasePlugin implements Plugin<Project> {
     }
 
     private static void addInitTask(final Project project, PaketPluginExtension extension) {
-        final task = project.tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TaskConfiguration.GROUP)
+        final task = project.tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TASK_GROUP_NAME)
         task.conventionMapping.map("dependenciesFile", { extension.getPaketDependenciesFile() })
     }
 
     private static void addBootstrapTask(final Project project, PaketPluginExtension extension) {
+        DownloadPaketBootstrapper d = project.tasks.create("downloadPaketBootstrapper", DownloadPaketBootstrapper)
+        final dTaskConvention = d.conventionMapping
+        dTaskConvention.map("paketBootstrapperExecutable", { extension.getBootstrapperExecutable() })
+        dTaskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
+
         PaketBootstrap task = project.tasks.create(name: BOOTSTRAP_TASK_NAME, type: PaketBootstrap)
-        task.dependsOn(project.tasks.getByName(PAKET_DEPENDENCIES_TASK_NAME))
+        task.dependsOn(d, project.tasks.getByName(PAKET_DEPENDENCIES_TASK_NAME))
 
         final taskConvention = task.conventionMapping
         taskConvention.map("executable", { extension.getBootstrapperExecutable() })
         taskConvention.map("paketExecutable", { extension.getExecutable() })
-        taskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
         taskConvention.map("paketVersion", { extension.getVersion() })
 
         task.outputs.upToDateWhen(new Spec<PaketBootstrap>() {
