@@ -17,17 +17,19 @@
 
 package wooga.gradle.paket.pack.internal
 
+import org.gradle.api.Project
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.internal.tasks.TaskResolver
 import org.gradle.api.tasks.TaskDependency
+import org.gradle.api.tasks.TaskProvider
 import wooga.gradle.paket.pack.tasks.PaketPack
 
 class PaketPublishingArtifact implements PublishArtifact {
 
     @Override
     String getName() {
-        return task.getPackageId()
+        return packageId
     }
 
     @Override
@@ -47,7 +49,7 @@ class PaketPublishingArtifact implements PublishArtifact {
 
     @Override
     File getFile() {
-        return this.task.getOutputFile()
+        return this.task.get().getOutputFile()
     }
 
     @Override
@@ -62,15 +64,17 @@ class PaketPublishingArtifact implements PublishArtifact {
         taskDependency
     }
 
-    private PaketPack task
+    private TaskProvider<PaketPack> task
+    private final String packageId
 
-    static PublishArtifact fromTask(PaketPack task) {
-        new PaketPublishingArtifact(task)
+    static PublishArtifact fromTask(TaskProvider<PaketPack> task, TaskResolver tasks, String packId) {
+        new PaketPublishingArtifact(task, tasks, packId)
     }
 
-    PaketPublishingArtifact(PaketPack task) {
+    PaketPublishingArtifact(TaskProvider<PaketPack> task, TaskResolver tasks, String packId) {
         this.task = task
-        taskDependency = new DefaultTaskDependency(task.project.tasks as TaskResolver)
+        this.packageId = packId
+        taskDependency = new DefaultTaskDependency(tasks)
         taskDependency.add(task)
     }
 }

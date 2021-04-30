@@ -19,6 +19,8 @@ package wooga.gradle.paket.base
 
 import nebula.test.PluginProjectSpec
 import nebula.test.ProjectSpec
+import org.gradle.api.Project
+import org.gradle.api.UnknownTaskException
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.tasks.PaketBootstrap
 
@@ -34,7 +36,7 @@ class PaketBasePluginSpec extends ProjectSpec {
     def 'Creates the [paket] extension'() {
         given:
         assert !project.plugins.hasPlugin(PLUGIN_NAME)
-        assert !project.extensions.findByName(PaketBasePlugin.EXTENSION_NAME)
+        assert !hasTask(project, PaketBasePlugin.EXTENSION_NAME)
 
         when:
         project.plugins.apply(PLUGIN_NAME)
@@ -47,7 +49,7 @@ class PaketBasePluginSpec extends ProjectSpec {
     def 'Creates the paket bootstrap task'() {
         given:
         assert !project.plugins.hasPlugin(PLUGIN_NAME)
-        assert !project.tasks.findByName(PaketBasePlugin.BOOTSTRAP_TASK_NAME)
+        assert !hasTask(project, PaketBasePlugin.BOOTSTRAP_TASK_NAME)
 
         when:
         project.plugins.apply(PLUGIN_NAME)
@@ -60,7 +62,7 @@ class PaketBasePluginSpec extends ProjectSpec {
     def 'Creates the [nupkg] configuration'() {
         given:
         assert !project.plugins.hasPlugin(PLUGIN_NAME)
-        assert !project.configurations.findByName(PaketBasePlugin.PAKET_CONFIGURATION)
+        assert !hasTask(project, PaketBasePlugin.PAKET_CONFIGURATION)
 
         when:
         project.plugins.apply(PLUGIN_NAME)
@@ -72,7 +74,7 @@ class PaketBasePluginSpec extends ProjectSpec {
     def 'Configures the [nupkg] configuration'() {
         given:
         assert !project.plugins.hasPlugin(PLUGIN_NAME)
-        assert !project.configurations.findByName(PaketBasePlugin.PAKET_CONFIGURATION)
+        assert !hasTask(project, PaketBasePlugin.PAKET_CONFIGURATION)
 
         when:
         project.plugins.apply(PLUGIN_NAME)
@@ -80,5 +82,14 @@ class PaketBasePluginSpec extends ProjectSpec {
         then:
         def config = project.configurations.findByName(PaketBasePlugin.PAKET_CONFIGURATION)
         !config.transitive
+    }
+
+    def hasTask(Project project, String taskName) {
+        try {
+            project.tasks.named(taskName)
+            return true
+        } catch(UnknownTaskException _) {
+            return false
+        }
     }
 }
