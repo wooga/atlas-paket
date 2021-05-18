@@ -69,5 +69,5 @@ dependencies {
         exclude module: 'logback-classic'
     }
 
-    compile('com.google.guava:guava:19.0')
+    compile('com.google.guava:guava:23.0')
 }
