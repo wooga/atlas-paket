@@ -21,6 +21,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.base.utils.internal.PaketDependencies
@@ -61,13 +62,15 @@ class PaketGetPlugin implements Plugin<Project> {
 
         def extension = project.extensions.getByType(PaketPluginExtension)
 
-        def paketInstall = tasks.create(INSTALL_TASK_NAME, PaketInstall.class)
-        def paketUpdate = tasks.create(UPDATE_TASK_NAME, PaketUpdate.class)
-        def paketRestore = tasks.create(RESTORE_TASK_NAME, PaketRestore.class)
-        def paketOutdated = tasks.create(OUTDATED_TASK_NAME, PaketOutdated.class)
+        def paketInstall = tasks.register(INSTALL_TASK_NAME, PaketInstall.class)
+        def paketUpdate = tasks.register(UPDATE_TASK_NAME, PaketUpdate.class)
+        def paketRestore = tasks.register(RESTORE_TASK_NAME, PaketRestore.class)
+        def paketOutdated = tasks.register(OUTDATED_TASK_NAME, PaketOutdated.class)
 
-        [paketInstall, paketUpdate, paketRestore, paketOutdated].each { Task task ->
-            task.group = GROUP
+        [paketInstall, paketUpdate, paketRestore, paketOutdated].each { taskProvider ->
+            taskProvider.configure { task ->
+                task.group = GROUP
+            }
         }
 
         final dependenciesFile = extension.paketDependenciesFile
@@ -75,10 +78,12 @@ class PaketGetPlugin implements Plugin<Project> {
             final dependencies = new PaketDependencies(dependenciesFile)
 
             dependencies.nugetDependencies.each { nuget ->
-                def task = tasks.create(UPDATE_TASK_NAME + nuget, PaketUpdate.class)
-                task.group = GROUP
-                task.nugetPackageId = nuget
-                task.description = "Update $nuget to their latest version and update projects."
+                def taskProvider = tasks.register(UPDATE_TASK_NAME + nuget, PaketUpdate.class)
+                taskProvider.configure { task ->
+                    task.group = GROUP
+                    task.nugetPackageId = nuget
+                    task.description = "Update $nuget to their latest version and update projects."
+                }
             }
         }
     }

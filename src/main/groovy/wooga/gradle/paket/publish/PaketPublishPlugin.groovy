@@ -30,6 +30,7 @@ import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.publish.internal.DefaultPaketPushPluginExtension
 import wooga.gradle.paket.publish.repository.internal.DefaultNugetRepositoryHandlerConvention
@@ -63,7 +64,7 @@ class PaketPublishPlugin implements Plugin<Project> {
         project.pluginManager.apply(PaketBasePlugin.class)
 
         def pushExtension = project.extensions.create(DefaultPaketPushPluginExtension.NAME, DefaultPaketPushPluginExtension, project)
-        def publishLifecycleTask = tasks[PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME]
+        def publishLifecycleTask = tasks.named(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)
 
         project.getExtensions().configure(PublishingExtension.class, new Action<PublishingExtension>() {
             void execute(PublishingExtension e) {
@@ -89,31 +90,33 @@ class PaketPublishPlugin implements Plugin<Project> {
                         createPublishTask(publishTaskName, artifact, publishLifecycleTask, repository)
                     }
                 }
-            }
-            catch (Exception e) {
-
+            } catch (Exception e) {
+                project.logger.warn(e.message)
             }
 
             PublishArtifactSet artifacts = nupkg.allArtifacts
 
-            publishingExtension.repositories.withType(NugetRepository) {
-                createPublishTasks(tasks, artifacts, it)
+            publishingExtension.repositories.withType(NugetRepository) { repository ->
+                createPublishTasks(tasks, artifacts, repository)
             }
         }
 
         createPublishLocalTask(tasks)
     }
 
-    void createPublishLocalTask(TaskContainer tasks) {
+    static void createPublishLocalTask(TaskContainer tasks) {
         def paketCopylifecycle = tasks.create(name: "publishLocal", group: PublishingPlugin.PUBLISH_TASK_GROUP, description: "publish all nupkg to all local paths")
         paketCopylifecycle.dependsOn tasks.withType(PaketCopy)
     }
 
     void createPublishTasks(TaskContainer tasks, PublishArtifactSet artifacts, NugetRepository repository) {
 
-        String baseTaskName = "publish" + repository.name.capitalize()
-        Task repoLifecycle = tasks.create(name: baseTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP)
-        repoLifecycle.description = "Publishes all nupkg artifacts to ${repository.destination}"
+        def baseTaskName = "publish" + repository.name.capitalize()
+        def repoLifecycle = tasks.register(baseTaskName)
+        repoLifecycle.configure { t ->
+          t.group = PublishingPlugin.PUBLISH_TASK_GROUP
+            t.description = "Publishes all nupkg artifacts to ${repository.destination}"
+        }
 
         artifacts.each { artifact ->
             def packageName = artifact.name.replaceAll(/\./, '')
@@ -122,29 +125,37 @@ class PaketPublishPlugin implements Plugin<Project> {
         }
     }
 
-    private Task createPublishTask(String publishTaskName, PublishArtifact artifact, Task lifecycle, NugetRepository repository) {
-        Task task = repository.url != null ? createPaketPublishTask(publishTaskName, repository, artifact) :
+    private TaskProvider<? extends Task> createPublishTask(String publishTaskName, PublishArtifact artifact, TaskProvider lifecycle, NugetRepository repository) {
+        TaskProvider taskProvider = repository.url != null ? createPaketPublishTask(publishTaskName, repository, artifact) :
                 createPaketCopyTask(publishTaskName, repository, artifact)
-        task.dependsOn artifact
-        lifecycle.dependsOn task
-        task
+        lifecycle.configure { Task t -> t.dependsOn(taskProvider) }
+        taskProvider.configure { task ->
+            task.dependsOn(artifact)
+        }
+        return taskProvider
     }
 
-    private Task createPaketCopyTask(String publishTaskName, NugetRepository repository, PublishArtifact artifact) {
-        PaketCopy task = (PaketCopy) tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketCopy)
-        task.from artifact.file
-        task.into new File(repository.path)
-        task.description = "Copies ${artifact.file.name} to ${repository.path}"
-        task
+    private TaskProvider<PaketCopy> createPaketCopyTask(String publishTaskName, NugetRepository repository, PublishArtifact artifact) {
+        TaskProvider<PaketCopy> taskProvider = tasks.register(publishTaskName, PaketCopy)
+        taskProvider.configure {task ->
+            task.group = PublishingPlugin.PUBLISH_TASK_GROUP
+            task.description = "Copies ${artifact.file.name} to ${repository.path}"
+            task.from(artifact.file)
+            task.into(new File(repository.path))
+        }
+        return taskProvider
     }
 
-    private PaketPush createPaketPublishTask(String publishTaskName, NugetRepository repository, PublishArtifact artifact) {
-        PaketPush task = (PaketPush) tasks.create(name: publishTaskName, group: PublishingPlugin.PUBLISH_TASK_GROUP, type: PaketPush)
-        task.url = repository.url
-        task.apiKey = repository.apiKey
-        task.endpoint = repository.endpoint
-        task.inputFile = artifact.file
-        task.description = "Publishes ${artifact.file.name} to ${repository.url}"
-        task
+    private TaskProvider<PaketPush> createPaketPublishTask(String publishTaskName, NugetRepository repository, PublishArtifact artifact) {
+        TaskProvider<PaketPush> taskProvider = tasks.register(publishTaskName, PaketPush)
+        taskProvider.configure { task ->
+            task.group = PublishingPlugin.PUBLISH_TASK_GROUP
+            task.url = repository.url
+            task.apiKey = repository.apiKey
+            task.endpoint = repository.endpoint
+            task.inputFile = { artifact.file }
+            task.description = "Publishes ${artifact.name} to ${repository.url}"
+        }
+        return taskProvider
     }
 }

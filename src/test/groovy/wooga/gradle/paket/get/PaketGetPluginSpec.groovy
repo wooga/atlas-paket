@@ -51,9 +51,9 @@ class PaketGetPluginSpec extends ProjectSpec {
     def "creates runtime tasks"() {
         given:
         assert !project.pluginManager.findPlugin(PLUGIN_NAME)
-        assert !project.tasks.find { it.group == PaketGetPlugin.GROUP }
+        assert !project.tasks.matching { it.group == PaketGetPlugin.GROUP }
         project.pluginManager.apply(BASE_PLUGIN_NAME)
-        def bootstrapTask = project.tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]
+        def bootstrapTask = project.tasks.named(PaketBasePlugin.BOOTSTRAP_TASK_NAME)
 
         when:
         project.pluginManager.apply(PLUGIN_NAME)
@@ -61,7 +61,7 @@ class PaketGetPluginSpec extends ProjectSpec {
         then:
         def tasks = project.tasks.findAll { it.group == PaketGetPlugin.GROUP }
         !tasks.empty
-        tasks.every { it.dependsOn.contains(bootstrapTask) }
+        tasks.every {it.dependsOn.contains(bootstrapTask) }
         tasks.any { it instanceof PaketInstall }
         tasks.any { it instanceof PaketUpdate }
         tasks.any { it instanceof PaketRestore }

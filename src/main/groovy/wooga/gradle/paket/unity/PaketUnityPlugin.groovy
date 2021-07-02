@@ -27,6 +27,8 @@ import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
+import java.util.stream.Collectors
+
 /**
  * A {@link Plugin} which adds tasks to install NuGet packages into a Unity3D project.
  * <p>
@@ -58,7 +60,7 @@ class PaketUnityPlugin implements Plugin<Project> {
         createPaketUnityInstallTasks(project, extension)
         extension.assemblyDefinitionFileStrategy = AssemblyDefinitionFileStrategy.manual
 
-        project.tasks.matching({ it.name.startsWith("paketUnity") }).each { task ->
+        project.tasks.matching({ it.name.startsWith("paketUnity") }).configureEach { task ->
             task.onlyIf {
                 extension.getPaketReferencesFiles() && !extension.getPaketReferencesFiles().isEmpty() &&
                         extension.getPaketDependenciesFile() && extension.getPaketDependenciesFile().exists() &&
@@ -70,44 +72,46 @@ class PaketUnityPlugin implements Plugin<Project> {
     }
 
     private static void createPaketUnityInstallTasks(final Project project, final PaketUnityPluginExtension extension) {
-
-        def lifecycleTask = project.tasks.create(INSTALL_TASK_NAME)
-        lifecycleTask.with {
-            group = GROUP
-            description = "Installs dependencies for all Unity3d projects"
-        }
-
-        extension.paketReferencesFiles.files.each { referenceFile ->
-            def task = project.tasks.maybeCreate(INSTALL_TASK_NAME + referenceFile.parentFile.name, PaketUnityInstall)
-            task.with {
-                group = GROUP
-                description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
-                conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
-                conventionMapping.map("includeAssemblyDefinitions", { extension.getIncludeAssemblyDefinitions() })
-                conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
-                frameworks = extension.getPaketDependencies().getFrameworks()
-                lockFile = extension.getPaketLockFile()
-                referencesFile = referenceFile
-                //projectRoot = referenceFile.parentFile
+        def installProviders = extension.paketReferencesFiles.files.collect { referenceFile ->
+            def taskName = INSTALL_TASK_NAME + referenceFile.parentFile.name
+            def installProvider = project.tasks.register(taskName, PaketUnityInstall)
+            installProvider.configure { PaketUnityInstall t ->
+                t.group = GROUP
+                t.description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
+                t.conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
+                t.conventionMapping.map("includeAssemblyDefinitions", { extension.getIncludeAssemblyDefinitions() })
+                t.conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
+                t.frameworks = extension.getPaketDependencies().getFrameworks()
+                t.lockFile = extension.getPaketLockFile()
+                t.referencesFile = referenceFile
             }
-            lifecycleTask.dependsOn task
+            return installProvider
         }
-    }
+        def lifecycleTaskProvider = project.tasks.register(INSTALL_TASK_NAME)
+
+        lifecycleTaskProvider.configure {lifecycleTask ->
+            lifecycleTask.group = GROUP
+            lifecycleTask.description = "Installs dependencies for all Unity3d projects"
+            installProviders.each { installTaskProvider ->
+                lifecycleTask.dependsOn(installTaskProvider)
+            }
+        }
+}
 
     void configurePaketDependencyInstallIfPresent() {
         project.plugins.withType(PaketGetPlugin) {
 
-            def paketUnityInstall = project.tasks[INSTALL_TASK_NAME]
-            def paketInstall = project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]
-            def paketRestore = project.tasks[PaketGetPlugin.RESTORE_TASK_NAME]
+            def paketUnityInstall = project.tasks.named(INSTALL_TASK_NAME)
+            def paketInstall = project.tasks.named(PaketGetPlugin.INSTALL_TASK_NAME)
+            def paketRestore = project.tasks.named(PaketGetPlugin.RESTORE_TASK_NAME)
 
             Closure configClosure = { task ->
                 task.finalizedBy paketUnityInstall
             }
 
-            project.tasks.withType(PaketUpdate, configClosure)
+            project.tasks.withType(PaketUpdate).configureEach(configClosure)
 
-            [paketInstall, paketRestore].each configClosure
+            [paketInstall, paketRestore].each {it.configure(configClosure) }
         }
     }
 }

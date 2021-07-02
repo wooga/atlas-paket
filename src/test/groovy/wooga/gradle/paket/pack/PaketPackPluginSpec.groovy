@@ -101,7 +101,7 @@ class PaketPackPluginSpec extends ProjectSpec {
         tasks.size() == 3
         tasks.every { it.name =~ /paketPack-TestPackage[\d]/ }
         tasks.every { it.group == BasePlugin.BUILD_GROUP }
-        tasks.every { it.dependsOn.contains(project.tasks[PaketBasePlugin.BOOTSTRAP_TASK_NAME]) }
+        tasks.every { it.dependsOn.contains(project.tasks.named(PaketBasePlugin.BOOTSTRAP_TASK_NAME)) }
     }
 
     def "skips pack task creation for duplicate package id"() {
@@ -124,6 +124,7 @@ class PaketPackPluginSpec extends ProjectSpec {
 
         when: "applying paket-pack plugin"
         project.pluginManager.apply(PLUGIN_NAME)
+        project.tasks.findAll()
 
         then:
         def artifacts = project.configurations[PaketBasePlugin.PAKET_CONFIGURATION].allArtifacts
@@ -149,7 +150,11 @@ class PaketPackPluginSpec extends ProjectSpec {
 
         then:
         tasks.size() == 3
-        tasks.every { it.dependsOn.contains(project.tasks[PaketGetPlugin.INSTALL_TASK_NAME]) }
+        tasks.findAll().every {
+            it.dependsOn.any { dependency ->
+                dependency.name == PaketGetPlugin.INSTALL_TASK_NAME
+            }
+        }
 
         where:
         firstPlugin     | secondPlugin
