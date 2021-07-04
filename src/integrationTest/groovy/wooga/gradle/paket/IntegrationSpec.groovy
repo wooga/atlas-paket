@@ -19,7 +19,7 @@ package wooga.gradle.paket
 
 import nebula.test.functional.ExecutionResult
 import org.apache.commons.io.FileUtils
-import org.apache.commons.lang.StringEscapeUtils
+import org.apache.commons.lang3.StringEscapeUtils
 import org.junit.Rule
 import org.junit.contrib.java.lang.system.ProvideSystemProperty
 import spock.lang.Shared
