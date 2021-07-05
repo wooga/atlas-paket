@@ -125,8 +125,10 @@ class PaketUnityInstall extends ConventionTask {
         def fileTree = project.fileTree(dir: project.projectDir)
         fileTree.include("packages/${nuget}/content/**")
 
-        getFrameworks().each({
-            fileTree.include("packages/${nuget}/lib/${it}/**")
+        getFrameworks().find({
+            def exists = new File(project.projectDir, "packages/${nuget}/lib/${it}").exists()
+            if (exists) fileTree.include("packages/${nuget}/lib/${it}/**")
+            return exists
         })
 
         fileTree.include("packages/${nuget}/lib/*.dll")
