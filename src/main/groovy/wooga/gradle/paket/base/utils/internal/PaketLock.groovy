@@ -17,6 +17,9 @@
 
 package wooga.gradle.paket.base.utils.internal
 
+/**
+ * The parsed contents of paket.lock file
+ */
 class PaketLock {
 
     enum SourceType {
@@ -35,7 +38,10 @@ class PaketLock {
 
     enum LineType {
 
-        TYPE(0), REMOTE(1), NAME(2), DEPENDENCY(3)
+        TYPE(0),
+        REMOTE(1),
+        NAME(2),
+        DEPENDENCY(3)
 
         private final int value
 
@@ -107,15 +113,25 @@ class PaketLock {
         return false
     }
 
+    /**
+     * @param id The identifier for the dependency
+     * @return All the direct and transitive dependencies used by this dependency
+     */
     List<String> getDependencies(SourceType source, String id) {
-        content[source.getValue()] && content[source.getValue()][id] ? content[source.getValue()][id] as List<String> : []
+        // If the lock file has a reference with the given id,
+        // retrieve all its dependencies
+        content[source.value] && content[source.value][id]
+                ? content[source.value][id] as List<String>
+                : []
     }
 
+    /**
+     * @return Given a list of package references, returns all their dependencies
+     */
     List<String> getAllDependencies(List<String> references) {
-        def ref = references.collect { reference ->
+        def result = references.collect { reference ->
             [reference, getAllDependencies(getDependencies(SourceType.NUGET, reference))]
         }
-
-        ref.flatten().unique()
+        result.flatten().unique()
     }
 }

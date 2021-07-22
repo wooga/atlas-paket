@@ -66,4 +66,15 @@ interface PaketUnityPluginExtension extends PaketPluginExtension {
      * @return Whether assembly definition files should be included during installation
      */
     Boolean getIncludeAssemblyDefinitions()
+
+    /**
+     * Sets whether test assemblies should be included during installation
+     * @param value
+     */
+    void setIncludeTests(Boolean value)
+
+    /**
+     * @return Whether test assemblies should be included during installation
+     */
+    Boolean getIncludeTests()
 }
