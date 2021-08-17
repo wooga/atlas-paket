@@ -22,24 +22,32 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
 import org.gradle.api.internal.artifacts.DefaultArtifactRepositoryContainer
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.authentication.http.BasicAuthentication
 import org.gradle.internal.authentication.DefaultAuthenticationContainer
 import org.gradle.internal.authentication.DefaultBasicAuthentication
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.ConfigureUtil
+import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import wooga.gradle.paket.base.repository.NugetRepositoryHandlerConvention
 import wooga.gradle.paket.base.repository.NugetArtifactRepository
+
 
 class DefaultNugetArtifactRepositoryHandlerConvention implements NugetRepositoryHandlerConvention<NugetArtifactRepository> {
 
     private final DefaultArtifactRepositoryContainer handler
     private final Instantiator instantiator
     private final FileResolver fileResolver
+    private final ObjectFactory objectFactory
+    private final ProviderFactory providerFactory
 
-    DefaultNugetArtifactRepositoryHandlerConvention(RepositoryHandler handler, FileResolver fileResolver, Instantiator instantiator) {
+    DefaultNugetArtifactRepositoryHandlerConvention(RepositoryHandler handler, FileResolver fileResolver, Instantiator instantiator, ObjectFactory objectFactory, ProviderFactory providerFactory) {
         this.handler = handler
         this.instantiator = instantiator
         this.fileResolver = fileResolver
+        this.objectFactory = objectFactory
+        this.providerFactory = providerFactory
     }
 
     @Override
@@ -58,11 +66,11 @@ class DefaultNugetArtifactRepositoryHandlerConvention implements NugetRepository
     }
 
     protected NugetArtifactRepository createNugetRepository() {
-        instantiator.newInstance(DefaultNugetArtifactRepository.class, fileResolver, instantiator, createAuthenticationContainer())
+        instantiator.newInstance(DefaultNugetArtifactRepository.class, fileResolver, instantiator, objectFactory, createAuthenticationContainer(), providerFactory)
     }
 
     protected AuthenticationContainer createAuthenticationContainer() {
-        DefaultAuthenticationContainer container = instantiator.newInstance(DefaultAuthenticationContainer.class, instantiator)
+        DefaultAuthenticationContainer container = instantiator.newInstance(DefaultAuthenticationContainer.class, instantiator, CollectionCallbackActionDecorator.NOOP)
 
         container.registerBinding(BasicAuthentication.class, DefaultBasicAuthentication.class)
         return container

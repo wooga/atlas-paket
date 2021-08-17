@@ -22,7 +22,9 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
@@ -44,16 +46,12 @@ import javax.inject.Inject
  * </pre>
  */
 class PaketBootstrap extends AbstractPaketTask {
-    static Logger logger = Logging.getLogger(PaketBootstrap)
-
-    @Input
-    String bootstrapURL
 
     @Optional
     @Input
     String paketVersion
 
-    @Input
+    @OutputFile
     File paketExecutable
 
     @OutputFiles
@@ -77,12 +75,6 @@ class PaketBootstrap extends AbstractPaketTask {
     }
 
     @Override
-    protected void performPaketCommand(IncrementalTaskInputs inputs) {
-        checkBootstrapper()
-        super.performPaketCommand(inputs)
-    }
-
-    @Override
     protected void configureArguments() {
         super.configureArguments()
         logger.info("requesting paket version: {}", getPaketVersion())
@@ -90,26 +82,5 @@ class PaketBootstrap extends AbstractPaketTask {
         args << getPaketVersion()
         args << "--prefer-nuget"
         args << "-v"
-    }
-
-    def checkBootstrapper() {
-        File f = getExecutable()
-        if (f.exists()) {
-            logger.info("Bootstrap file {} already exists", f.path)
-            return
-        }
-
-        f.parentFile.mkdirs()
-
-        def url =  new URL(getBootstrapURL())
-        url.withInputStream { i ->
-            f.withOutputStream {
-                it << i
-            }
-        }
-
-        if (!f.exists()) {
-            throw new GradleException("Failed to download bootstrapper from ${f.path}")
-        }
     }
 }

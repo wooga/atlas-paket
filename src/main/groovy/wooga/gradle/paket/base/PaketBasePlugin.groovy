@@ -28,12 +28,13 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.Delete
-import org.gradle.buildinit.tasks.internal.TaskConfiguration
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import wooga.gradle.paket.base.dependencies.internal.DefaultPaketDependencyHandler
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.base.repository.internal.DefaultNugetArtifactRepositoryHandlerConvention
+import wooga.gradle.paket.base.tasks.DownloadPaketBootstrapper
 import wooga.gradle.paket.base.tasks.PaketDependenciesTask
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 import wooga.gradle.paket.base.tasks.PaketBootstrap
@@ -54,6 +55,8 @@ class PaketBasePlugin implements Plugin<Project> {
     static final String PAKET_DEPENDENCIES_TASK_NAME = "paketDependencies"
     static final String PAKET_CONFIGURATION = "nupkg"
 
+    static final String TASK_GROUP_NAME = "Build Setup"
+
     @Override
     void apply(Project project) {
         this.project = project
@@ -67,7 +70,7 @@ class PaketBasePlugin implements Plugin<Project> {
 
         DefaultRepositoryHandler handler = (DefaultRepositoryHandler) project.repositories
 
-        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector)
+        DefaultNugetArtifactRepositoryHandlerConvention repositoryConvention = new DefaultNugetArtifactRepositoryHandlerConvention(handler, fileResolver, injector, project.objects, project.providers)
         new DslObject(handler).getConvention().getPlugins().put("net.wooga.paket-base", repositoryConvention)
 
 
@@ -84,69 +87,62 @@ class PaketBasePlugin implements Plugin<Project> {
     }
 
     private static void setupPaketTasks(final Project project) {
-        final paketBootstrapTask = project.tasks[BOOTSTRAP_TASK_NAME]
+        final paketBootstrapTask = project.tasks.named(BOOTSTRAP_TASK_NAME)
 
-        project.tasks.withType(AbstractPaketTask, new Action<AbstractPaketTask>() {
-            @Override
-            void execute(AbstractPaketTask task) {
-                if (!(task instanceof PaketBootstrap)) {
-                    task.dependsOn paketBootstrapTask
-                }
+        project.tasks.withType(AbstractPaketTask).configureEach { task ->
+            if (!(task instanceof PaketBootstrap)) {
+                task.dependsOn(paketBootstrapTask)
             }
-        })
-
-        project.tasks.withType(PaketInit, new Action<PaketInit>() {
-            @Override
-            void execute(PaketInit task) {
-                task.finalizedBy paketBootstrapTask
-            }
-        })
+        }
+        project.tasks.withType(PaketInit).configureEach { task ->
+            task.finalizedBy(paketBootstrapTask)
+        }
     }
 
     private static void configurePaketTasks(final Project project, PaketPluginExtension extension) {
-        project.tasks.withType(AbstractPaketTask, new Action<AbstractPaketTask>() {
-            @Override
-            void execute(AbstractPaketTask task) {
-
-                final taskConvention = task.conventionMapping
-                taskConvention.map("executable", { extension.getExecutable() })
-                taskConvention.map("monoExecutable", { extension.getMonoExecutable() })
-                taskConvention.map("logFile", { new File("${project.buildDir}/logs/${task.name}.log") })
-                taskConvention.map("dependenciesFile", {
-
-                    if(extension.getPaketDependenciesFile().exists()){
-                        return project.files(extension.getPaketDependenciesFile())
-                    }
-                    return project.files()
-
-                })
-            }
-        })
+        project.tasks.withType(AbstractPaketTask).configureEach { task ->
+            final taskConvention = task.conventionMapping
+            taskConvention.map("executable", { extension.getExecutable() })
+            taskConvention.map("monoExecutable", { extension.getMonoExecutable() })
+            taskConvention.map("logFile", { new File("${project.buildDir}/logs/${task.name}.log") })
+            taskConvention.map("dependenciesFile", {
+                if(extension.getPaketDependenciesFile().exists()){
+                    return project.files(extension.getPaketDependenciesFile())
+                }
+                return project.files()
+            })
+        }
     }
 
     private static void addDependenciesTask(final Project project) {
-        project.tasks.create(name: PAKET_DEPENDENCIES_TASK_NAME, type: PaketDependenciesTask)
+        project.tasks.register(PAKET_DEPENDENCIES_TASK_NAME, PaketDependenciesTask)
     }
 
     private static void addInitTask(final Project project, PaketPluginExtension extension) {
-        final task = project.tasks.create(name: INIT_TASK_NAME, type: PaketInit, group: TaskConfiguration.GROUP)
-        task.conventionMapping.map("dependenciesFile", { extension.getPaketDependenciesFile() })
+        project.tasks.register(INIT_TASK_NAME, PaketInit).configure {t ->
+            t.group = TASK_GROUP_NAME
+            t.conventionMapping.map("dependenciesFile", { extension.getPaketDependenciesFile() })
+        }
     }
 
     private static void addBootstrapTask(final Project project, PaketPluginExtension extension) {
-        PaketBootstrap task = project.tasks.create(name: BOOTSTRAP_TASK_NAME, type: PaketBootstrap)
-        task.dependsOn(project.tasks.getByName(PAKET_DEPENDENCIES_TASK_NAME))
+        def downloadTaskProvider = project.tasks.register("downloadPaketBootstrapper", DownloadPaketBootstrapper)
+        downloadTaskProvider.configure {d ->
+            final dTaskConvention = d.conventionMapping
+            dTaskConvention.map("paketBootstrapperExecutable", { extension.getBootstrapperExecutable() })
+            dTaskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
+        }
 
-        final taskConvention = task.conventionMapping
-        taskConvention.map("executable", { extension.getBootstrapperExecutable() })
-        taskConvention.map("paketExecutable", { extension.getExecutable() })
-        taskConvention.map("bootstrapURL", { extension.getPaketBootstrapperUrl() })
-        taskConvention.map("paketVersion", { extension.getVersion() })
+        project.tasks.register(BOOTSTRAP_TASK_NAME, PaketBootstrap).configure { task ->
+            task.dependsOn(downloadTaskProvider, project.tasks.named(PAKET_DEPENDENCIES_TASK_NAME))
 
-        task.outputs.upToDateWhen(new Spec<PaketBootstrap>() {
-            @Override
-            boolean isSatisfiedBy(PaketBootstrap t) {
-                if(t.paketExecutable.exists()) {
+            final taskConvention = task.conventionMapping
+            taskConvention.map("executable", { extension.getBootstrapperExecutable() })
+            taskConvention.map("paketExecutable", { extension.getExecutable() })
+            taskConvention.map("paketVersion", { extension.getVersion() })
+
+            task.outputs.upToDateWhen { PaketBootstrap t ->
+                if (t.paketExecutable.exists()) {
                     ByteArrayOutputStream stdOut = new ByteArrayOutputStream()
 
                     String osName = System.getProperty("os.name").toLowerCase()
@@ -170,7 +166,7 @@ class PaketBasePlugin implements Plugin<Project> {
                 }
                 return false
             }
-        })
+        }
     }
 
     private static void setConfigurations(final Project project) {
@@ -181,7 +177,9 @@ class PaketBasePlugin implements Plugin<Project> {
     }
 
     private static void setCleanTargets(final Project project) {
-        final clean = project.tasks.getByName(LifecycleBasePlugin.CLEAN_TASK_NAME) as Delete
-        clean.delete(project.file("paket-files"), project.file("packages"), project.file(".paket"))
+        final cleanProvider = project.tasks.named(LifecycleBasePlugin.CLEAN_TASK_NAME)
+        cleanProvider.configure { clean ->
+            clean.delete(project.file("paket-files"), project.file("packages"), project.file(".paket"))
+        }
     }
 }

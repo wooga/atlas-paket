@@ -27,7 +27,7 @@ import wooga.gradle.paket.get.PaketGetPlugin
 
 class PaketUnityChangeSpec extends IntegrationSpec {
 
-    final static String STD_OUT_ALL_OUT_OF_DATE = "All input files are considered out-of-date for incremental task"
+    final static String STD_OUT_ALL_OUT_OF_DATE = "The input changes require a full rebuild for incremental task"
 
     @PaketDependency(projectDependencies = ["D1", "D2", "D3"])
     PaketDependencySetup paketSetup

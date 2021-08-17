@@ -17,6 +17,8 @@
 
 package wooga.gradle.paket.publish.repository.internal
 
+import org.gradle.api.Action
+import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor
 import wooga.gradle.paket.publish.repository.NugetArtifactRepository
 
 class NugetRepository implements NugetArtifactRepository {
@@ -59,5 +61,8 @@ class NugetRepository implements NugetArtifactRepository {
         path ? path : url
     }
 
+    @Override
+    void content(Action<? super RepositoryContentDescriptor> action) {
 
+    }
 }
