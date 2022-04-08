@@ -91,8 +91,6 @@ class PaketUnityInstall extends ConventionTask {
 
     public final static String assemblyDefinitionFileExtension = "asmdef"
 
-    public final static String assemblyDefinitionFileExtension = "asmdef"
-
     /**
      * @return the installation output directory
      */
