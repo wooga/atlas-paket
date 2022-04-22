@@ -103,7 +103,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             }
 
         """.stripIndent()
-
+        setPaketVersion()
         paketTemplateFile = createFile("paket.template")
         paketTemplateFile << """
             type file
@@ -201,6 +201,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
                 publishRepositoryName = "$repoName"
             }
         """.stripIndent()
+        setPaketVersion()
 
         when: "run the publish task"
         def result = runTasks("publish")
@@ -247,6 +248,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             }
 
         """.stripIndent()
+        setPaketVersion()
 
         and: "a future local output file"
         def futureFile = new File(escapedPath, nugetArtifact.name)

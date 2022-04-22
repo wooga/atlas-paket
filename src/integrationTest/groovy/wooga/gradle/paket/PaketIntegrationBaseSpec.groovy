@@ -33,6 +33,14 @@ abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
     @Shared
     String bootstrapperFileName = "paket.bootstrapper.exe"
 
+    def setPaketVersion(String version = "5.219.0") {
+        buildFile << """
+        paketBootstrap {
+           paketVersion = "${version}"
+        } 
+        """.stripIndent()
+    }
+
     @Unroll
     def "calls paketBootstrap when running #taskToRun"(String taskToRun) {
         given: "an empty paket dependency and lock file"

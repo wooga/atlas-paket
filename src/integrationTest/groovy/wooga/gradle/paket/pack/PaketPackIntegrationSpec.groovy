@@ -32,7 +32,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             version = "$version"
             ${applyPlugin(PaketPackPlugin)}
         """.stripIndent()
-
+        setPaketVersion()
         paketTemplateFile = createFile("paket.template")
         paketTemplateFile << """
             type file
@@ -104,6 +104,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             ${applyPlugin(PaketPackPlugin)}
             version = "$version"
         """.stripIndent()
+        setPaketVersion()
 
         and: "a future output file"
         def outputFile = new File(new File(new File(projectDir, 'build'), "outputs"), "${packageID}.${version}.nupkg")
@@ -132,6 +133,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             ${applyPlugin(PaketPackPlugin)}
             version = "0.0.0"
         """.stripIndent()
+        setPaketVersion()
 
         and: "a custom template file with version"
         paketTemplateFile.text = ""
@@ -174,6 +176,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             ${applyPlugin(PaketPackPlugin)}
             version = "$version"
         """.stripIndent()
+        setPaketVersion()
 
         and: "a custom template file without version"
         paketTemplateFile.text = ""
@@ -228,6 +231,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
                 version = {"$version"}
             }
         """.stripIndent()
+        setPaketVersion()
 
 
         and: "a future output file"
@@ -256,6 +260,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             group = 'test'
             ${applyPlugin(PaketPackPlugin)}
         """.stripIndent()
+        setPaketVersion()
 
         and: "a custom template file without version"
         paketTemplateFile.text = ""
@@ -297,6 +302,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             ${applyPlugin(PaketPackPlugin)}
             version = "0.0.0"
         """.stripIndent()
+        setPaketVersion()
 
         and: "a custom template file with version"
         paketTemplateFile.text = ""

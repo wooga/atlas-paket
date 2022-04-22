@@ -29,6 +29,7 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
             group = 'test'
             ${applyPlugin(PaketGetPlugin)}
         """.stripIndent()
+        setPaketVersion()
     }
 
     @Override
