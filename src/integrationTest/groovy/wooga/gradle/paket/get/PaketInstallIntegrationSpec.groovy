@@ -28,6 +28,7 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
             group = 'test'
             ${applyPlugin(PaketGetPlugin)}
         """.stripIndent()
+        setPaketVersion()
     }
 
     @Override
