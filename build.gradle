@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id "net.wooga.plugins" version "2.3.0"
+    id "net.wooga.plugins" version "3.2.0"
     id 'net.wooga.snyk' version '0.10.0'
     id "net.wooga.snyk-gradle-plugin" version "0.2.0"
     id "net.wooga.cve-dependency-resolution" version "0.4.0"
@@ -29,36 +29,43 @@ pluginBundle {
     website = 'https://wooga.github.io/atlas-paket/'
     vcsUrl = 'https://github.com/wooga/atlas-paket'
     tags = ['Paket', 'c-sharp', 'nuget']
+}
 
+gradlePlugin {
     plugins {
         paket {
             id = 'net.wooga.paket'
             displayName = 'Gradle Paket plugin'
             description = 'This plugin provides tasks for retrieving,packing and publishing Nuget packages via Paket'
+            implementationClass = 'wooga.gradle.paket.PaketPlugin'
         }
 
         paketGet {
             id = 'net.wooga.paket-get'
             displayName = 'Gradle Paket Get plugin'
             description = 'This plugin provides tasks for retrieving Nuget packages via Paket'
+            implementationClass = 'wooga.gradle.paket.get.PaketGetPlugin'
         }
 
         paketPack {
             id = 'net.wooga.paket-pack'
             displayName = 'Gradle Paket Pack plugin'
             description = 'This plugin provides tasks for packing Nuget packages via Paket'
+            implementationClass = 'wooga.gradle.paket.pack.PaketPackPlugin'
         }
 
         paketPublish {
             id = 'net.wooga.paket-publish'
             displayName = 'Gradle Paket Publish plugin'
             description = 'This plugin provides tasks for publishing Nuget packages via Paket'
+            implementationClass = 'wooga.gradle.paket.publish.PaketPublishPlugin'
         }
 
         paketUnity {
             id = 'net.wooga.paket-unity'
             displayName = 'Gradle Paket Unity3D plugin'
             description = 'This plugin provides tasks to apply the Paket.Unity3D extension'
+            implementationClass = 'wooga.gradle.paket.unity.PaketUnityPlugin'
         }
     }
 }

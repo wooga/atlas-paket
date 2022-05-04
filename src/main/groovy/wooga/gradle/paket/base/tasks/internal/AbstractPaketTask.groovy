@@ -29,10 +29,8 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
 
     static Logger logger = Logging.getLogger(AbstractPaketTask)
 
-    @Internal
     private final Class<T> taskType
 
-    @Internal
     protected Boolean supportLogfile = true
 
     @InputFile
@@ -54,18 +52,20 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
         this.logFile = value
     }
 
+    protected String paketCommand
+
     @Optional
     @Input
-    protected String paketCommand
+    protected String getPaketCommand() {
+        paketCommand
+    }
 
     @SkipWhenEmpty
     @InputFiles
     FileCollection dependenciesFile
 
-    @Internal
     protected ByteArrayOutputStream stdOut
 
-    @Internal
     protected ByteArrayOutputStream stdErr
 
     protected ArrayList<String> arguments = []

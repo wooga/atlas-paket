@@ -84,7 +84,7 @@ class PaketPush extends AbstractPaketTask {
         }
     }
 
-    def inputFile
+    private def inputFile
 
     /**
      * Returns the path to the .nupkg file
@@ -92,8 +92,12 @@ class PaketPush extends AbstractPaketTask {
      * @return  path to the .nupkg file
      */
     @InputFile
-    File getinputFile() {
+    File getInputFile() {
         project.file inputFile
+    }
+
+    void setInputFile(Object value) {
+        inputFile = value
     }
 
     def endpoint
@@ -134,6 +138,6 @@ class PaketPush extends AbstractPaketTask {
             args << "endpoint" << getEndpoint()
         }
 
-        args << "file" << getinputFile().path
+        args << "file" << getInputFile().path
     }
 }
