@@ -22,7 +22,6 @@ import org.gradle.api.Task
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import wooga.gradle.paket.base.PaketBasePlugin
@@ -58,39 +57,26 @@ class PaketDependenciesTask extends DefaultTask {
     }
 
     @Nested
-    private PaketDependencyMacros getMacros() {
+    PaketDependencyMacros getMacros() {
         macros
     }
 
-    @Nested
     private PaketDependencyConfigurationContainer getDependencyConfigurationContainer() {
         dependencyHandler.configurationContainer
     }
 
-    @Nested
     private List<NugetArtifactRepository> getRepositories() {
-        project.repositories.findAll {it instanceof NugetArtifactRepository} as List<NugetArtifactRepository>
+        project.repositories.findAll { it instanceof NugetArtifactRepository } as List<NugetArtifactRepository>
     }
 
     private String content
 
-    /**
-     *
-     * @return
-     */
-    @Optional
     @Input
-    private String getContent() {
-        def v = project.gradle.gradleVersion.split(/\./).collect {Integer.parseInt(it)}
-        if((v[0] == 4 && v[1] >= 7) || v[0] > 4) {
-            content = null
-        }
-        else {
-            if(!content) {
-                def w = new StringWriter()
-                writeDependencies(w)
-                content = w.toString()
-            }
+    protected String getContent() {
+        if (!content) {
+            def w = new StringWriter()
+            writeDependencies(w)
+            content = w.toString()
         }
         content
     }
@@ -127,7 +113,7 @@ class PaketDependenciesTask extends DefaultTask {
     }
 
     protected static void writeGroup(PaketDependencyConfiguration group, Writer writer, boolean printGroupStatement = true, String indent = '    ') {
-        if(printGroupStatement) {
+        if (printGroupStatement) {
             writer.println()
             writer.println("group ${group.getName().capitalize()}")
         }
@@ -139,22 +125,21 @@ class PaketDependenciesTask extends DefaultTask {
 
     protected void writeGroups(Writer writer) {
         def main = configurationContainer.getByName(PaketDependencyHandler.MAIN_GROUP)
-        writeGroup(main, writer, false,'')
+        writeGroup(main, writer, false, '')
 
-        configurationContainer.findAll {it.name != 'main'}.each {
+        configurationContainer.findAll { it.name != 'main' }.each {
             writeGroup(it, writer)
         }
     }
 
     protected void writeSources(Writer writer) {
         getRepositories().each { repo ->
-            if(repo.url) {
+            if (repo.url) {
                 writer.print("source ${repo.url}")
                 def credentials = repo.getCredentials()
-                if(credentials.username && credentials.password) {
+                if (credentials.username && credentials.password) {
                     writer.println(" username: \"${credentials.username}\" password: \"${credentials.password}\"")
-                }
-                else{
+                } else {
                     writer.println()
                 }
             } else {
@@ -171,7 +156,7 @@ class PaketDependenciesTask extends DefaultTask {
 
     protected void writeMacros(Writer writer) {
         def frameworks = getMacros().frameworks
-        if(frameworks) {
+        if (frameworks) {
             writer.println("framework: ${frameworks.join(", ")}")
         }
     }

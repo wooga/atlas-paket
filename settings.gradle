@@ -28,4 +28,4 @@ pluginManagement {
   }
 }
 
-rootProject.name = 'atlas-paket'
+rootProject.name = 'paket'

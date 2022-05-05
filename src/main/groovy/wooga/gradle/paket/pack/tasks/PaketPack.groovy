@@ -43,6 +43,7 @@ class PaketPack extends AbstractPaketTask {
     /**
      * @return the packageId of the nuget to be packed.
      */
+    @Input
     String getPackageId() {
         new PaketTemplate(getTemplateFile()).getPackageId()
     }
