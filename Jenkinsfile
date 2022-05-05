@@ -1,5 +1,5 @@
 #!groovy
-@Library('github.com/wooga/atlas-jenkins-pipeline@1.x') _
+@Library('github.com/wooga/atlas-jenkins-pipeline@fix/dockerargs') _
 
 withCredentials([usernameColonPassword(credentialsId: 'artifactory_publish', variable: 'artifactory_publish'),
                  usernameColonPassword(credentialsId: 'artifactory_deploy', variable: 'artifactory_deploy'),
@@ -12,5 +12,5 @@ withCredentials([usernameColonPassword(credentialsId: 'artifactory_publish', var
                             "nugetkey=${artifactory_deploy}"
                           ]
 
-    buildGradlePlugin platforms: ['macos','windows','linux'], coverallsToken: coveralls_token, sonarToken: sonar_token, testEnvironment: testEnvironment
+    buildGradlePlugin platforms: ['linux'], coverallsToken: coveralls_token, sonarToken: sonar_token, testEnvironment: testEnvironment, dockerArgs: [dockerBuildArgs: ["--no-cache"]]
 }

@@ -17,5 +17,7 @@ RUN apt-get update \
     && apt-get install mono-devel -y \
     && apt-get clean
 
+RUN echo "please don't cache me uwu"
+
 RUN chown -R ci:ci $HOME
 RUN chmod -R 777 $HOME
