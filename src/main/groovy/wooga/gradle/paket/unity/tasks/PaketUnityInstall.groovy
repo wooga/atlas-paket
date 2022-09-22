@@ -17,26 +17,19 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import groovy.transform.Internal
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
-
 /**
  * A task to copy referenced NuGet packages into Unity3D projects.
  * <p>
@@ -114,8 +107,10 @@ class PaketUnityInstall extends ConventionTask {
         def locks = new PaketLock(getLockFile())
         def dependencies = locks.getAllDependencies(references.nugets)
         dependencies.each { nuget ->
-            def depFiles = getFilesForPackage(nuget)
-            files << depFiles
+            if (!PaketUnwrapUPMPackages.isUPMWrapper(nuget)) {
+                def depFiles = getFilesForPackage(nuget)
+                files << depFiles
+            }
         }
 
         project.files(files)
