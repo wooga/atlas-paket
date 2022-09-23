@@ -1,7 +1,7 @@
 package wooga.gradle.paket.base.utils.internal
 
 import org.apache.commons.io.FileUtils
-import org.gradle.api.GradleException
+=import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class UnwrapUpm {
@@ -38,6 +38,8 @@ class UnwrapUpm {
         project.tarTree(this.upmTarFile).files.each { fileFromTar ->
             def path = fileFromTar.toPath()
             def indexOfPackage = 0
+
+            // looks for the first directory that is called "package"
             while (indexOfPackage < path.getNameCount() && path.getName(indexOfPackage).toString() != unpackDirectoryName) {
                 indexOfPackage++;
             }

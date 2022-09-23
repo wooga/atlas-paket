@@ -7,8 +7,6 @@ class DownloadAndUnpackTar {
     private String url;
     private File destinationDir;
 
-    private static final String tempTarName = "temp.tgz"
-
     DownloadAndUnpackTar(String url, File destinationDir)
     {
         this.url = url
@@ -22,17 +20,14 @@ class DownloadAndUnpackTar {
 
     private File getTempTarLocation()
     {
-        return new File(this.destinationDir.getParentFile(), tempTarName);
+        def f = File.createTempFile("wrapped_upm", "tgz")
+        f.deleteOnExit()
+        return f
     }
 
     public void exec(Project project)
     {
         File f = getTempTarLocation()
-        if (f.exists()) {
-            f.delete();
-        }
-
-        f.parentFile.mkdirs()
 
         def url =  new URL(this.url)
         url.withInputStream { i ->

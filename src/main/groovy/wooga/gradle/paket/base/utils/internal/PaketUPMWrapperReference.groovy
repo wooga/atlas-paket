@@ -1,6 +1,8 @@
 package wooga.gradle.paket.base.utils.internal
 
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
 /*
  * Copyright 2022 Wooga GmbH
@@ -28,27 +30,32 @@ class PaketUPMWrapperReference {
     public boolean exists
 
     public final static String upmWrapperReferenceFile = "paket.upm.wrapper.reference"
+    static Logger logger = Logging.getLogger(PaketUPMWrapperReference)
 
-    public static boolean IsReferenceFile(File file)
-    {
-        return file.name.equals(upmWrapperReferenceFile)
+    public static boolean IsReferenceFile(File file) {
+        return file.name == upmWrapperReferenceFile
     }
 
     PaketUPMWrapperReference(File wrapperReferencesFile) {
         file = wrapperReferencesFile
         exists = false
         if (file.exists()) {
-            exists = true
-            def parts = file.text.trim().split(";")
-            upmPackageURL = parts[0]
-            upmPackageName  = parts[1]
-            upmPackageNameUnversioned = upmPackageName.split("@")[0]
-            upmPackageTar = new File ("${file.parentFile.path}/${upmPackageURL}")
+            def line = file.readLines().find { !it.startsWithAny("#", "//") }.trim()
+            if (line.isEmpty() || !line.matches(/[^;]*;[^;]*/)) {
+                logger.warn("UPM Wrapper Reference File ${file.path} is malformed.")
+            } else {
+                exists = true
+                def parts = line.split(";")
+                upmPackageURL = parts[0]
+                upmPackageName = parts[1]
+                upmPackageNameUnversioned = upmPackageName.split("@")[0]
+                upmPackageTar = new File("${file.parentFile.path}/${upmPackageURL}")
+            }
         }
     }
 
     PaketUPMWrapperReference(String nugetPackage, Project project) {
-        this(project.file ("packages/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+        this(project.file("packages/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
     }
 
 }

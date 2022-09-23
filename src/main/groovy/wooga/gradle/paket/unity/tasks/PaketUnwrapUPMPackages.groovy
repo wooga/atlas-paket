@@ -19,6 +19,7 @@ package wooga.gradle.paket.unity.tasks
 
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
+import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
@@ -97,7 +98,7 @@ class PaketUnwrapUPMPackages extends ConventionTask {
     }
 
     Set<File> getFilesForPackage(String nuget) {
-        if (isUPMWrapper(nuget)) {
+        if (isUPMWrapper(nuget, project)) {
             return [new PaketUPMWrapperReference(nuget, project).file] as Set<File>
         }
     }
@@ -145,8 +146,8 @@ class PaketUnwrapUPMPackages extends ConventionTask {
         })
     }
 
-    public static boolean isUPMWrapper(String packageName) {
-        return packageName.startsWith(localUPMWrapperPackagePrefix)
+    public static boolean isUPMWrapper(String packageName, Project project) {
+        return (new PaketUPMWrapperReference(packageName, project)).exists
     }
 
     private PaketUPMWrapperReference[] getWrappedUPMPackages() {
