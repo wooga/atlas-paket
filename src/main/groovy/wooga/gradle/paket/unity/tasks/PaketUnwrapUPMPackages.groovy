@@ -34,9 +34,11 @@ import wooga.gradle.paket.base.utils.internal.UnwrapUpm
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
 /**
- * A task to unwrap referenced UPM packages from within NuGet wrapper packages into Unity3D projects as local UPM Overrides.
+ * A task to unwrap UPM packages from within Paket Wrapper Packages into Unity3D projects as local UPM Overrides.
  * <p>
- * This task will take as input a references and lock file to compute the nuget packages that contain upm references and then download the referenced tars from them and unpack them into the unity project's {@code Packages} folder.
+ * This task will take as input a references and lock file to compute the nuget packages that contain upm references.
+ * Then it will either download or just unpack the referenced tars from them into the unity project's {@code Packages} folder.
+ * This will effectively instruct Unity to locally override those UPM package, and force it to use this version instead of whatever is defined in the Unity UPM manifest
  * <p>
  * Example:
  * <pre>
@@ -115,10 +117,12 @@ class PaketUnwrapUPMPackages extends ConventionTask {
             @Override
             void execute(InputFileDetails outOfDate) {
                 if(inputFiles.contains(outOfDate.file) && PaketUPMWrapperReference.IsReferenceFile(outOfDate.file)) {
-                    def upmWrapper = new PaketUPMWrapperReference(outOfDate.file)
-                    if (upmWrapper.exists) {
-                        cleanLocalUpmOverride(upmWrapper)
-                        def upmUnwrapper = new UnwrapUpm(upmWrapper, getOutputDirectory());
+                    def upmWrapperRef = new PaketUPMWrapperReference(outOfDate.file)
+                    if (upmWrapperRef.exists) {
+                        cleanLocalUpmOverride(upmWrapperRef)
+                        def upmUnwrapper = upmWrapperRef.upmPackageURL.startsWith("http")
+                                ? new DownloadAndUnpackTar(upmWrapperRef, getOutputDirectory())
+                                : new UnwrapUpm(upmWrapperRef, getOutputDirectory())
                         upmUnwrapper.exec(project)
                     }
                 }
@@ -130,7 +134,7 @@ class PaketUnwrapUPMPackages extends ConventionTask {
             void execute(InputFileDetails removed) {
                 if (PaketUPMWrapperReference.IsReferenceFile(removed.file)) {
                     logger.info("remove: ${removed.file}")
-                    var upmWrapper = new PaketUPMWrapperReference(removed.file);
+                    def upmWrapper = new PaketUPMWrapperReference(removed.file);
                     if (upmWrapper.exists) {
                         cleanLocalUpmOverride(new PaketUPMWrapperReference(removed.file))
                     }

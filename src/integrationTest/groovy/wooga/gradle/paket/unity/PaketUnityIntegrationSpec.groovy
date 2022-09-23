@@ -23,6 +23,7 @@ import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
+import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
 class PaketUnityIntegrationSpec extends IntegrationSpec {
 
@@ -34,7 +35,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     }
 
     @Shared
-    def bootstrapTestCases = [PaketUnityPlugin.INSTALL_TASK_NAME]
+    def bootstrapTestCases = [PaketUnityPlugin.INSTALL_TASK_NAME, PaketUnityPlugin.UNWRAP_UPM_TASK_NAME]
 
     @Unroll
     def "skips paket call with [only-if] when no [paket.dependencies] file is present when running #taskToRun"(String taskToRun) {
@@ -70,7 +71,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     }
 
     @Unroll
-    def "run paketUnityInstall after #taskToRun"(String taskToRun) {
+    def "run paketUnityInstall and paketUnityUnwrapUPMPackages after #taskToRun"(String taskToRun) {
         given: "a small test nuget package"
         def nuget = "Mini"
 
@@ -98,6 +99,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         then:
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        result.wasExecuted(PaketUnityPlugin.UNWRAP_UPM_TASK_NAME)
 
         where:
         taskToRun                        | _
@@ -127,6 +129,76 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         then:
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+    }
+
+    def "paketUnityInstall ignores UPM Wrappers"() {
+        given: "a small project with a unity project dir"
+        def unityProjectName = "Test.Project"
+        def dependencyName = PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix + "TestDependency"
+
+        and: "apply paket get plugin to get paket install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "setup paket configuration"
+        setupWrappedUpmPaketProject(dependencyName, unityProjectName)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+        def packagesDir = new File(projectDir, "${unityProjectName}/Assets/Paket.Unity3D/${dependencyName}")
+        assert !packagesDir.exists()
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+    }
+
+    def "run paketUnityUnwrapUPMPackages with dependencies"() {
+        given: "a small project with a unity project dir"
+        def unityProjectName = "Test.Project"
+        def dependencyName = PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix + "TestDependency"
+
+        and: "apply paket get plugin to get paket install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "setup paket configuration with wrapped upm dep"
+        setupWrappedUpmPaketProject(dependencyName, unityProjectName)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.UNWRAP_UPM_TASK_NAME)
+        def packagesDir = new File(projectDir, "${unityProjectName}/Packages/${dependencyName}")
+        def unpackedFile = new File(projectDir, "${unityProjectName}/Packages/${dependencyName}/dummy_file")
+
+        then:
+        packagesDir.exists()
+        unpackedFile.exists()
+        result.wasExecuted(PaketUnityPlugin.UNWRAP_UPM_TASK_NAME)
+    }
+
+    def "paketUnityUnwrapUPMPackages ignores not wrapped packages"() {
+        given: "a small project with a unity project dir"
+        def unityProjectName = "Test.Project"
+        def dependencyName = "TestDependency"
+
+        and: "apply paket get plugin to get paket install task"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "setup paket configuration with wrapped upm dep"
+        setupPaketProject(dependencyName, unityProjectName)
+
+        when:
+        def result = runTasksSuccessfully(PaketUnityPlugin.UNWRAP_UPM_TASK_NAME)
+        def packagesDir = new File(projectDir, "${unityProjectName}/Packages/${dependencyName}")
+        def unpackedFile = new File(projectDir, "${unityProjectName}/Packages/${dependencyName}/dummy_file")
+
+        then:
+        !packagesDir.exists()
+        !unpackedFile.exists()
+        result.wasExecuted(PaketUnityPlugin.UNWRAP_UPM_TASK_NAME)
     }
 
     @Unroll("Copy assembly definitions when includeAssemblyDefinitions is #includeAssemblyDefinitions and set in #configurationString")
@@ -193,6 +265,18 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         """.stripIndent()
 
         createFile("packages/${dependencyName}/content/${dependencyName}.cs")
+    }
+
+    private void setupWrappedUpmPaketProject(dependencyName, unityProjectName) {
+        setupPaketProject(dependencyName, unityProjectName)
+
+        copyDummyTgz("packages/${dependencyName}/lib/${dependencyName}.tgz")
+        def f = createFile("packages/${dependencyName}/lib/paket.upm.wrapper.reference")
+        f.text = "${dependencyName}.tgz;${dependencyName}"
+    }
+
+    private File copyDummyTgz(String dest) {
+        copyResources("upm_package.tgz", dest)
     }
 
     static boolean hasNoSource(ExecutionResult result, String taskName) {

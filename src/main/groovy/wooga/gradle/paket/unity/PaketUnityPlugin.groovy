@@ -133,12 +133,15 @@ class PaketUnityPlugin implements Plugin<Project> {
 
             Closure configClosure = { task ->
                 task.finalizedBy paketUnityInstall
-                task.finalizedBy paketUpmUnwrap
             }
 
             project.tasks.withType(PaketUpdate).configureEach(configClosure)
 
             [paketInstall, paketRestore].each {it.configure(configClosure) }
+
+            project.tasks.withType(PaketUnityInstall).configureEach{ t -> t.finalizedBy(paketUpmUnwrap)}
+            paketUnityInstall.configure{t -> t.finalizedBy(paketUpmUnwrap)}
+
         }
     }
 }

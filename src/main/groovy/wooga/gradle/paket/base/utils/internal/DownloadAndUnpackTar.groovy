@@ -1,6 +1,5 @@
 package wooga.gradle.paket.base.utils.internal
 
-import org.apache.commons.io.FileUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -8,7 +7,6 @@ class DownloadAndUnpackTar {
     private String url;
     private File destinationDir;
 
-    private static final String unpackDirectoryName = "package"
     private static final String tempTarName = "temp.tgz"
 
     DownloadAndUnpackTar(String url, File destinationDir)

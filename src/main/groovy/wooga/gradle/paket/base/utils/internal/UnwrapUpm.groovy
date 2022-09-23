@@ -8,6 +8,7 @@ class UnwrapUpm {
     private File upmTarFile;
     private File destinationDir;
 
+    // this is how Unity names the root directory inside the upm tar files
     private static final String unpackDirectoryName = "package"
 
     UnwrapUpm(File tarFile, File destinationDir)
@@ -19,7 +20,6 @@ class UnwrapUpm {
     UnwrapUpm(String url, File destinationDir, Project project)
     {
         this(project.file(url), destinationDir)
-        this.destinationDir = destinationDir;
     }
 
     UnwrapUpm(PaketUPMWrapperReference ref, File outputDirectory)
@@ -35,7 +35,7 @@ class UnwrapUpm {
 
         project.logger.info("unpacking ${this.upmTarFile.path} into ${destinationDir.path}")
 
-        project.tarTree( project.resources.gzip(this.upmTarFile) ).files.each { fileFromTar ->
+        project.tarTree(this.upmTarFile).files.each { fileFromTar ->
             def path = fileFromTar.toPath()
             def indexOfPackage = 0
             while (indexOfPackage < path.getNameCount() && path.getName(indexOfPackage).toString() != unpackDirectoryName) {
