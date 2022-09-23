@@ -1,7 +1,7 @@
 package wooga.gradle.paket.base.utils.internal
 
 import org.apache.commons.io.FileUtils
-=import org.gradle.api.GradleException
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class UnwrapUpm {
