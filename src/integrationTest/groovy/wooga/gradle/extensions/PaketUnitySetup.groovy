@@ -35,6 +35,7 @@ import java.lang.annotation.Target
 interface PaketUnitySetup {
     File getProjectReferencesFile()
     File getInstallDirectory()
+    File getUPMInstallDirectory()
     File getUnityProjectDir()
     String getName()
 

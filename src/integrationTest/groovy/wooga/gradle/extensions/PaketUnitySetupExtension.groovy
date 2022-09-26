@@ -67,6 +67,11 @@ class PaketUnitySetupInterceptor extends GradleIntegrationSpecInterceptor implem
     }
 
     @Override
+    File getUPMInstallDirectory() {
+        new File(unityProjectDir, "/Packages")
+    }
+
+    @Override
     File getUnityProjectDir() {
         new File(projectDir, projectName)
     }

@@ -17,8 +17,10 @@
 
 package wooga.gradle.paket.unity
 
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.CopySpec
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.get.PaketGetPlugin
@@ -26,6 +28,7 @@ import wooga.gradle.paket.get.tasks.PaketUpdate
 import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
+import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
 import java.util.stream.Collectors
 
@@ -48,7 +51,7 @@ class PaketUnityPlugin implements Plugin<Project> {
     static final String GROUP = "PaketUnity"
     static final String EXTENSION_NAME = 'paketUnity'
     static final String INSTALL_TASK_NAME = "paketUnityInstall"
-
+    static final String UNWRAP_UPM_TASK_NAME = "paketUnityUnwrapUPMPackages"
     @Override
     void apply(Project project) {
         this.project = project
@@ -58,9 +61,10 @@ class PaketUnityPlugin implements Plugin<Project> {
 
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketUnityPluginExtension, project, baseExtension.dependencyHandler)
         createPaketUnityInstallTasks(project, extension)
+        createPaketUpmUnwrapTasks(project, extension)
         extension.assemblyDefinitionFileStrategy = AssemblyDefinitionFileStrategy.manual
 
-        project.tasks.matching({ it.name.startsWith("paketUnity") }).configureEach { task ->
+        project.tasks.matching({ it.name.startsWith("paketUnity")}).configureEach { task ->
             task.onlyIf {
                 extension.getPaketReferencesFiles() && !extension.getPaketReferencesFiles().isEmpty() &&
                         extension.getPaketDependenciesFile() && extension.getPaketDependenciesFile().exists() &&
@@ -96,12 +100,36 @@ class PaketUnityPlugin implements Plugin<Project> {
                 lifecycleTask.dependsOn(installTaskProvider)
             }
         }
-}
+    }
+
+    private static void createPaketUpmUnwrapTasks(final Project project, final PaketUnityPluginExtension extension) {
+        def unwrapProviders = extension.paketReferencesFiles.files.collect { referenceFile ->
+            def taskName = UNWRAP_UPM_TASK_NAME + referenceFile.parentFile.name
+            def unwrapProvider = project.tasks.register(taskName, PaketUnwrapUPMPackages)
+            unwrapProvider.configure { PaketUnwrapUPMPackages t ->
+                t.group = GROUP
+                t.description = "Unwraps Wrapped UPM dependencies for Unity3d project ${referenceFile.parentFile.name} "
+                t.lockFile = extension.getPaketLockFile()
+                t.referencesFile = referenceFile
+            }
+            return unwrapProvider
+        }
+        def lifecycleTaskProvider = project.tasks.register(UNWRAP_UPM_TASK_NAME)
+
+        lifecycleTaskProvider.configure {lifecycleTask ->
+            lifecycleTask.group = GROUP
+            lifecycleTask.description = "Unwraps Wrapped UPM dependencies for all Unity3d projects"
+            unwrapProviders.each { unwrapTaskProvider ->
+                lifecycleTask.dependsOn(unwrapTaskProvider)
+            }
+        }
+    }
 
     void configurePaketDependencyInstallIfPresent() {
         project.plugins.withType(PaketGetPlugin) {
 
             def paketUnityInstall = project.tasks.named(INSTALL_TASK_NAME)
+            def paketUpmUnwrap = project.tasks.named(UNWRAP_UPM_TASK_NAME)
             def paketInstall = project.tasks.named(PaketGetPlugin.INSTALL_TASK_NAME)
             def paketRestore = project.tasks.named(PaketGetPlugin.RESTORE_TASK_NAME)
 
@@ -112,6 +140,10 @@ class PaketUnityPlugin implements Plugin<Project> {
             project.tasks.withType(PaketUpdate).configureEach(configClosure)
 
             [paketInstall, paketRestore].each {it.configure(configClosure) }
+
+            project.tasks.withType(PaketUnityInstall).configureEach{ t -> t.finalizedBy(paketUpmUnwrap)}
+            paketUnityInstall.configure{t -> t.finalizedBy(paketUpmUnwrap)}
+
         }
     }
 }

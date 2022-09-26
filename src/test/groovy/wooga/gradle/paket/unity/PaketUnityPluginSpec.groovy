@@ -68,6 +68,28 @@ class PaketUnityPluginSpec extends ProjectSpec {
     }
 
     @Unroll
+    def 'adds unwrap task to [paket get] task #taskName'(String taskName) {
+        given: "project with [paket get] applied"
+        project.plugins.apply(GET_PLUGIN_NAME)
+
+        and: "project with [paket unity] applied"
+        project.plugins.apply(PLUGIN_NAME)
+
+        assert project.plugins.hasPlugin(GET_PLUGIN_NAME)
+        assert project.plugins.hasPlugin(PLUGIN_NAME)
+
+        and: "task to be tested"
+        def task = project.tasks[taskName]
+
+        expect:
+        task.finalizedBy.getDependencies(task).contains(project.tasks[PaketUnityPlugin.UNWRAP_UPM_TASK_NAME])
+
+        where:
+        taskName << [PaketUnityPlugin.INSTALL_TASK_NAME]
+    }
+
+
+    @Unroll
     def 'adds install task to [paket get] task #taskName 2'(String taskName) {
         given: "project with [paket unity] applied"
         project.plugins.apply(PLUGIN_NAME)
@@ -87,4 +109,26 @@ class PaketUnityPluginSpec extends ProjectSpec {
         where:
         taskName << [PaketGetPlugin.INSTALL_TASK_NAME, PaketGetPlugin.UPDATE_TASK_NAME, PaketGetPlugin.RESTORE_TASK_NAME]
     }
+
+    @Unroll
+    def 'adds unwrap task to [paket get] task #taskName 2'(String taskName) {
+        given: "project with [paket unity] applied"
+        project.plugins.apply(PLUGIN_NAME)
+
+        and: "project with [paket get] applied"
+        project.plugins.apply(GET_PLUGIN_NAME)
+
+        assert project.plugins.hasPlugin(GET_PLUGIN_NAME)
+        assert project.plugins.hasPlugin(PLUGIN_NAME)
+
+        and: "task to be tested"
+        def task = project.tasks[taskName]
+
+        expect:
+        task.finalizedBy.getDependencies(task).contains(project.tasks[PaketUnityPlugin.UNWRAP_UPM_TASK_NAME])
+
+        where:
+        taskName << [PaketUnityPlugin.INSTALL_TASK_NAME]
+    }
+
 }

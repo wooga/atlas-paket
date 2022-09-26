@@ -21,6 +21,7 @@ import groovy.transform.InheritConstructors
 import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
+import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
 class PaketDependencySetupExtension extends AbstractAnnotationDrivenExtension<PaketDependency> {
 
@@ -40,6 +41,8 @@ class PaketDependencyInterceptor extends GradleIntegrationSpecInterceptor implem
 
     protected File paketDependencies
     protected File paketLock
+
+    final static String localUPMWrapperPackagePrefix = "Wooga.UPMWrapper"
 
     PaketDependencyInterceptor(String fieldName, String[] projectDependencies) {
         super(fieldName)
@@ -68,11 +71,25 @@ nuget ${projectDependencies.join("\nnuget ")}""".stripIndent()
 
         projectDependencies.each { dependency ->
             createFile("packages/${dependency}/content/ContentFile.cs")
+            if (dependency.startsWith(localUPMWrapperPackagePrefix)) {
+                setupWrappedUpmDependency(dependency)
+            }
         }
         createLockFile(projectDependencies)
         paketDependencies = dependenciesFile
         dependenciesFile
     }
+
+    private void setupWrappedUpmDependency(dependencyName) {
+        copyDummyTgz("packages/${dependencyName}/lib/${dependencyName}.tgz")
+        def f = createFile("packages/${dependencyName}/lib/paket.upm.wrapper.reference")
+        f.text = "${dependencyName}.tgz;${dependencyName}"
+    }
+
+    private File copyDummyTgz(String dest) {
+        copyResources("upm_package.tgz", dest)
+    }
+
 
     File createDependencies(List<String> dependencies) {
         projectDependencies = dependencies

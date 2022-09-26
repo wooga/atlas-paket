@@ -97,4 +97,8 @@ abstract class GradleIntegrationSpecInterceptor extends AbstractMethodIntercepto
         }
         file
     }
+
+    protected void copyResources(String from, String to) {
+        spec.copyResources(from, to)
+    }
 }
