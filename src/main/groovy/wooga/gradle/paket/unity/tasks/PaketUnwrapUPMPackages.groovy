@@ -17,21 +17,20 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import org.apache.commons.io.FileUtils
+
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
 import org.gradle.api.internal.ConventionTask
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
-import wooga.gradle.paket.base.utils.internal.DownloadAndUnpackTar
-import wooga.gradle.paket.base.utils.internal.PaketLock
-import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
-import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
-import wooga.gradle.paket.base.utils.internal.UnwrapUpm
+import wooga.gradle.paket.base.utils.internal.*
 import wooga.gradle.paket.unity.PaketUnityPlugin
 
 /**
@@ -64,8 +63,6 @@ class PaketUnwrapUPMPackages extends ConventionTask {
      */
     @InputFile
     File lockFile
-
-    public final static String localUPMWrapperPackagePrefix = "Wooga.UPMWrapper"
 
     /**
      * @return the installation output directory
@@ -117,14 +114,14 @@ class PaketUnwrapUPMPackages extends ConventionTask {
         inputs.outOfDate(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails outOfDate) {
-                if(inputFiles.contains(outOfDate.file) && PaketUPMWrapperReference.IsReferenceFile(outOfDate.file)) {
+                if (inputFiles.contains(outOfDate.file) && PaketUPMWrapperReference.IsReferenceFile(outOfDate.file)) {
                     def upmWrapperRef = new PaketUPMWrapperReference(outOfDate.file)
                     if (upmWrapperRef.exists) {
                         cleanLocalUpmOverride(upmWrapperRef)
-                        def upmUnwrapper = upmWrapperRef.upmPackageURL.startsWith("http")
-                                ? new DownloadAndUnpackTar(upmWrapperRef, getOutputDirectory())
-                                : new UnwrapUpm(upmWrapperRef, getOutputDirectory())
-                        upmUnwrapper.exec(project)
+
+                        upmWrapperRef.upmPackageURL.startsWith("http")
+                                ? new DownloadAndUnpackTar(upmWrapperRef, getOutputDirectory()).exec(project)
+                                : new UnwrapUpm(upmWrapperRef, getOutputDirectory()).exec(project)
                     }
                 }
             }

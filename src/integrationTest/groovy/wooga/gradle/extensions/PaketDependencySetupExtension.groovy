@@ -42,6 +42,8 @@ class PaketDependencyInterceptor extends GradleIntegrationSpecInterceptor implem
     protected File paketDependencies
     protected File paketLock
 
+    final static String localUPMWrapperPackagePrefix = "Wooga.UPMWrapper"
+
     PaketDependencyInterceptor(String fieldName, String[] projectDependencies) {
         super(fieldName)
         this.projectDependencies = projectDependencies.toList()
@@ -69,7 +71,7 @@ nuget ${projectDependencies.join("\nnuget ")}""".stripIndent()
 
         projectDependencies.each { dependency ->
             createFile("packages/${dependency}/content/ContentFile.cs")
-            if (dependency.startsWith(PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix)) {
+            if (dependency.startsWith(localUPMWrapperPackagePrefix)) {
                 setupWrappedUpmDependency(dependency)
             }
         }

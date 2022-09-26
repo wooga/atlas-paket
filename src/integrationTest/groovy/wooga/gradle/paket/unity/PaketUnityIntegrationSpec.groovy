@@ -21,6 +21,7 @@ import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
+import wooga.gradle.extensions.PaketDependencyInterceptor
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
@@ -134,7 +135,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     def "paketUnityInstall ignores UPM Wrappers"() {
         given: "a small project with a unity project dir"
         def unityProjectName = "Test.Project"
-        def dependencyName = PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix + "TestDependency"
+        def dependencyName = PaketDependencyInterceptor.localUPMWrapperPackagePrefix + "TestDependency"
 
         and: "apply paket get plugin to get paket install task"
         buildFile << """
@@ -156,7 +157,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
     def "run paketUnityUnwrapUPMPackages with dependencies"() {
         given: "a small project with a unity project dir"
         def unityProjectName = "Test.Project"
-        def dependencyName = PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix + "TestDependency"
+        def dependencyName = PaketDependencyInterceptor.localUPMWrapperPackagePrefix + "TestDependency"
 
         and: "apply paket get plugin to get paket install task"
         buildFile << """

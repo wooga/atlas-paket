@@ -48,7 +48,7 @@ class PaketUPMWrapperReference {
                 def parts = line.split(";")
                 upmPackageURL = parts[0]
                 upmPackageName = parts[1]
-                upmPackageNameUnversioned = upmPackageName.split("@")[0]
+                upmPackageNameUnversioned = upmPackageName.split("@", 2).first()
                 upmPackageTar = new File("${file.parentFile.path}/${upmPackageURL}")
             }
         }

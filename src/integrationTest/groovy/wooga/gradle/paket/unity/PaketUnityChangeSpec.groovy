@@ -20,6 +20,7 @@ package wooga.gradle.paket.unity
 import nebula.test.IntegrationSpec
 import spock.lang.Unroll
 import wooga.gradle.extensions.PaketDependency
+import wooga.gradle.extensions.PaketDependencyInterceptor
 import wooga.gradle.extensions.PaketDependencySetup
 import wooga.gradle.extensions.PaketUnity
 import wooga.gradle.extensions.PaketUnitySetup
@@ -29,7 +30,7 @@ import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 class PaketUnityChangeSpec extends IntegrationSpec {
 
     final static String STD_OUT_ALL_OUT_OF_DATE = "The input changes require a full rebuild for incremental task"
-    final static String U = PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix;
+    final static String U = PaketDependencyInterceptor.localUPMWrapperPackagePrefix;
 
     @PaketDependency(projectDependencies = ["D1", "D2", "D3"])
     PaketDependencySetup paketSetup
@@ -141,7 +142,7 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         unityProject1.projectReferencesFile.exists()
 
         appliedReferencesAfterUpdate.every { ref ->
-            if (ref.startsWith(PaketUnwrapUPMPackages.localUPMWrapperPackagePrefix)) {
+            if (ref.startsWith(PaketDependencyInterceptor.localUPMWrapperPackagePrefix)) {
                 new File(unityProject1.getUPMInstallDirectory(), (ref as String) + "/dummy_file").exists()
             } else {
                 !(new File(unityProject1.getUPMInstallDirectory(), (ref as String) + "/dummy_file").exists())
