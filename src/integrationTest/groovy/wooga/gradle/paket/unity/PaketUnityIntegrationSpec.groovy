@@ -71,7 +71,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         taskToRun << bootstrapTestCases
     }
 
-    @Unroll
+    @Unroll("unwrap upm after")
     def "run paketUnityInstall and paketUnityUnwrapUPMPackages after #taskToRun"(String taskToRun) {
         given: "a small test nuget package"
         def nuget = "Mini"
