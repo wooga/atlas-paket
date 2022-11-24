@@ -30,8 +30,6 @@ import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
-import java.util.stream.Collectors
-
 /**
  * A {@link Plugin} which adds tasks to install NuGet packages into a Unity3D project.
  * <p>
@@ -62,7 +60,7 @@ class PaketUnityPlugin implements Plugin<Project> {
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketUnityPluginExtension, project, baseExtension.dependencyHandler)
         createPaketUnityInstallTasks(project, extension)
         createPaketUpmUnwrapTasks(project, extension)
-        extension.assemblyDefinitionFileStrategy = AssemblyDefinitionFileStrategy.manual
+        extension.assemblyDefinitionFileStrategy = PaketUnityPluginConventions.assemblyDefinitionFileStrategy
 
         project.tasks.matching({ it.name.startsWith("paketUnity")}).configureEach { task ->
             task.onlyIf {
