@@ -34,6 +34,7 @@ import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
+
 /**
  * A task to copy referenced NuGet packages into Unity3D projects.
  * <p>
@@ -42,13 +43,11 @@ import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
  * Example:
  * <pre>
  * {@code
- *     task unityInstall(type:wooga.gradle.paket.unity.tasks.PaketUnityInstall) {
- *         referencesFile = file('paket.unity3D.references')
+ *     task unityInstall(type:wooga.gradle.paket.unity.tasks.PaketUnityInstall) {*         referencesFile = file('paket.unity3D.references')
  *         lockFile = file('../paket.lock')
  *         frameworks = ["net11", "net20", "net35"]
  *         paketOutputDirectoryName = "PaketUnity3D"
- *     }
- * }
+ *}*}
  * </pre>
  */
 class PaketUnityInstall extends ConventionTask {
@@ -120,6 +119,15 @@ class PaketUnityInstall extends ConventionTask {
         project.files(files)
     }
 
+    PaketUnityInstall() {
+        description = 'Copy paket dependencies into unity projects'
+        group = PaketUnityPlugin.GROUP
+    }
+
+    /**
+     * @param nuget The name of the package
+     * @return The files to be copied over from this package
+     */
     Set<File> getFilesForPackage(String nuget) {
         def fileTree = project.fileTree(dir: project.projectDir)
         fileTree.include("packages/${nuget}/content/**")
@@ -141,11 +149,6 @@ class PaketUnityInstall extends ConventionTask {
         return files
     }
 
-    PaketUnityInstall() {
-        description = 'Copy paket dependencies into unity projects'
-        group = PaketUnityPlugin.GROUP
-    }
-
     @TaskAction
     protected performCopy(IncrementalTaskInputs inputs) {
 
@@ -160,7 +163,7 @@ class PaketUnityInstall extends ConventionTask {
         inputs.outOfDate(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails outOfDate) {
-                if(inputFiles.contains(outOfDate.file)) {
+                if (inputFiles.contains(outOfDate.file)) {
                     def outputPath = transformInputToOutputPath(outOfDate.file, project.file("packages"))
                     logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
                     FileUtils.copyFile(outOfDate.file, outputPath)
@@ -193,7 +196,8 @@ class PaketUnityInstall extends ConventionTask {
     protected void cleanOutputDirectory() {
         def tree = project.fileTree(getOutputDirectory())
 
-        if(getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
+        // If the strategy is manual, do not delete asmdefs
+        if (getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
             tree.exclude("**/*.asmdef")
             tree.exclude("**/*.asmdef.meta")
         }

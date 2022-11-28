@@ -130,7 +130,8 @@ class PaketInstallIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         result.standardOutput.contains("Update $nuget to their latest version and update projects.")
     }
 
-    //generated dependencies update task updates only one dependency
+    // generated dependencies update task updates only one dependency
+    // The test name is written in shorthand due to the default path character limit (260) on Windows
     def "gdutuood"() {
         given: "A few small test nugets"
         def nuget1 = "Mini"

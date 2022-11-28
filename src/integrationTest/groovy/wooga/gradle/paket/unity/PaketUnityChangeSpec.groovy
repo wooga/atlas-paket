@@ -414,11 +414,16 @@ class PaketUnityChangeSpec extends IntegrationSpec {
     }
 
     @Unroll
-    def "task :paketInstall keeps files with #filePattern in #location paket install directory"() {
+    def "task :paketInstall keeps files with #filePattern in #location paket install directory when strategy is #strategy"() {
         given: "a file matching the file pattern"
         def baseDir = (location == "root") ? unityProject1.installDirectory : new File(unityProject1.installDirectory, "some/nested/directory")
         baseDir.mkdirs()
         def fileToKeep = createFile("test${filePattern}", baseDir) << "random content"
+
+        and: "the assembly file definition strategy set to manual"
+        buildFile << """
+        paketUnity.assemblyDefinitionFileStrategy = "$strategy"
+        """.stripIndent()
 
         when:
         runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -427,11 +432,11 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         fileToKeep.exists()
 
         where:
-        filePattern    | location
-        ".asmdef"      | "root"
-        ".asmdef"      | "nested"
-        ".asmdef.meta" | "root"
-        ".asmdef.meta" | "nested"
+        filePattern    | location | strategy
+        ".asmdef"      | "root"   | "manual"
+        ".asmdef"      | "nested" | "manual"
+        ".asmdef.meta" | "root"   | "manual"
+        ".asmdef.meta" | "nested" | "manual"
     }
 
     def "task :paketInstall deletes empty directories"() {
@@ -459,6 +464,76 @@ class PaketUnityChangeSpec extends IntegrationSpec {
         !rootDir.exists()
         !secondLevel.exists()
         !thirdLevel.exists()
+    }
+
+    @Unroll
+    def "task :paketInstall is not up to date when includeAssemblyDefinitions goes from #includeAtStart to #includeAtEnd"() {
+
+        given: "a root project with a unity project"
+        buildFile << """
+            ${applyPlugin(PaketGetPlugin)}
+        """.stripIndent()
+
+        and: "a configured plugin"
+        buildFile << """
+        paketUnity {
+            setIncludeAssemblyDefinitions(${includeAtStart})
+        }
+        """.stripIndent()
+
+        and: "some source files and an assembly definittion"
+        def file1 = createFile("packages/${unityProject3.projectReferences[0]}/content/ContentFile.cs")
+        def file2 = createFile("packages/${unityProject3.projectReferences[1]}/content/ContentFile.cs")
+        def asmdefFile = createFile("packages/${unityProject3.projectReferences[1]}/content/Content.asmdef")
+
+        def expectedFile1 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[0]}/ContentFile.cs")
+        def expectedFile2 = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[1]}/ContentFile.cs")
+        def expectedAsmdefFile = new File(unityProject3.installDirectory, "${unityProject3.projectReferences[1]}/Content.asmdef")
+
+        assert !expectedFile1.exists()
+        assert !expectedFile2.exists()
+        assert !expectedAsmdefFile.exists()
+
+        when: "running paket install at the start"
+        def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, file1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, file2.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, asmdefFile.path)
+
+        expectedFile1.exists()
+        expectedFile2.exists()
+        expectedAsmdefFile.exists() == includeAtStart
+
+        when: "running paket install again"
+        buildFile << """
+        paketUnity {
+            setIncludeAssemblyDefinitions(${includeAtEnd})
+        }
+        """.stripIndent()
+
+        result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then: ""
+        result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
+        !result.wasUpToDate(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        !containsHasChangedOrDeletedOutput(result.standardOutput, file1.path)
+        !containsHasChangedOrDeletedOutput(result.standardOutput, file2.path)
+
+        allFilesOutOfDate(result.standardOutput)
+
+        expectedFile1.exists()
+        expectedFile2.exists()
+        expectedAsmdefFile.exists() == includeAtEnd
+
+        where:
+        includeAtStart | includeAtEnd
+        true           | false
+        false          | true
     }
 
     def containsHasChangedOrDeletedOutput(String stdOut, String filePath) {

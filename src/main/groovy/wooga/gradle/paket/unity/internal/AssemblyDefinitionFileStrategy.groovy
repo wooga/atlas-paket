@@ -17,7 +17,17 @@
 
 package wooga.gradle.paket.unity.internal
 
+/**
+ * The strategy to employ regarding assembly definition files
+ */
 enum AssemblyDefinitionFileStrategy {
-    manual, disabled
 
+    /**
+     * Assembly definition files will be manually handled by the user
+     */
+    manual,
+    /**
+     * The default behavior, treat them as any other file
+     */
+    disabled
 }
