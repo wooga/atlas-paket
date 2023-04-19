@@ -202,7 +202,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         result.wasExecuted(PaketUnityPlugin.UNWRAP_UPM_TASK_NAME)
     }
 
-    @Unroll("Copy assembly definitions when includeAssemblyDefinitions is #includeAssemblyDefinitions and set in #configurationString")
+    @Unroll("#message assembly definitions when includeAssemblyDefinitions is #includeAssemblyDefinitions and set in #configurationString")
     def "copy assembly definition files"() {
 
         given: "apply paket get plugin to get paket install task"
@@ -221,8 +221,12 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         and: "setup assembly definition file in package"
         def asmdefFileName = "${dependencyName}.${PaketUnityInstall.assemblyDefinitionFileExtension}"
+        def asmdefRefName = "${dependencyName}.${PaketUnityInstall.assemblyReferenceFileExtension}"
+
         def inputAsmdefFile = createFile("packages/${dependencyName}/content/${asmdefFileName}")
+        def inputAsmRefFile = createFile("packages/${dependencyName}/content/${asmdefRefName}")
         assert inputAsmdefFile.exists()
+        assert inputAsmRefFile.exists()
 
         when:
         def result = runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
@@ -232,9 +236,10 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
 
         then:
         result.wasExecuted(PaketUnityPlugin.INSTALL_TASK_NAME)
-        def outputAsmdefFilePath = "${packagesDir}/${asmdefFileName}"
-        def outputAsmdefFile = new File(outputAsmdefFilePath)
+        def outputAsmdefFile = new File("${packagesDir}/${asmdefFileName}")
+        def outputAsmRefFile = new File("${packagesDir}/${asmdefRefName}")
         includeAssemblyDefinitions == outputAsmdefFile.exists()
+        includeAssemblyDefinitions == outputAsmRefFile.exists()
 
         where:
         baseConfigurationString | includeAssemblyDefinitions
@@ -247,6 +252,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         taskName = PaketUnityPlugin.INSTALL_TASK_NAME + unityProjectName
         dependencyName = "Wooga.TestDependency"
         configurationString = baseConfigurationString.replace("#taskName%%", "'${taskName}'")
+        message = includeAssemblyDefinitions ? "Skip copy" : "copy"
     }
 
     private void setupPaketProject(dependencyName, unityProjectName) {

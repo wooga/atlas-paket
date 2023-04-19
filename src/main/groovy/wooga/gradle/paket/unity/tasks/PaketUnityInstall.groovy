@@ -86,6 +86,7 @@ class PaketUnityInstall extends ConventionTask {
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
     public final static String assemblyDefinitionFileExtension = "asmdef"
+    public final static String assemblyReferenceFileExtension = "asmref"
 
     /**
      * @return the installation output directory
@@ -143,6 +144,9 @@ class PaketUnityInstall extends ConventionTask {
 
         if (!getIncludeAssemblyDefinitions()) {
             fileTree.exclude("**/*.${assemblyDefinitionFileExtension}")
+            fileTree.exclude("**/*.${assemblyDefinitionFileExtension}.meta")
+            fileTree.exclude("**/*.${assemblyReferenceFileExtension}")
+            fileTree.exclude("**/*.${assemblyReferenceFileExtension}.meta")
         }
 
         def files = fileTree.files
