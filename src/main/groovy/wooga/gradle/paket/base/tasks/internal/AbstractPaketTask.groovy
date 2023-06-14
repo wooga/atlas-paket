@@ -24,6 +24,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
+import org.gradle.work.InputChanges
 
 abstract class AbstractPaketTask<T extends AbstractPaketTask> extends ConventionTask {
 
@@ -125,7 +126,7 @@ abstract class AbstractPaketTask<T extends AbstractPaketTask> extends Convention
     }
 
     @TaskAction
-    protected void performPaketCommand(IncrementalTaskInputs inputs) {
+    protected void performPaketCommand(InputChanges inputs) {
         configureArguments()
         exec()
     }

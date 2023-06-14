@@ -285,7 +285,7 @@ class PaketPackIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         then:
         outputContains(result, "A problem was found with the configuration of task ':paketPack-WoogaTest'")
-        outputContains(result, "No value has been specified for property 'version'")
+        outputContains(result, "property 'version' doesn't have a configured value")
         !outputFile.exists()
         result.wasExecuted("paketPack-WoogaTest")
 

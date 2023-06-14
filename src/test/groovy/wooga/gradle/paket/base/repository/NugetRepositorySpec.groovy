@@ -18,7 +18,6 @@
 package wooga.gradle.paket.base.repository
 
 import spock.lang.Specification
-import wooga.gradle.paket.base.repository.internal.NugetRepository
 import wooga.gradle.paket.publish.repository.internal.NugetRepository
 
 class NugetRepositorySpec extends Specification {

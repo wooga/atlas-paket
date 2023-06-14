@@ -17,11 +17,14 @@
 
 package wooga.gradle.paket.base.dependencies
 
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 
 interface PaketDependencyHandler extends PaketDependencyConfigurationContainer, PaketDependencyMacros {
 
     static final String MAIN_GROUP = "main"
+
+
 
     /**
      * Returns the {@code main} dependency configuration.
@@ -31,6 +34,7 @@ interface PaketDependencyHandler extends PaketDependencyConfigurationContainer, 
      *
      * @return the default {@code PaketDependencyConfiguration} object
      */
+    @Internal
     PaketDependencyConfiguration getMain()
 
     /**
@@ -40,6 +44,7 @@ interface PaketDependencyHandler extends PaketDependencyConfigurationContainer, 
      */
     void main(Closure depSpec)
 
+    @Internal
     @Nested
     PaketDependencyConfigurationContainer getConfigurationContainer()
 
