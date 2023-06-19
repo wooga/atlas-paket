@@ -17,29 +17,19 @@
 
 package wooga.gradle.paket.base.dependencies.internal
 
-import org.gradle.api.Action
-import org.gradle.api.DomainObjectCollection
 import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.NamedDomainObjectProvider
-import org.gradle.api.NamedDomainObjectSet
-import org.gradle.api.Namer
 import org.gradle.api.Project
-import org.gradle.api.Rule
-import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.internal.project.ProjectInternal
-import org.gradle.api.tasks.Internal
 import org.gradle.internal.metaobject.DynamicInvokeResult
 import org.gradle.internal.metaobject.MethodAccess
 import org.gradle.internal.metaobject.MethodMixIn
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.util.CollectionUtils
+import org.gradle.util.Configurable
 import org.gradle.util.ConfigureUtil
 import wooga.gradle.paket.base.dependencies.*
 
-//@Delegate with NamedDomainObjectSet::named and NamedDomainObjectSet::withType gives a JVM NullPointerException
-//its not clear if because of gradle interception or a groovy bug. So those have to be excluded from the
-// @Delegate and implemented manually in the class.
 class DefaultPaketDependencyHandler implements PaketDependencyHandler, MethodMixIn {
 
     @Delegate(includeTypes = [PaketDependencyConfigurationHandler.class], interfaces = false)
@@ -48,10 +38,7 @@ class DefaultPaketDependencyHandler implements PaketDependencyHandler, MethodMix
     @Delegate
     private final PaketDependencyMacros macros
 
-    @Delegate(excludes = ["configure", //legit, we have our own configure impl
-            "named", "withType",  //JVM/gradle/groovy bug
-            "getRules", "isEmpty", "getAsMap", "getNames", "getNamer" //needs @Internal bc is used by task
-    ])
+    @Delegate(excludeTypes = [Configurable.class])
     private final PaketDependencyConfigurationContainer configurationContainer
     private final DynamicDependencyConfigurationMethods dynamicMethods
     private final ServiceRegistry services
@@ -72,19 +59,15 @@ class DefaultPaketDependencyHandler implements PaketDependencyHandler, MethodMix
         })
     }
 
-
     @Override
     boolean hasDependencies() {
         configurationContainer.every { it.isEmpty() }
     }
 
-
-
     void clear() {
         configurationContainer.each { it.clear() }
     }
 
-    @Internal
     @Override
     PaketDependencyConfiguration getMain() {
         return mainConfiguration
@@ -99,7 +82,11 @@ class DefaultPaketDependencyHandler implements PaketDependencyHandler, MethodMix
         this.mainConfiguration.configure(depSpec)
     }
 
-    @Internal
+    @Override
+    PaketDependencyConfigurationContainer getConfigurationContainer() {
+        return this.configurationContainer
+    }
+
     @Override
     MethodAccess getAdditionalMethods() {
         return dynamicMethods
@@ -130,6 +117,8 @@ class DefaultPaketDependencyHandler implements PaketDependencyHandler, MethodMix
                 return DynamicInvokeResult.notFound()
             }
         }
+
+
     }
 
     private static class NameUtil {
@@ -141,81 +130,6 @@ class DefaultPaketDependencyHandler implements PaketDependencyHandler, MethodMix
             name.chars.every { Character.isJavaIdentifierPart(it) }
         }
     }
-
-    //here be boilerplate
-
-    @Override
-    NamedDomainObjectProvider<PaketDependencyConfiguration> named(String s) throws UnknownDomainObjectException {
-        return configurationContainer.named(s)
-    }
-
-    @Override
-    NamedDomainObjectProvider<PaketDependencyConfiguration> named(String s, Action<? super PaketDependencyConfiguration> action) throws UnknownDomainObjectException {
-        return configurationContainer.named(s, action)
-    }
-
-    @Override
-    <S extends PaketDependencyConfiguration> NamedDomainObjectProvider<S> named(String s, Class<S> aClass, Action<? super S> action) throws UnknownDomainObjectException {
-        return configurationContainer.named(s, aClass, action)
-    }
-
-    @Override
-    <S extends PaketDependencyConfiguration> NamedDomainObjectProvider<S> named(String s, Class<S> aClass) throws UnknownDomainObjectException {
-        return configurationContainer.named(s, aClass)
-    }
-
-    @Override
-    <S extends PaketDependencyConfiguration> NamedDomainObjectSet<S> withType(Class<S> aClass) {
-        return configurationContainer.withType(aClass)
-    }
-
-    @Override
-    <S extends PaketDependencyConfiguration> DomainObjectCollection<S> withType(Class<S> aClass, Action<? super S> action) {
-        return configurationContainer.withType(aClass, action)
-    }
-
-    @Override
-    <S extends PaketDependencyConfiguration> DomainObjectCollection<S> withType(@DelegatesTo.Target Class<S> aClass, @DelegatesTo(genericTypeIndex = 0) Closure closure) {
-        return configurationContainer.withType(aClass, closure)
-    }
-
-    @Internal
-    @Override
-    List<Rule> getRules() {
-        return configurationContainer.getRules()
-    }
-    @Internal
-    @Override
-    boolean isEmpty() {
-        return configurationContainer.isEmpty()
-    }
-
-    @Internal
-    @Override
-    PaketDependencyConfigurationContainer getConfigurationContainer() {
-        return this.configurationContainer
-    }
-
-
-
-    @Internal
-    @Override
-    SortedMap<String, PaketDependencyConfiguration> getAsMap() {
-        return configurationContainer.getAsMap()
-    }
-
-    @Internal
-    @Override
-    SortedSet<String> getNames() {
-        return configurationContainer.getNames()
-    }
-
-    @Internal
-    @Override
-    Namer<PaketDependencyConfiguration> getNamer() {
-        return configurationContainer.getNamer()
-    }
-
 }
 
 

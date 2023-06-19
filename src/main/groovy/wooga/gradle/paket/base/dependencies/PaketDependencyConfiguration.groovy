@@ -20,13 +20,11 @@ package wooga.gradle.paket.base.dependencies
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectSet
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.util.Configurable
 
 interface PaketDependencyConfiguration extends PaketDependencyConfigurationHandler, NamedDomainObjectSet<PaketDependency>, Configurable<NamedDomainObjectContainer<PaketDependency>>, Named {
 
-    @Internal
     @Nested
     SortedMap<String, PaketDependency> getAsMap()
 }

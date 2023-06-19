@@ -52,9 +52,7 @@ class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
         def result = runTasksWithFailure(taskToRun)
 
         then:
-        def expectedLockFile = new File(projectDir, "paket.lock")
-        outputContains(result,"property 'paketLock' specifies file '${expectedLockFile.absolutePath}' which doesn't exist")
-        outputContains(result,"An input file was expected to be present but it doesn't exist")
+        outputContains(result,"specified for property 'paketLock' does not exist")
 
         where:
         taskToRun << [PaketGetPlugin.RESTORE_TASK_NAME]
