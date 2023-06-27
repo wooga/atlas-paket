@@ -85,7 +85,7 @@ class PaketUnwrapUPMPackages extends ConventionTask {
         }
 
         def locks = new PaketLock(getLockFile())
-        def dependencies = locks.getAllDependencies(references.nugets)
+        def dependencies = locks.getAllDependencies(references.referenceNames)
         dependencies.each { nuget ->
             def depFiles = getFilesForPackage(nuget)
             files << depFiles
@@ -156,7 +156,7 @@ class PaketUnwrapUPMPackages extends ConventionTask {
 
         Set<PaketUPMWrapperReference> packages = []
         def locks = new PaketLock(getLockFile())
-        def dependencies = locks.getAllDependencies(references.nugets)
+        def dependencies = locks.getAllDependencies(references.referenceNames)
         dependencies.each { nuget ->
             def upmPackage = new PaketUPMWrapperReference(nuget, project)
             if (upmPackage.exists) {
