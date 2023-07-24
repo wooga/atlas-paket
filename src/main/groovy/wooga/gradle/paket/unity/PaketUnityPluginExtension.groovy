@@ -24,7 +24,7 @@ import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 /**
  * A extensions point for paket unity
  */
-interface PaketUnityPluginExtension extends PaketPluginExtension {
+interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackageSpec {
 
     /**
      * Returns a {@link FileCollection} object containing all {@code paket.unity3D.references} files.
