@@ -17,15 +17,13 @@
 
 package wooga.gradle.paket.unity
 
-import org.gradle.api.Action
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.CopySpec
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.get.tasks.PaketUpdate
-import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
@@ -88,7 +86,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 t.lockFile = extension.getPaketLockFile()
                 t.referencesFile = referenceFile
                 t.paketUpmPackageEnabled.convention(extension.paketUpmPackageEnabled)
-                t.paketUpmPackageNames.convention(extension.paketUpmPackageNames)
+                t.paketUpmPackageJson.convention(extension.paketUpmPackageJson)
             }
             return installProvider
         }

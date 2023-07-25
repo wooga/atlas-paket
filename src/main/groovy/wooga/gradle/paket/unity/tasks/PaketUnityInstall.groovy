@@ -211,10 +211,12 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     protected void createPackageDotJsonIfNotExists(File packageDir) {
         def upmPaket = new UPMPaketPackage(packageDir)
         if(packageDir.exists() && !upmPaket.packageDotJson.present) {
-            def packageName = paketUpmPackageNames.getting(upmPaket.name)
-                    .getOrElse("com.wooga.nuget.${upmPaket.name.toLowerCase()}")
-            upmPaket.generateBasicPackageDotJson(packageName)
-            logger.info("generated package.json ($packageName) for $packageDir")
+
+            def pkgJsonOverrides = paketUpmPackageJson.getting(upmPaket.name).getOrElse([:])
+            def pkgJson = UPMPaketPackage.basicUPMPackageJson("com.wooga.nuget.${upmPaket.name.toLowerCase()}", pkgJsonOverrides)
+
+            upmPaket.writePackageJson(pkgJson)
+            logger.info("generated package.json (${pkgJson['name']}) for $packageDir")
         }
     }
 

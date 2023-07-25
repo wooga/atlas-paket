@@ -1,5 +1,7 @@
 package wooga.gradle.paket.unity.internal
 
+import groovy.json.JsonOutput
+
 class UPMPaketPackage {
 
     final File baseDir
@@ -16,15 +18,23 @@ class UPMPaketPackage {
         }
     }
 
-    File generateBasicPackageDotJson(String packageName) {
-        return createBasicPackageJson(baseDir, packageName)
+    File writePackageJson(Map<String, Object> contents) {
+        return writePackageJson(baseDir, contents)
     }
 
-    static File createBasicPackageJson(File baseDir, String packageName) {
+    static File writePackageJson(File baseDir, Map<String, Object> contents) {
         def createdPkgJson = new File(baseDir, "package.json")
-        createdPkgJson << UPMPaketPackage.classLoader.getResource("package.json.template")
-                .text.replaceAll("%%UPM_PACKAGE_NAME%%", packageName)
-        return createdPkgJson;
+        createdPkgJson << JsonOutput.prettyPrint(JsonOutput.toJson(contents))
+        return createdPkgJson
+    }
+
+    static Map<String, Object> basicUPMPackageJson(String packageName, Map<String, Object> overrides = [:]) {
+        Map<String, Object> base = [
+                name: packageName,
+                version: "0.0.0"
+        ]
+        base.putAll(overrides)
+        return base
     }
 
 }

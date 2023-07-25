@@ -34,7 +34,7 @@ interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackag
     FileCollection getPaketReferencesFiles()
 
     /**
-     * @return  the paket unity output directory name
+     * @return  the paket unity output directory name. Relative to `<unity_project>/Assets`
      */
     String getPaketOutputDirectoryName()
 

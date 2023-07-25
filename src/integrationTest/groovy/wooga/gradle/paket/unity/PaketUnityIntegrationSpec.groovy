@@ -17,6 +17,7 @@
 
 package wooga.gradle.paket.unity
 
+import com.wooga.gradle.test.PropertyUtils
 import groovy.json.JsonSlurper
 import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
@@ -292,8 +293,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         buildFile << """
             paketUnity {
                 paketUpmPackageEnabled = $paketUpmPackageEnabled
-                ${expectedName ?
-                "paketUpmPackageNames = ['test': '${expectedName}']" :
+                ${overrides ?
+                "paketUpmPackageJson = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
                 ""
         }
             }
@@ -308,19 +309,20 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         if (hasPackageJson) {
             pkgJsonFile.file
             manifestJson.file
-            def pkgJson = new JsonSlurper().parse(pkgJsonFile)
-            pkgJson['name'] == (expectedName ?: "com.wooga.nuget.${pktUnityInstallDir.name.toLowerCase()}")
-            pkgJson['version'] == "0.0.0"
+            def pkgJson = new JsonSlurper().parse(pkgJsonFile) as Map<String, Object>
+            pkgJson['name'] == (overrides?.get('name') ?: "com.wooga.nuget.${pktUnityInstallDir.name.toLowerCase()}")
+            pkgJson.entrySet().containsAll(overrides?.entrySet()?: [:])
         } else {
             !pkgJsonFile.file
             !manifestJson.file
         }
 
         where:
-        paketUpmPackageEnabled | hasPackageJson | expectedName      | msg
-        true                   | true           | null              | "has"
-        true                   | true           | "com.custom.name" | "has"
-        false                  | false          | null              | "hasn't"
+        paketUpmPackageEnabled | hasPackageJson | overrides                 | msg
+        true                   | true           | null                      | "has"
+        true                   | true           | [name: "com.custom.name"] | "has"
+        true                   | true           | [custom: "customfield"]   | "has"
+        false                  | false          | null                      | "hasn't"
     }
 
     private void setupPaketProject(dependencyName, unityProjectName) {

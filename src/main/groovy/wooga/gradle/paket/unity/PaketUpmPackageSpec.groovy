@@ -9,28 +9,23 @@ import org.gradle.api.tasks.Optional
 
 trait PaketUpmPackageSpec implements BaseSpec {
 
-    private final MapProperty<String, String> paketUpmPackageNames = objects.mapProperty(String, String)
+    /**
+     *
+     */
+    private final MapProperty<String, Map<String, Object>> paketUpmPackageJson = objects.mapProperty(String, Map)
 
     @Input
     @Optional
-    MapProperty<String, String> getPaketUpmPackageNames() {
-        return paketUpmPackageNames
+    MapProperty<String, Map<String, Object>> getPaketUpmPackageJson() {
+        return paketUpmPackageJson
     }
 
-    void setPaketUpmPackageNames(Map paketUpmPackages) {
-        this.paketUpmPackageNames.set(paketUpmPackages)
+    void setPaketUpmPackageJson(Map paketUpmPackages) {
+        this.paketUpmPackageJson.set(paketUpmPackages)
     }
 
-    void setPaketUpmPackageNames(Provider<Map<String, String>> paketUpmPackages) {
-        this.paketUpmPackageNames.set(paketUpmPackages)
-    }
-
-    void addPaketUpmPackageMapping(String paketName, String upmName) {
-        paketUpmPackageNames.put(paketName, upmName)
-    }
-
-    void addPaketUpmPackageMapping(String paketName, Provider<String> upmName) {
-        paketUpmPackageNames.put(paketName, upmName)
+    void setPaketUpmPackageJson(Provider<Map<String, String>> paketUpmPackages) {
+        this.paketUpmPackageJson.set(paketUpmPackages)
     }
 
     private final Property<Boolean> paketUpmPackageEnabled = objects.property(Boolean)
