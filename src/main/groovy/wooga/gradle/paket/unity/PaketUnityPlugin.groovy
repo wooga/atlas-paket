@@ -86,7 +86,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 t.lockFile = extension.getPaketLockFile()
                 t.referencesFile = referenceFile
                 t.paketUpmPackageEnabled.convention(extension.paketUpmPackageEnabled)
-                t.paketUpmPackageJson.convention(extension.paketUpmPackageJson)
+                t.paketUpmPackageManifests.convention(extension.paketUpmPackageManifests)
             }
             return installProvider
         }

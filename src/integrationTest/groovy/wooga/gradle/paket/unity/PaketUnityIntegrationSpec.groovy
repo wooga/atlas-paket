@@ -27,7 +27,6 @@ import wooga.gradle.extensions.PaketDependencyInterceptor
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.fixtures.PaketFixturesTrait
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
-import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
 class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixturesTrait {
 
@@ -294,7 +293,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             paketUnity {
                 paketUpmPackageEnabled = $paketUpmPackageEnabled
                 ${overrides ?
-                "paketUpmPackageJson = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
                 ""
         }
             }
@@ -306,23 +305,23 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         then:
         result.success
         def pkgJsonFile = new File(pktUnityInstallDir, "package.json")
-        if (hasPackageJson) {
+        if (hasPackageManifest) {
             pkgJsonFile.file
             manifestJson.file
             def pkgJson = new JsonSlurper().parse(pkgJsonFile) as Map<String, Object>
             pkgJson['name'] == (overrides?.get('name') ?: "com.wooga.nuget.${pktUnityInstallDir.name.toLowerCase()}")
-            pkgJson.entrySet().containsAll(overrides?.entrySet()?: [:])
+            pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [:])
         } else {
             !pkgJsonFile.file
             !manifestJson.file
         }
 
         where:
-        paketUpmPackageEnabled | hasPackageJson | overrides                 | msg
-        true                   | true           | null                      | "has"
-        true                   | true           | [name: "com.custom.name"] | "has"
-        true                   | true           | [custom: "customfield"]   | "has"
-        false                  | false          | null                      | "hasn't"
+        paketUpmPackageEnabled | hasPackageManifest | overrides                 | msg
+        true                   | true               | null                      | "has"
+        true                   | true               | [name: "com.custom.name"] | "has"
+        true                   | true               | [custom: "customfield"]   | "has"
+        false                  | false              | null                      | "hasn't"
     }
 
     private void setupPaketProject(dependencyName, unityProjectName) {

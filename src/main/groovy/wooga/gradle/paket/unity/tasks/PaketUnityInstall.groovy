@@ -134,7 +134,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 def packages = locks.getAllDependencies(references.nugets).collect {
                     new File(outputDirectory, it)
                 }
-                packages.each { createPackageDotJsonIfNotExists(it) }
+                packages.each { createPackageManifestIfNotExists(it) }
             }
         }
     }
@@ -208,14 +208,14 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         })
     }
 
-    protected void createPackageDotJsonIfNotExists(File packageDir) {
+    protected void createPackageManifestIfNotExists(File packageDir) {
         def upmPaket = new UPMPaketPackage(packageDir)
-        if(packageDir.exists() && !upmPaket.packageDotJson.present) {
+        if(packageDir.exists() && !upmPaket.packageManifest.present) {
 
-            def pkgJsonOverrides = paketUpmPackageJson.getting(upmPaket.name).getOrElse([:])
-            def pkgJson = UPMPaketPackage.basicUPMPackageJson("com.wooga.nuget.${upmPaket.name.toLowerCase()}", pkgJsonOverrides)
+            def pkgJsonOverrides = paketUpmPackageManifests.getting(upmPaket.name).getOrElse([:])
+            def pkgJson = UPMPaketPackage.basicUPMPackageManifest("com.wooga.nuget.${upmPaket.name.toLowerCase()}", pkgJsonOverrides)
 
-            upmPaket.writePackageJson(pkgJson)
+            upmPaket.writePackageManifest(pkgJson)
             logger.info("generated package.json (${pkgJson['name']}) for $packageDir")
         }
     }

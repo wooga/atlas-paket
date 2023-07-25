@@ -9,24 +9,25 @@ import org.gradle.api.tasks.Optional
 
 trait PaketUpmPackageSpec implements BaseSpec {
 
-    /**
-     *
-     */
-    private final MapProperty<String, Map<String, Object>> paketUpmPackageJson = objects.mapProperty(String, Map)
+    private final MapProperty<String, Map<String, Object>> paketUpmPackageManifests = objects.mapProperty(String, Map)
 
+    /**
+     * Map [<paket_package_name>: <upm_manifest_contents>] that overrides the contents of generated package.json files in UPM package mode.
+     */
     @Input
     @Optional
-    MapProperty<String, Map<String, Object>> getPaketUpmPackageJson() {
-        return paketUpmPackageJson
+    MapProperty<String, Map<String, Object>> getPaketUpmPackageManifests() {
+        return paketUpmPackageManifests
     }
 
-    void setPaketUpmPackageJson(Map paketUpmPackages) {
-        this.paketUpmPackageJson.set(paketUpmPackages)
+    void setPaketUpmPackageManifests(Map paketUpmPackages) {
+        this.paketUpmPackageManifests.set(paketUpmPackages)
     }
 
-    void setPaketUpmPackageJson(Provider<Map<String, String>> paketUpmPackages) {
-        this.paketUpmPackageJson.set(paketUpmPackages)
+    void setPaketUpmPackageManifests(Provider<Map<String, String>> paketUpmPackages) {
+        this.paketUpmPackageManifests.set(paketUpmPackages)
     }
+
 
     private final Property<Boolean> paketUpmPackageEnabled = objects.property(Boolean)
 
@@ -39,15 +40,14 @@ trait PaketUpmPackageSpec implements BaseSpec {
      * {@code paketUpmPackages} property. If a mapping is not found there,
      * a generic 'com.wooga.nuget.<paket-package-name>' name will be used.
      * <br>
-     * <br>
-     * This mode only works with PackageManagerSystem == paket, and throws otherwise.
-     *
-     * @throws {@code java.lang.IllegalStateException if PackageManagerSystem != paket}
      */
     void enablePaketUpmPackages() {
         paketUpmPackageEnabled.set(true)
     }
 
+    /**
+     * Enables/Disables "UPM package mode" for paket. See {@code PaketUpmPackageSpec::enablePaketUpmPackages} for more details.
+     */
     @Input
     @Optional
     Property<Boolean> getPaketUpmPackageEnabled() {
