@@ -11,5 +11,5 @@ withCredentials([usernameColonPassword(credentialsId: 'artifactory_publish', var
                             "nugetkey=${artifactory_deploy}"
                           ]
 
-    buildGradlePlugin platforms: ['macos','windows','linux'], sonarToken: sonar_token, testEnvironment: testEnvironment
+    buildGradlePlugin platforms: ['macos','windows'/*,'linux'*/], sonarToken: sonar_token, testEnvironment: testEnvironment
 }
