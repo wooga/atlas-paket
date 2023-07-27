@@ -27,6 +27,8 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     public static final String DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME = "paket.unity3d.references"
     public static final String DEFAULT_PAKET_DIRECTORY = "Paket.Unity3D"
+    //This path is relative to the <unityProject>/Assets dir
+    public static final String UNITY_PACKAGES_DIRECTORY = "../Packages"
 
     protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
@@ -44,6 +46,9 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
 
     String getPaketOutputDirectoryName() {
+        if(paketUpmPackageEnabled.get()) {
+            return customPaketOutputDirectory ?: UNITY_PACKAGES_DIRECTORY
+        }
         return customPaketOutputDirectory ?: DEFAULT_PAKET_DIRECTORY
     }
 

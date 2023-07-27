@@ -17,16 +17,18 @@
 
 package wooga.gradle.paket.unity
 
+import com.wooga.gradle.test.PropertyUtils
+import groovy.json.JsonSlurper
 import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.extensions.PaketDependencyInterceptor
 import wooga.gradle.paket.get.PaketGetPlugin
+import wooga.gradle.paket.unity.fixtures.PaketFixturesTrait
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
-import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
-class PaketUnityIntegrationSpec extends IntegrationSpec {
+class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixturesTrait {
 
     def setup() {
         buildFile << """
@@ -237,9 +239,9 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         includeAssemblyDefinitions == outputAsmdefFile.exists()
 
         where:
-        baseConfigurationString | includeAssemblyDefinitions
-        "paketUnity" | true
-        "paketUnity" | false
+        baseConfigurationString                | includeAssemblyDefinitions
+        "paketUnity"                           | true
+        "paketUnity"                           | false
         "project.tasks.getByName(#taskName%%)" | true
         "project.tasks.getByName(#taskName%%)" | false
 
@@ -247,6 +249,79 @@ class PaketUnityIntegrationSpec extends IntegrationSpec {
         taskName = PaketUnityPlugin.INSTALL_TASK_NAME + unityProjectName
         dependencyName = "Wooga.TestDependency"
         configurationString = baseConfigurationString.replace("#taskName%%", "'${taskName}'")
+    }
+
+    def "ensures Paket-installed UPM packages have the package dot json in the package root"() {
+        given:
+        def unityProjDir = new File(projectDir, "unity")
+        new File(unityProjDir, "Assets").mkdirs()
+        def (_, testPkgJson) = fakeUPMPaketPackage("test", unityProjDir)
+        def pkgInstallDir = new File(unityProjDir, "Packages/test")
+        def testPkgContents = testPkgJson.text
+
+        and:
+        buildFile << """
+            paketUnity {
+                enablePaketUpmPackages()
+            }
+        """
+
+        when:
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.success
+        def pkgJsonFile = new File(pkgInstallDir, "package.json")
+        pkgJsonFile.file
+        pkgJsonFile.text == testPkgContents
+    }
+
+    def "ensures Paket-installed non-UPM packages #msg a generated package dot json in package root when paketUpmPackageEnabled is #paketUpmPackageEnabled"() {
+        given:
+        def unityProjDir = new File(projectDir, "unity")
+        new File(unityProjDir, "Assets").mkdirs()
+        def testNuGetPackage = fakePaketPackage("test")
+        def manifestJson = new File(unityProjDir, "Packages/manifest.json").with {
+            mkdirs(); createNewFile();
+            it
+        }
+        def pktUnityInstallDir = new File(unityProjDir, "Packages/test")
+        assert !new File(testNuGetPackage, "package.json").exists()
+
+        and:
+        buildFile << """
+            paketUnity {
+                paketUpmPackageEnabled = $paketUpmPackageEnabled
+                ${overrides ?
+                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+                ""
+        }
+            }
+        """
+
+        when:
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.success
+        def pkgJsonFile = new File(pktUnityInstallDir, "package.json")
+        if (hasPackageManifest) {
+            pkgJsonFile.file
+            manifestJson.file
+            def pkgJson = new JsonSlurper().parse(pkgJsonFile) as Map<String, Object>
+            pkgJson['name'] == (overrides?.get('name') ?: "com.wooga.nuget.${pktUnityInstallDir.name.toLowerCase()}")
+            pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [:])
+        } else {
+            !pkgJsonFile.file
+            !manifestJson.file
+        }
+
+        where:
+        paketUpmPackageEnabled | hasPackageManifest | overrides                 | msg
+        true                   | true               | null                      | "has"
+        true                   | true               | [name: "com.custom.name"] | "has"
+        true                   | true               | [custom: "customfield"]   | "has"
+        false                  | false              | null                      | "hasn't"
     }
 
     private void setupPaketProject(dependencyName, unityProjectName) {

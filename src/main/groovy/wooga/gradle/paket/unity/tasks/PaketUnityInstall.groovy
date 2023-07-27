@@ -33,7 +33,11 @@ import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
+import wooga.gradle.paket.unity.PaketUpmPackageSpec
 import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
+import wooga.gradle.paket.unity.internal.UPMPaketPackage
+
+import java.nio.file.Paths
 
 /**
  * A task to copy referenced NuGet packages into Unity3D projects.
@@ -50,7 +54,7 @@ import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
  *}*}
  * </pre>
  */
-class PaketUnityInstall extends ConventionTask {
+class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
 
     /**
      * @return the path to a {@code paket.unity3d.references} file
@@ -122,6 +126,17 @@ class PaketUnityInstall extends ConventionTask {
     PaketUnityInstall() {
         description = 'Copy paket dependencies into unity projects'
         group = PaketUnityPlugin.GROUP
+
+        this.doLast {
+            if (isPaketUpmPackageEnabled().get()) {
+                def references = new PaketUnityReferences(getReferencesFile())
+                def locks = new PaketLock(getLockFile())
+                def packages = locks.getAllDependencies(references.nugets).collect {
+                    new File(outputDirectory, it)
+                }
+                packages.each { createPackageManifestIfNotExists(it) }
+            }
+        }
     }
 
     /**
@@ -193,6 +208,18 @@ class PaketUnityInstall extends ConventionTask {
         })
     }
 
+    protected void createPackageManifestIfNotExists(File packageDir) {
+        def upmPaket = new UPMPaketPackage(packageDir)
+        if(packageDir.exists() && !upmPaket.packageManifest.present) {
+
+            def pkgJsonOverrides = paketUpmPackageManifests.getting(upmPaket.name).getOrElse([:])
+            def pkgJson = UPMPaketPackage.basicUPMPackageManifest("com.wooga.nuget.${upmPaket.name.toLowerCase()}", pkgJsonOverrides)
+
+            upmPaket.writePackageManifest(pkgJson)
+            logger.info("generated package.json (${pkgJson['name']}) for $packageDir")
+        }
+    }
+
     protected void cleanOutputDirectory() {
         def tree = project.fileTree(getOutputDirectory())
 
@@ -200,6 +227,9 @@ class PaketUnityInstall extends ConventionTask {
         if (getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
             tree.exclude("**/*.asmdef")
             tree.exclude("**/*.asmdef.meta")
+        }
+        if(isPaketUpmPackageEnabled().get()) {
+            tree.exclude("manifest.json")
         }
 
         logger.info("delete files in directory: ${getOutputDirectory()}")
@@ -227,7 +257,9 @@ class PaketUnityInstall extends ConventionTask {
         def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
         def pathSegments = relativePath.split("/").toList()
         pathSegments.remove(1)
-        def outputPath = new File(getOutputDirectory(), pathSegments.join(File.separator))
-        outputPath
+        if(isPaketUpmPackageEnabled().get() && inputFile.name in ["package.json", "package.json.meta"]) {
+            return Paths.get(getOutputDirectory().absolutePath, pathSegments[0], inputFile.name).toFile()
+        }
+        return new File(getOutputDirectory(), pathSegments.join(File.separator))
     }
 }
