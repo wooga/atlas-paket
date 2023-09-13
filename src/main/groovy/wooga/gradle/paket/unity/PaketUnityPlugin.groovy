@@ -59,7 +59,7 @@ class PaketUnityPlugin implements Plugin<Project> {
         createPaketUnityInstallTasks(project, extension)
         createPaketUpmUnwrapTasks(project, extension)
         extension.assemblyDefinitionFileStrategy = PaketUnityPluginConventions.assemblyDefinitionFileStrategy
-        extension.paketUpmPackageEnabled.convention(PaketUnityPluginConventions.paketUpmPackageEnabled)
+        extension.paketUpmPackageEnabled.convention(PaketUnityPluginConventions.paketUpmPackageEnabled.getBooleanValueProvider(project))
 
         project.tasks.matching({ it.name.startsWith("paketUnity")}).configureEach { task ->
             task.onlyIf {
