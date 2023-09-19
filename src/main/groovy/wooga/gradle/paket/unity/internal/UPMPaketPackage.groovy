@@ -28,9 +28,10 @@ class UPMPaketPackage {
         return createdPkgJson
     }
 
-    static Map<String, Object> basicUPMPackageManifest(String packageName, Map<String, Object> overrides = [:]) {
+    static Map<String, Object> basicUPMPackageManifest(String packageName, String displayName, Map<String, Object> overrides = [:]) {
         Map<String, Object> base = [
                 name: packageName,
+                displayName: displayName,
                 version: "0.0.0"
         ]
         base.putAll(overrides)

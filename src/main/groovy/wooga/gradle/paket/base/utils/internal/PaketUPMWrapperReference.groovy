@@ -3,6 +3,7 @@ package wooga.gradle.paket.base.utils.internal
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.Input
 
 /*
  * Copyright 2022 Wooga GmbH
@@ -55,7 +56,14 @@ class PaketUPMWrapperReference {
     }
 
     PaketUPMWrapperReference(String nugetPackage, Project project) {
-        this(project.file("packages/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+        this(project.file("${getPackagesDirectory(project)}/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+    }
+
+    public static String getPackagesDirectory(Project project) {
+        def lowerCasePackages = project.file("packages");
+        def upperCasePackages = project.file("Packages");
+        // in "single-project"-mode, we install paket into `Packages`. Otherwise we use `packages`
+        return upperCasePackages.exists() ? upperCasePackages.getName() : lowerCasePackages.getName();
     }
 
 }
