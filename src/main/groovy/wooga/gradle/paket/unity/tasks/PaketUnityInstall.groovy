@@ -101,85 +101,77 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     // since this can get deleted, we need to look inside the not-yet-deleted unity upm package and deduce the nuget & paket Id from there.
     @Internal
     Map<String, String> nugetToUPMPackageIdCache = [:] as Map<String,String>
-    private void updateNugetToUpmPackageIdCache()
-    {
+
+    private void updateNugetToUpmPackageIdCache() {
         logger.info("Update Nuget2Upm PackageId Cache")
+        def packagesDirPath = getAbsolutePath(getPackagesDirectory())
+        def packageJsonMap = findPackageJsons(packagesDirPath)
+        populateCacheFromInputFiles(packagesDirPath, packageJsonMap)
+        populateCacheFromOutputDirectory()
+        logCache()
+    }
 
-        // maps from top-level directory to found package.json. Used for finding "top-most" package.json
-        def packageJsonMap = [:] as Map<String, Path>
+    protected Path getAbsolutePath(String directory) {
+        return project.file(directory).toPath().toAbsolutePath().normalize()
+    }
 
-        // 1. search in PackagesDirectory for input nupkgs
-        Path packagesDirPath = project.file(getPackagesDirectory()).toPath().toAbsolutePath().normalize()
-
+    protected Map<String, Path> findPackageJsons(Path dirPath) {
+        def map = [:]
         inputFiles.each {
             if (it.name == "package.json") {
-                def relativePath = packagesDirPath.relativize(it.toPath().toAbsolutePath().normalize())
+                def relativePath = dirPath.relativize(getAbsolutePath(it.path))
                 def paketId = relativePath[0].toString()
-
-                if (!packageJsonMap.containsKey(paketId)
-                        || packageJsonMap[paketId].iterator().size() > relativePath.iterator().size() ) {
-                    packageJsonMap[paketId] = relativePath;
-                }
-
-                logger.info("Found package.json in ${it.path} for ${paketId}")
+                if (isNewOrCloserJson(relativePath, map[paketId])) map[paketId] = relativePath
             }
         }
+        return map
+    }
 
-        // from inputFiles: fix packages with missing package.json
+    protected boolean isNewOrCloserJson(Path newPath, Path existingPath) {
+        return !existingPath || existingPath.iterator().size() > newPath.iterator().size()
+    }
+
+    protected void populateCacheFromInputFiles(Path dirPath, Map<String, Path> packageJsonMap) {
         inputFiles.each {
-            def relativePath = packagesDirPath.relativize(it.toPath().toAbsolutePath().normalize())
+            def relativePath = dirPath.relativize(getAbsolutePath(it.path))
             def paketId = relativePath[0].toString()
-            def paketIdDir = new File(getPackagesDirectory(), paketId.toString())
-
-            if (paketIdDir.exists() && !packageJsonMap.containsKey(paketId)) {
-                var upmName = this.generateUpmId(paketId)
+            if (!packageJsonMap.containsKey(paketId)) {
+                def upmName = generateUpmId(paketId)
                 nugetToUPMPackageIdCache[paketId] = upmName
-                logger.info("Missing package.json for ${paketId}. Generated: ${upmName}")
             }
         }
-
-        packageJsonMap.each {
-            var packagePath = packagesDirPath.resolve(it.value)
-            if (Files.exists(packagePath)) {
-                def pkgJsonMap = new JsonSlurper().parse(packagePath) as Map<String, Object>
-                if (pkgJsonMap.containsKey("name")) {
-                    nugetToUPMPackageIdCache[it.key] = pkgJsonMap["name"]
-                }
-            }
+        packageJsonMap.each { paketId, packagePath ->
+            updateCacheFromPackageJson(dirPath.resolve(packagePath), paketId)
         }
+    }
 
-        LinkedHashMap<String, File> outputPackageJsons = [:]
-
-        // 2. search in OutputDirectory for installed packages, these might have been removed
-        project.fileTree(getOutputDirectory()).visit(new FileVisitor() {
-            @Override
-            void visitDir(FileVisitDetails dirDetails) {
-            }
-
-            @Override
-            void visitFile(FileVisitDetails fileDetails) {
-                if (fileDetails.name == "package.json") {
-                    outputPackageJsons[fileDetails.relativePath.segments[0]] = fileDetails.file
-                }
-            }
-        })
-
+    protected void updateCacheFromPackageJson(Path packagePath, String paketId) {
+        if (Files.exists(packagePath)) {
+            def pkgJsonMap = new JsonSlurper().parse(packagePath)
+            if (pkgJsonMap.containsKey("name")) nugetToUPMPackageIdCache[paketId] = pkgJsonMap["name"]
+        }
+    }
+    protected void populateCacheFromOutputDirectory() {
+        def outputPackageJsons = findOutputPackageJsons()
         outputPackageJsons.each {
-            logger.info("Found package.json in output: ${it.key} : ${it.value.path}")
-
-            def pkgJsonMap = new JsonSlurper().parse(it.value) as Map<String, Object>
+            def pkgJsonMap = new JsonSlurper().parse(it.value)
             if (pkgJsonMap.containsKey("name") && pkgJsonMap.containsKey("displayName")) {
                 def paketId = pkgJsonMap["displayName"]
-                def upmId = pkgJsonMap["name"]
-                if (!nugetToUPMPackageIdCache.containsKey(paketId)) {
-                    nugetToUPMPackageIdCache[paketId] = upmId
-                }
+                if (!nugetToUPMPackageIdCache.containsKey(paketId)) nugetToUPMPackageIdCache[paketId] = pkgJsonMap["name"]
             }
         }
+    }
 
-        nugetToUPMPackageIdCache.each {
-            logger.info("nugetToUPMPackageIdCache[${it.key}]=${it.value}")
+    protected LinkedHashMap<String, File> findOutputPackageJsons() {
+        def map = [:]
+        project.fileTree(getOutputDirectory()).visit {
+            if (it.name == "package.json") map[it.relativePath.segments[0]] = it.file
         }
+        return map
+    }
+
+    protected void logCache() {
+        nugetToUPMPackageIdCache.each { logger.info("nugetToUPMPackageIdCache[${it.key}]=${it.value}") }
     }
 
     public final static String assemblyDefinitionFileExtension = "asmdef"
@@ -273,7 +265,9 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     @TaskAction
     protected performCopy(IncrementalTaskInputs inputs) {
         logger.quiet("include libs with frameworks: " + getFrameworks().join(", "))
-        updateNugetToUpmPackageIdCache()
+        if (isPaketUpmPackageEnabled().get()) {
+            updateNugetToUpmPackageIdCache()
+        }
 
         if (!inputs.incremental) {
             if (getOutputDirectory().exists()) {
