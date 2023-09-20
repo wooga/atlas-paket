@@ -44,7 +44,6 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
         project.files(project.fileTree(dir: project.projectDir, include: "**/${DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}").files)
     }
 
-
     String getPaketOutputDirectoryName() {
         if(paketUpmPackageEnabled.get()) {
             return customPaketOutputDirectory ?: UNITY_PACKAGES_DIRECTORY

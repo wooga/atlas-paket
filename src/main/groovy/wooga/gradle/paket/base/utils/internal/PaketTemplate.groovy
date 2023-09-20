@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.base.utils.internal
 
-class PaketTemplate {
+class PaketTemplate implements Serializable {
 
     private def content
 
@@ -37,6 +37,10 @@ class PaketTemplate {
 
     String getPackageId() {
         content['id']
+    }
+
+    String getUpmPackageId() {
+        content['upmId']
     }
 
     String getVersion() {

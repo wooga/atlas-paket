@@ -23,19 +23,12 @@ import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
-import org.gradle.api.file.RelativePath
 import org.gradle.api.internal.ConventionTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
-import wooga.gradle.paket.base.dependencies.PaketDependency
 import wooga.gradle.paket.base.utils.internal.PaketLock
+import wooga.gradle.paket.base.utils.internal.PaketTemplate
 import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
@@ -44,9 +37,8 @@ import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 import wooga.gradle.paket.unity.internal.UPMPaketPackage
 
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.nio.file.Path
-
+import java.nio.file.Paths
 /**
  * A task to copy referenced NuGet packages into Unity3D projects.
  * <p>
@@ -96,6 +88,9 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
 
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
+
+    @Input
+    List<PaketTemplate> paketTemplates
 
     // We need this cache, since the mapping from nuget to upm package Id exists only in the package.json of a package from the paket packages cache
     // since this can get deleted, we need to look inside the not-yet-deleted unity upm package and deduce the nuget & paket Id from there.
@@ -295,6 +290,16 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 def outputPath = transformInputToOutputPath(removed.file, project.file(getPackagesDirectory()))
                 outputPath.delete()
 
+                // delete generated package.jsons
+                if (isPaketUpmPackageEnabled().get()) {
+                    def relativePath = project.file(getPackagesDirectory()).toURI().relativize(removed.file.toURI()).getPath()
+                    def paketId = relativePath.split("/").toList()[0]
+                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUPMPackageIdCache[paketId], "package.json").toFile()
+                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUPMPackageIdCache[paketId], "package.json.meta").toFile()
+                    if (packageJson.exists()) packageJson.delete()
+                    if (packageJsonMeta.exists()) packageJsonMeta.delete()
+                }
+
                 File parent = outputPath.parentFile
                 while (parent.isDirectory() && parent.listFiles().toList().empty) {
                     logger.info("Garbage collecting: ${removed.file}")
@@ -331,6 +336,10 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         if(isPaketUpmPackageEnabled().get()) {
             tree = project.fileTree(getOutputDirectory()) {
                 include 'com.wooga.*/**'
+            }
+            // exclude own package(s)
+            paketTemplates.each {
+                tree.exclude("${it.upmPackageId}/**")
             }
         }
 

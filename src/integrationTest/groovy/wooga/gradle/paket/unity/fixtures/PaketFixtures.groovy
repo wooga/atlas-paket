@@ -56,7 +56,7 @@ trait PaketFixturesTrait {
                                            File baseDir = projectDir) {
         def packageFolder = fakePaketPackage(name, baseDir, installedPackagesDir, unityDir)
         createMetafiles(packageFolder)
-        new File(packageFolder, "content/innerFolder/package.json") << """{"name" : "com.something.${name.toLowerCase()}"}"""
+        new File(packageFolder, "content/innerFolder/package.json") << """{"name" : "com.something.${name.toLowerCase()}", "displayName": "${name}"}"""
         new File(packageFolder, "content/innerFolder/package.json.meta") << "META"
         return [packageFolder, new File(packageFolder, "content/innerFolder/package.json")]
     }

@@ -85,6 +85,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 t.frameworks = extension.getPaketDependencies().getFrameworks()
                 t.lockFile = extension.getPaketLockFile()
                 t.referencesFile = referenceFile
+                t.paketTemplates = extension.paketTemplates
                 t.paketUpmPackageEnabled.convention(extension.paketUpmPackageEnabled)
                 t.paketUpmPackageManifests.convention(extension.paketUpmPackageManifests)
             }
