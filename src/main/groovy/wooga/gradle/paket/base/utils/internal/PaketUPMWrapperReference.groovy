@@ -60,9 +60,8 @@ class PaketUPMWrapperReference {
     }
 
     public static String getPackagesDirectory(Project project) {
-        def lowerCasePackages = project.file("packages");
         // this will return "Packages" on case-INsensitive FS and the proper "packages" in case-senitive FS
-        return lowerCasePackages.canonicalFile.name
+        return project.file("packages").canonicalFile.name
     }
 
 }
