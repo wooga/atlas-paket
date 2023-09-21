@@ -60,14 +60,8 @@ class PaketUPMWrapperReference {
     }
 
     public static String getPackagesDirectory(Project project) {
-        def lowerCasePackages = project.file("packages");
-        def upperCasePackages = project.file("Packages");
-
-        // NOTE: on case-insensitife FS both "Packages" and "packages" will exist, however if we filter using gradle, it's case sensitive.
-        // So we need to use teh .canonicalFile which normalizes to the one that actually is case-sensitive on the FS
-
-        // in "single-project"-mode, we install paket into `Packages`. Otherwise we use `packages`
-        return upperCasePackages.exists() ? upperCasePackages.canonicalFile.name : lowerCasePackages.canonicalFile.name;
+        // this will return "Packages" on case-INsensitive FS and the proper "packages" in case-senitive FS
+        return project.file("packages").canonicalFile.name
     }
 
 }
