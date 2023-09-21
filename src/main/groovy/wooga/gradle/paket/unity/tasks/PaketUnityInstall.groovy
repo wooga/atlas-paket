@@ -53,6 +53,7 @@ import java.nio.file.Paths
  * </pre>
  */
 class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
+    static final String PACKAGE_JSON = "package.json"
 
     /**
      * @return the path to a {@code paket.unity3d.references} file
@@ -193,7 +194,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         if (isPaketUpmPackageEnabled().get()) {
             logger.info("Update Nuget2Upm PackageId Cache")
             nugetToUpmId = new NugetToUpmPackageIdCache(project, inputFiles, outputDirectory, paketUpmPackageManifests)
-            nugetToUpmId.dumpCacheTolog(logger)
+            nugetToUpmId.dumpCacheToLog()
         }
 
         if (!inputs.incremental) {
@@ -226,8 +227,8 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 if (isPaketUpmPackageEnabled().get()) {
                     def relativePath = project.file(getPackagesDirectory()).toURI().relativize(removed.file.toURI()).getPath()
                     def paketId = relativePath.split("/").toList()[0]
-                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), "package.json").toFile()
-                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), "package.json.meta").toFile()
+                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), PACKAGE_JSON).toFile()
+                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), "${PACKAGE_JSON}.meta").toFile()
                     if (packageJson.exists()) packageJson.delete()
                     if (packageJsonMeta.exists()) packageJsonMeta.delete()
                 }
@@ -270,7 +271,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         if(isPaketUpmPackageEnabled().get()) {
             def upmPackageDirs = []
             project.file(getOutputDirectory()).eachDir {
-                if ( !(it.name in preInstalledUpmPackages) && new File(it, "package.json").exists()) {
+                if ( !(it.name in preInstalledUpmPackages) && new File(it, PACKAGE_JSON).exists()) {
                     upmPackageDirs << it
                 }
             }
@@ -305,7 +306,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
 
         if (isPaketUpmPackageEnabled().get()) {
             def paketId = pathSegments.remove(0)
-            if(inputFile.name in ["package.json", "package.json.meta"]) {
+            if(inputFile.name in [PACKAGE_JSON, "${PACKAGE_JSON}.meta"]) {
                 return Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), inputFile.name).toFile()
             }
             // replace the paketId with upmId

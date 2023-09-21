@@ -3,7 +3,6 @@ package wooga.gradle.paket.unity.internal
 import groovy.json.JsonSlurper
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.logging.Logger
 import org.gradle.api.provider.MapProperty
 import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 
@@ -12,6 +11,10 @@ import java.nio.file.Path
 
 class NugetToUpmPackageIdCache
 {
+    static final String PACKAGE_JSON = "package.json"
+    static final String NAME = "name"
+    static final String DISPLAY_NAME = "displayName"
+
     final Project project
     final FileCollection inputFiles
     final File outputDirectory
@@ -29,34 +32,32 @@ class NugetToUpmPackageIdCache
         populateCacheFromOutputDirectory()
     }
 
-    public String getUpmId(String nugetId)
-    {
-        nugetToUPMPackageIdCache.containsKey(nugetId) ? nugetToUPMPackageIdCache[nugetId] : generateUpmId(nugetId)
+    String getUpmId(String nugetId) {
+        nugetToUPMPackageIdCache[nugetId] ?: generateUpmId(nugetId)
     }
 
-    protected String generateUpmId(String paketId)
-    {
-        def pkgJsonOverrides = paketUpmPackageManifests.getting(paketId).getOrElse([:])
-        return pkgJsonOverrides.containsKey("name") ? pkgJsonOverrides["name"] : "com.wooga.nuget.${paketId.toLowerCase()}"
-    }
-
-    public containsKey(String nugetId)
+    boolean containsKey(String nugetId)
     {
         nugetToUPMPackageIdCache.containsKey(nugetId)
     }
 
-    public void dumpCacheTolog(Logger logger) {
-        nugetToUPMPackageIdCache.each { logger.info("nugetToUPMPackageIdCache[${it.key}]=${it.value}") }
+    void dumpCacheToLog() {
+        nugetToUPMPackageIdCache.each { project.logger.info("nugetToUPMPackageIdCache[${it.key}]=${it.value}") }
     }
 
-    protected Path getAbsolutePath(String directory) {
-        return project.file(directory).toPath().toAbsolutePath().normalize()
+    private String generateUpmId(String paketId) {
+        def pkgJsonOverrides = paketUpmPackageManifests.getting(paketId)?.getOrElse([:])
+        pkgJsonOverrides[NAME] ?: "com.wooga.nuget.${paketId.toLowerCase()}"
     }
 
-    protected Map<String, Path> findPackageJsons(Path dirPath) {
-        def map = [:]
+    private Path getAbsolutePath(String directory) {
+        project.file(directory).toPath().toAbsolutePath().normalize()
+    }
+
+    private Map<String, Path> findPackageJsons(Path dirPath) {
+        Map<String, Path> map = [:]
         inputFiles.each {
-            if (it.name == "package.json") {
+            if (it.name == PACKAGE_JSON) {
                 def relativePath = dirPath.relativize(getAbsolutePath(it.path))
                 def paketId = relativePath[0].toString()
                 if (isNewOrCloserJson(relativePath, map[paketId])) map[paketId] = relativePath
@@ -65,11 +66,11 @@ class NugetToUpmPackageIdCache
         return map
     }
 
-    protected static boolean isNewOrCloserJson(Path newPath, Path existingPath) {
-        return !existingPath || existingPath.iterator().size() > newPath.iterator().size()
+    private static boolean isNewOrCloserJson(Path newPath, Path existingPath) {
+        !existingPath || existingPath.iterator().size() > newPath.iterator().size()
     }
 
-    protected void populateCacheFromInputFiles() {
+    private void populateCacheFromInputFiles() {
         def packagesDirPath = getAbsolutePath(PaketUPMWrapperReference.getPackagesDirectory(project))
         def packageJsonMap = findPackageJsons(packagesDirPath)
 
@@ -86,28 +87,34 @@ class NugetToUpmPackageIdCache
         }
     }
 
-    protected void updateCacheFromPackageJson(Path packagePath, String paketId) {
+    private void updateCacheFromPackageJson(Path packagePath, String paketId) {
         if (Files.exists(packagePath)) {
-            def pkgJsonMap = new JsonSlurper().parse(packagePath)
-            if (pkgJsonMap.containsKey("name")) nugetToUPMPackageIdCache[paketId] = pkgJsonMap["name"]
-        }
-    }
-    protected void populateCacheFromOutputDirectory() {
-        def outputPackageJsons = findOutputPackageJsons()
-        outputPackageJsons.each {
-            def pkgJsonMap = new JsonSlurper().parse(it.value)
-            if (pkgJsonMap.containsKey("name") && pkgJsonMap.containsKey("displayName")) {
-                def paketId = pkgJsonMap["displayName"]
-                if (!nugetToUPMPackageIdCache.containsKey(paketId)) nugetToUPMPackageIdCache[paketId] = pkgJsonMap["name"]
+            try {
+                def pkgJsonMap = new JsonSlurper().parse(packagePath)
+                if (pkgJsonMap.containsKey(NAME)) nugetToUPMPackageIdCache[paketId] = pkgJsonMap[NAME]
+            } catch (Exception e) {
+                project.logger.error("Failed to parse ${PACKAGE_JSON}", e)
             }
         }
     }
 
-    protected LinkedHashMap<String, File> findOutputPackageJsons() {
-        def map = [:]
+    private void populateCacheFromOutputDirectory() {
+        def outputPackageJsons = findOutputPackageJsons()
+        outputPackageJsons.each {
+            def pkgJsonMap = new JsonSlurper().parse(it.value)
+            if (pkgJsonMap.containsKey(NAME) && pkgJsonMap.containsKey(DISPLAY_NAME)) {
+                def paketId = pkgJsonMap[DISPLAY_NAME]
+                if (!nugetToUPMPackageIdCache.containsKey(paketId)) nugetToUPMPackageIdCache[paketId] = pkgJsonMap[NAME]
+            }
+        }
+    }
+
+    private LinkedHashMap<String, File> findOutputPackageJsons() {
+        LinkedHashMap<String, File> map = [:]
         project.fileTree(outputDirectory).visit {
-            if (it.name == "package.json") map[it.relativePath.segments[0]] = it.file
+            if (it.name == PACKAGE_JSON) map[it.relativePath.segments[0]] = it.file
         }
         return map
     }
+
 }
