@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import groovy.json.JsonSlurper
+
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
@@ -33,11 +33,9 @@ import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.unity.PaketUpmPackageSpec
 import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
-import wooga.gradle.paket.unity.internal.NugetToUpmPackageCache
+import wooga.gradle.paket.unity.internal.NugetToUpmPackageIdCache
 import wooga.gradle.paket.unity.internal.UPMPaketPackage
 
-import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 /**
  * A task to copy referenced NuGet packages into Unity3D projects.
@@ -99,7 +97,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     // We need this cache, since the mapping from nuget to upm package Id exists only in the package.json of a package from the paket packages cache
     // since this can get deleted, we need to look inside the not-yet-deleted unity upm package and deduce the nuget & paket Id from there.
     @Internal
-    NugetToUpmPackageCache nugetToUpmCache
+    NugetToUpmPackageIdCache nugetToUpmId
 
     public final static String assemblyDefinitionFileExtension = "asmdef"
 
@@ -146,8 +144,8 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 def packages = []
 
                 locks.getAllDependencies(references.nugets).each { nuget ->
-                    if (!PaketUnwrapUPMPackages.isUPMWrapper(nuget, project) && nugetToUpmCache.containsKey(nuget)) {
-                        packages << [nuget, new File(outputDirectory, nugetToUpmCache.getUpmId(nuget))]
+                    if (!PaketUnwrapUPMPackages.isUPMWrapper(nuget, project) && nugetToUpmId.containsKey(nuget)) {
+                        packages << [nuget, new File(outputDirectory, nugetToUpmId.getUpmId(nuget))]
                     }
                 }
 
@@ -194,8 +192,8 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         logger.quiet("include libs with frameworks: " + getFrameworks().join(", "))
         if (isPaketUpmPackageEnabled().get()) {
             logger.info("Update Nuget2Upm PackageId Cache")
-            nugetToUpmCache = new NugetToUpmPackageCache(project, inputFiles, outputDirectory, paketUpmPackageManifests)
-            nugetToUpmCache.dumpCacheTolog(logger)
+            nugetToUpmId = new NugetToUpmPackageIdCache(project, inputFiles, outputDirectory, paketUpmPackageManifests)
+            nugetToUpmId.dumpCacheTolog(logger)
         }
 
         if (!inputs.incremental) {
@@ -228,8 +226,8 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 if (isPaketUpmPackageEnabled().get()) {
                     def relativePath = project.file(getPackagesDirectory()).toURI().relativize(removed.file.toURI()).getPath()
                     def paketId = relativePath.split("/").toList()[0]
-                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "package.json").toFile()
-                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "package.json.meta").toFile()
+                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), "package.json").toFile()
+                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), "package.json.meta").toFile()
                     if (packageJson.exists()) packageJson.delete()
                     if (packageJsonMeta.exists()) packageJsonMeta.delete()
                 }
@@ -252,7 +250,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         if(packageDir.exists() && !upmPaket.packageManifest.present) {
 
             def pkgJsonOverrides = paketUpmPackageManifests.getting(upmPaket.name).getOrElse([:])
-            def pkgJson = UPMPaketPackage.basicUPMPackageManifest(nugetToUpmCache.getUpmId(nugetId), nugetId, pkgJsonOverrides)
+            def pkgJson = UPMPaketPackage.basicUPMPackageManifest(nugetToUpmId.getUpmId(nugetId), nugetId, pkgJsonOverrides)
 
             upmPaket.writePackageManifest(pkgJson)
             logger.info("generated package.json (${pkgJson['name']}) for $packageDir")
@@ -308,10 +306,10 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         if (isPaketUpmPackageEnabled().get()) {
             def paketId = pathSegments.remove(0)
             if(inputFile.name in ["package.json", "package.json.meta"]) {
-                return Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), inputFile.name).toFile()
+                return Paths.get(getOutputDirectory().absolutePath, nugetToUpmId.getUpmId(paketId), inputFile.name).toFile()
             }
             // replace the paketId with upmId
-            pathSegments.add(0, nugetToUpmCache.getUpmId(paketId))
+            pathSegments.add(0, nugetToUpmId.getUpmId(paketId))
             return new File(getOutputDirectory(), pathSegments.join(File.separator))
         }
 

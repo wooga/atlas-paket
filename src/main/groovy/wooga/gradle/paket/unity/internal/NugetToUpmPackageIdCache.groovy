@@ -10,7 +10,7 @@ import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 import java.nio.file.Files
 import java.nio.file.Path
 
-class NugetToUpmPackageCache
+class NugetToUpmPackageIdCache
 {
     final Project project
     final FileCollection inputFiles
@@ -19,7 +19,7 @@ class NugetToUpmPackageCache
 
     Map<String, String> nugetToUPMPackageIdCache = [:] as Map<String,String>
 
-    NugetToUpmPackageCache(Project project, FileCollection inputs, File outputDirectory, MapProperty<String, Map<String, Object>> packageManifests) {
+    NugetToUpmPackageIdCache(Project project, FileCollection inputs, File outputDirectory, MapProperty<String, Map<String, Object>> packageManifests) {
         this.project = project
         this.inputFiles = inputs
         this.outputDirectory = outputDirectory
