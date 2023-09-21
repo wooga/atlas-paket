@@ -17,10 +17,8 @@
 
 package wooga.gradle.paket.base
 
-import org.gradle.api.file.FileCollection
 import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
 import wooga.gradle.paket.base.utils.PaketDependencies
-import wooga.gradle.paket.base.utils.internal.PaketTemplate
 
 /**
  * Base extension point for paket plugins.
@@ -33,7 +31,7 @@ interface PaketPluginExtension {
      * The {@code .paket} is the place the plugin or the project stores the {@code paket.exe}
      * and {@code paket.bootstrapper.exe} executables.
      *
-     * @return the path to {@code paket} directory.
+     * @return  the path to {@code paket} directory.
      * @default {@code projectDir/.paket}
      */
     File getPaketDirectory()
@@ -42,7 +40,7 @@ interface PaketPluginExtension {
      * Sets the path to the paket directory.
      * <p>
      * The value can be anything that can be converted into a File/file path string.
-     * @param directory the path to the paket directory
+     * @param   directory the path to the paket directory
      */
     void setPaketDirectory(Object directory)
 
@@ -50,8 +48,8 @@ interface PaketPluginExtension {
      * Sets the path to the paket directory.
      * <p>
      * The value can be anything that can be converted into a File/file path string.
-     * @param directory the path to the paket directory
-     * @return this
+     * @param   directory the path to the paket directory
+     * @return  this
      */
     PaketPluginExtension paketDirectory(Object directory)
 
@@ -61,7 +59,7 @@ interface PaketPluginExtension {
      * This version will be used to load a specific version of the paket binary.
      * When empty, the bootstrapper will load the latest version available.
      *
-     * @return the version for paket.
+     * @return  the version for paket.
      * @default ""
      */
     String getVersion()
@@ -72,7 +70,7 @@ interface PaketPluginExtension {
      * There is no version validation implemented.
      * The behavior is undefined for invalid input.
      *
-     * @param version the version string
+     * @param   version the version string
      */
     void setVersion(Object version)
 
@@ -82,7 +80,7 @@ interface PaketPluginExtension {
      * There is no version validation implemented.
      * The behavior is undefined for invalid input.
      *
-     * @param version the version string
+     * @param   version the version string
      * @returns this
      */
     PaketPluginExtension version(Object version)
@@ -92,7 +90,7 @@ interface PaketPluginExtension {
      * <p>
      * This value won't be used on windows.
      *
-     * @return the path to mono executable
+     * @return  the path to mono executable
      * @default "mono"
      */
     String getMonoExecutable()
@@ -100,14 +98,14 @@ interface PaketPluginExtension {
     /**
      * Sets the path to mono executable
      *
-     * @param path to mono
+     * @param   path to mono
      */
     void setMonoExecutable(Object path)
 
     /**
      * Sets the path to mono executable
      *
-     * @param path to mono
+     * @param   path to mono
      * @returns this
      */
     PaketPluginExtension monoExecutable(Object path)
@@ -122,14 +120,14 @@ interface PaketPluginExtension {
     /**
      * Sets the paket executable path
      *
-     * @param executable
+     * @param   executable
      */
     void setExecutable(Object executable)
 
     /**
      * Sets the paket executable path
      *
-     * @param executable
+     * @param   executable
      * @returns this
      */
     PaketPluginExtension executable(Object executable)
@@ -137,22 +135,22 @@ interface PaketPluginExtension {
     /**
      * Returns the path to the bootstrapper executable
      *
-     * @return path to bootstrapper executable
+     * @return  path to bootstrapper executable
      */
     File getBootstrapperExecutable()
 
     /**
      * Sets the boostrapper executable path
      *
-     * @param fileName
+     * @param   fileName
      */
     void setBootstrapperExecutable(Object fileName)
 
     /**
      * Sets the boostrapper executable path
      *
-     * @param fileName
-     * @return this
+     * @param   fileName
+     * @return  this
      */
     PaketPluginExtension bootstrapperExecutable(Object fileName)
 
@@ -166,14 +164,14 @@ interface PaketPluginExtension {
     /**
      * Sets the bootstrapper download URL
      *
-     * @param url
+     * @param   url
      */
     void setPaketBootstrapperUrl(Object url)
 
     /**
      * Sets the bootstrapper download URL
      *
-     * @param url
+     * @param   url
      * @returns this
      */
     PaketPluginExtension paketBootstrapperUrl(Object url)
@@ -195,25 +193,10 @@ interface PaketPluginExtension {
     /**
      * Returns the content of {@code paket.dependencies} parsed as {@link PaketDependencies} object.
      *
-     * @return the parsed {@code paket.dependencies} file
-     * @see PaketDependencies
+     * @return  the parsed {@code paket.dependencies} file
+     * @see     PaketDependencies
      */
     PaketDependencies getPaketDependencies()
 
     PaketDependencyHandler getDependencyHandler()
-
-    /**
-     * Returns a sorted {@link List<File>} list containing all {@code paket.template} files.
-     *
-     * @return a collection of all {@code paket.template} files.
-     */
-    List<File> getPaketTemplateFiles()
-
-    /**
-     * Returns a sorted {@link List<PaketTemplate>} list containing all parsed {@code paket.template} files.
-     *
-     * @return a collection of all {@code PaketTemplate}s.
-     */
-    List<PaketTemplate> getPaketTemplates()
-
 }

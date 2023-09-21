@@ -18,18 +18,16 @@
 package wooga.gradle.paket.base.internal
 
 import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
 import wooga.gradle.paket.base.utils.internal.PaketDependencies
-import wooga.gradle.paket.base.utils.internal.PaketTemplate
 
 class DefaultPaketPluginExtension implements PaketPluginExtension {
+
     private static final String DEFAULT_PAKET_DIRECTORY = ".paket"
     private static final String DEFAULT_PAKET_EXECUTION_NAME = "paket.exe"
     private static final String DEFAULT_PAKET_BOOTSTRAPPER_EXECUTION_NAME = "paket.bootstrapper.exe"
     private static final String DEFAULT_PAKET_DEPENDENCIES_FILE_NAME = "paket.dependencies"
-    public static final String DEFAULT_PAKET_TEMPLATE_FILE_NAME = "paket.template"
     private static
     final String DEFAULT_PAKET_BOOTSTRAPPER_URL = "https://github.com/fsprojects/Paket/releases/download/5.155.0/paket.bootstrapper.exe"
 
@@ -183,26 +181,5 @@ class DefaultPaketPluginExtension implements PaketPluginExtension {
     @Override
     PaketDependencyHandler getDependencyHandler() {
         dependencyHandler
-    }
-
-    @Override
-    List<File> getPaketTemplateFiles() {
-        def files = project.files(project.fileTree(dir: project.projectDir, include: "**/${DEFAULT_PAKET_TEMPLATE_FILE_NAME}").files)
-        return files.sort().sort(true) { o1, o2 ->
-            String sep = File.separator
-            if (o1.path.count(sep) > o2.path.count(sep)) {
-                return 1
-            } else if (o1.path.count(sep) < o2.path.count(sep)) {
-                return -1
-            } else {
-                return 0
-            }
-        }
-    }
-
-    @Override
-    List<PaketTemplate> getPaketTemplates()
-    {
-        getPaketTemplateFiles().collect {new PaketTemplate(it)}
     }
 }

@@ -60,6 +60,7 @@ class PaketPackPlugin implements Plugin<Project> {
     Project project
     TaskContainer tasks
 
+    static String PAKET_TEMPLATE_PATTERN = "**/paket.template"
     static String TASK_PACK_PREFIX = "paketPack-"
     static final String EXTENSION_NAME = 'paketPack'
 
@@ -76,8 +77,21 @@ class PaketPackPlugin implements Plugin<Project> {
         final extension = project.extensions.create(EXTENSION_NAME, DefaultPaketPackPluginExtension, project, baseExtension.dependencyHandler)
 
         final configuration = project.configurations.getByName(PaketBasePlugin.PAKET_CONFIGURATION)
+        def templateFiles = project.fileTree(project.projectDir)
+        templateFiles.include PAKET_TEMPLATE_PATTERN
+        templateFiles = templateFiles.sort()
+        templateFiles = templateFiles.sort(true) { o1, o2 ->
+            String sep = File.separator
+            if (o1.path.count(sep) > o2.path.count(sep)) {
+                return 1
+            } else if (o1.path.count(sep) < o2.path.count(sep)) {
+                return -1
+            } else {
+                return 0
+            }
+        }
 
-        extension.paketTemplateFiles.each { File file ->
+        templateFiles.each { File file ->
             def templateReader = new PaketTemplate(file)
             def packageID = templateReader.getPackageId()
             def packageName = packageID.replaceAll(/\./, '')

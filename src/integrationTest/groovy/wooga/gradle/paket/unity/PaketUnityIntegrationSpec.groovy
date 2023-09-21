@@ -437,18 +437,16 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         new File(unityProjDir, "Assets").mkdirs()
         setupPaketProject("Wooga.TestDependency", "unity")
 
-        def preInstalledPackageDir = new File(unityProjDir, "Packages/${packageId}")
-        preInstalledPackageDir.mkdirs()
-        def preInstalledPackageFile = new File(preInstalledPackageDir, "some.file")
-        preInstalledPackageFile.createNewFile()
-
-        and:
-        new File(projectDir, "paket.template").text = "upmId ${ownPackageId}"
+        def installedUnityPackageDir = new File(unityProjDir, "Packages/${packageId}")
+        installedUnityPackageDir.mkdirs()
+        def installedUnityPackageFile = new File(installedUnityPackageDir, isUpmPackage ? "package.json" : "some.file")
+        installedUnityPackageFile.text = "{}"
 
         and:
         buildFile << """
             paketUnity {
                 paketUpmPackageEnabled = true
+                preInstalledUpmPackages = ["${preinstalledPackage}"]
             }
             // force non-incremental build
             tasks.named('${PaketUnityPlugin.INSTALL_TASK_NAME}').configure {
@@ -460,18 +458,18 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         then:
         result.success
         if (doesDelete) {
-            !preInstalledPackageDir.exists()
-            !preInstalledPackageFile.exists()
+            !installedUnityPackageDir.exists()
+            !installedUnityPackageFile.exists()
         } else {
-            preInstalledPackageDir.exists()
-            preInstalledPackageFile.exists()
+            installedUnityPackageDir.exists()
+            installedUnityPackageFile.exists()
         }
 
         where:
-        deleteVerb          | packageType           | doesDelete  | packageId                       | ownPackageId
-        "Does NOT delete"   | "own"                 | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"
-        "Does NOT delete"   | "third-party"         | false       | "com.third-party"               | "not-important"
-        "Deletes"           | "com-wooga-prefixed"  | true        | "com.wooga.delete-me"           | "com.wooga.do-not-delete-me"
+        deleteVerb          | packageType           | doesDelete  | packageId                      | preinstalledPackage            | isUpmPackage
+        "Does NOT delete"   | "non-upm-package"     | false       | "com.wooga.do-not-delete-me"   | ""                             | false
+        "Does NOT delete"   | "preinstalled"        | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"   | true
+        "Deletes"           | "upm-package"         | true        | "com.wooga.delete-me"          | ""                             | true
     }
 
     def "Shared paket and unity install-dir install"() {
@@ -531,18 +529,16 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         new File(unityProjDir, "Assets").mkdirs()
         def dependencyFile = setupPaketProject("Wooga.TestDependency", "")
 
-        def preInstalledPackageDir = new File(unityProjDir, "Packages/${packageId}")
-        preInstalledPackageDir.mkdirs()
-        def preInstalledPackageFile = new File(preInstalledPackageDir, "some.file")
-        preInstalledPackageFile.createNewFile()
-
-        and:
-        new File(projectDir, "paket.template").text = "upmId ${ownPackageId}"
+        def installedUnityPackageDir = new File(unityProjDir, "Packages/${packageId}")
+        installedUnityPackageDir.mkdirs()
+        def installedUnityPackageFile = new File(installedUnityPackageDir, isUpmPackage ? "package.json" : "some.file")
+        installedUnityPackageFile.text = "{}"
 
         and:
         buildFile << """
             paketUnity {
                 paketUpmPackageEnabled = true
+                preInstalledUpmPackages = ["${preinstalledPackage}"]
             }
             // force non-incremental build
             tasks.named('${PaketUnityPlugin.INSTALL_TASK_NAME}').configure {
@@ -554,20 +550,21 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         then:
         result.success
         if (doesDelete) {
-            !preInstalledPackageDir.exists()
-            !preInstalledPackageFile.exists()
+            !installedUnityPackageDir.exists()
+            !installedUnityPackageFile.exists()
         } else {
-            preInstalledPackageDir.exists()
-            preInstalledPackageFile.exists()
+            installedUnityPackageDir.exists()
+            installedUnityPackageFile.exists()
         }
 
         dependencyFile.exists()
 
         where:
-        deleteVerb          | packageType           | doesDelete  | packageId                       | ownPackageId
-        "Does NOT delete"   | "own"                 | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"
-        "Does NOT delete"   | "third-party"         | false       | "com.third-party"               | "not-important"
-        "Deletes"           | "com-wooga-prefixed"  | true        | "com.wooga.delete-me"           | "com.wooga.do-not-delete-me"
+        deleteVerb          | packageType           | doesDelete  | packageId                      | preinstalledPackage            | isUpmPackage
+        "Does NOT delete"   | "non-upm-package"     | false       | "com.wooga.do-not-delete-me"   | ""                             | false
+        "Does NOT delete"   | "preinstalled"        | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"   | true
+        "Deletes"           | "upm-package"         | true        | "com.wooga.delete-me"          | ""                             | true
+
     }
 
     private File setupPaketProject(dependencyName, unityProjectName) {
