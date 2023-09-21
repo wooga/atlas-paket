@@ -3,6 +3,7 @@ package wooga.gradle.paket.base.utils.internal
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.Input
 
 /*
  * Copyright 2022 Wooga GmbH
@@ -55,7 +56,18 @@ class PaketUPMWrapperReference {
     }
 
     PaketUPMWrapperReference(String nugetPackage, Project project) {
-        this(project.file("packages/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+        this(project.file("${getPackagesDirectory(project)}/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+    }
+
+    public static String getPackagesDirectory(Project project) {
+        def lowerCasePackages = project.file("packages");
+        def upperCasePackages = project.file("Packages");
+
+        // NOTE: on case-insensitife FS both "Packages" and "packages" will exist, however if we filter using gradle, it's case sensitive.
+        // So we need to use teh .canonicalFile which normalizes to the one that actually is case-sensitive on the FS
+
+        // in "single-project"-mode, we install paket into `Packages`. Otherwise we use `packages`
+        return upperCasePackages.exists() ? upperCasePackages.canonicalFile.name : lowerCasePackages.canonicalFile.name;
     }
 
 }

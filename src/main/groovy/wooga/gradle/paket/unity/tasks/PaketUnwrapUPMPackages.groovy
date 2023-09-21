@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.unity.tasks
 
-
+import groovy.transform.Internal
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -68,6 +68,7 @@ class PaketUnwrapUPMPackages extends ConventionTask {
      * @return the installation output directory
      */
     @OutputDirectory
+    @Internal
     File getOutputDirectory() {
         new File(getReferencesFile().getParentFile(), "Packages")
     }

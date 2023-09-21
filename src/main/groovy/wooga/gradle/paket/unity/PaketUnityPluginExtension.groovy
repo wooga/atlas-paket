@@ -66,4 +66,15 @@ interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackag
      * @return Whether assembly definition files should be included during installation
      */
     Boolean getIncludeAssemblyDefinitions()
+
+    /**
+     * @return A list of pre-installed upm package id's, that should not be modified by the PaketUnityInstall task
+     */
+    List<String> getPreInstalledUpmPackages()
+
+    /**
+     * Sets list of pre-installed upm package id's, that should not be modified by the PaketUnityInstall task
+     * @param preInstalledPackages
+     */
+    void setPreInstalledUpmPackages(List<String> preInstalledPackages);
 }

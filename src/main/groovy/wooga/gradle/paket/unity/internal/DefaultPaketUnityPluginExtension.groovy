@@ -33,6 +33,7 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
     protected Boolean includeAssemblyDefinitions = false
+    protected List<String> preInstalledUpmPackages
 
     DefaultPaketUnityPluginExtension(Project project,final PaketDependencyHandler dependencyHandler) {
         super(project, dependencyHandler)
@@ -43,7 +44,6 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     FileCollection getPaketReferencesFiles() {
         project.files(project.fileTree(dir: project.projectDir, include: "**/${DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME}").files)
     }
-
 
     String getPaketOutputDirectoryName() {
         if(paketUpmPackageEnabled.get()) {
@@ -76,4 +76,17 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     Boolean getIncludeAssemblyDefinitions() {
         includeAssemblyDefinitions
     }
+
+    @Override
+    List<String> getPreInstalledUpmPackages()
+    {
+        preInstalledUpmPackages
+    }
+
+    @Override
+    void setPreInstalledUpmPackages(List<String> value)
+    {
+        preInstalledUpmPackages = value
+    }
+
 }

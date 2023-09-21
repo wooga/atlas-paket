@@ -82,6 +82,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 t.conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
                 t.conventionMapping.map("includeAssemblyDefinitions", { extension.getIncludeAssemblyDefinitions() })
                 t.conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
+                t.conventionMapping.map("preInstalledUpmPackages", { extension.getPreInstalledUpmPackages() })
                 t.frameworks = extension.getPaketDependencies().getFrameworks()
                 t.lockFile = extension.getPaketLockFile()
                 t.referencesFile = referenceFile

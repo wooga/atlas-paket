@@ -256,7 +256,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         def unityProjDir = new File(projectDir, "unity")
         new File(unityProjDir, "Assets").mkdirs()
         def (_, testPkgJson) = fakeUPMPaketPackage("test", unityProjDir)
-        def pkgInstallDir = new File(unityProjDir, "Packages/test")
+        def pkgInstallDir = new File(unityProjDir, "Packages/com.something.test")
         def testPkgContents = testPkgJson.text
 
         and:
@@ -285,7 +285,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             mkdirs(); createNewFile();
             it
         }
-        def pktUnityInstallDir = new File(unityProjDir, "Packages/test")
+        def pktUnityInstallDir = new File(unityProjDir, "Packages/${(overrides?.get('name') ?: "com.wooga.nuget.test")}")
         assert !new File(testNuGetPackage, "package.json").exists()
 
         and:
@@ -309,7 +309,7 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             pkgJsonFile.file
             manifestJson.file
             def pkgJson = new JsonSlurper().parse(pkgJsonFile) as Map<String, Object>
-            pkgJson['name'] == (overrides?.get('name') ?: "com.wooga.nuget.${pktUnityInstallDir.name.toLowerCase()}")
+            pkgJson['name'] == (overrides?.get('name') ?: "${pktUnityInstallDir.name.toLowerCase()}")
             pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [:])
         } else {
             !pkgJsonFile.file
@@ -324,7 +324,250 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         false                  | false              | null                      | "hasn't"
     }
 
-    private void setupPaketProject(dependencyName, unityProjectName) {
+    def "Paket-installed #packageType packages install into directory named after #source upm name"() {
+        given:
+        def unityProjDir = new File(projectDir, "unity")
+        new File(unityProjDir, "Assets").mkdirs()
+
+        if (isUpmPackage) {
+            def (_, testPkgJson) = fakeUPMPaketPackage("test", unityProjDir)
+        } else {
+            def testNuGetPackage = fakePaketPackage("test")
+        }
+
+        def pkgInstallDirName = isUpmPackage ? "com.something.test" : (overrides?.get('name') ?: "com.wooga.nuget.test")
+        def pktUnityInstallDir = new File(unityProjDir, "Packages/${pkgInstallDirName}")
+
+        new File(unityProjDir, "Packages").mkdirs()
+        def manifestJson = new File(unityProjDir, "Packages/manifest.json")
+        manifestJson.createNewFile()
+
+        and:
+        buildFile << """
+            paketUnity {
+                paketUpmPackageEnabled = true
+                ${overrides ?
+                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+                ""
+        }
+            }
+        """
+
+        when:
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.success
+        def pkgJsonFile = new File(pktUnityInstallDir, "package.json")
+
+        pkgJsonFile.file
+        manifestJson.file
+
+        def pkgJson = new JsonSlurper().parse(pkgJsonFile) as Map<String, Object>
+        pkgJson['name'] == pkgInstallDirName
+
+        pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [].toSet())
+
+        where:
+        packageType           | source              | isUpmPackage      | overrides
+        "upm-enabled"          | "package-json"     | true              | null
+        "non-upm"              | "generated"        | false             | null
+        "non-upm"              | "overridden"       | false             | ["name": "com.custom.name"]
+    }
+
+    def "Paket-installed #packageType packages get deleted"() {
+        given:
+        def unityProjDir = new File(projectDir, "unity")
+        new File(unityProjDir, "Assets").mkdirs()
+
+
+        def pkgInstallDirName = isUpmPackage ? "com.something.test" : (overrides?.get('name') ?: "com.wooga.nuget.test")
+        def pktUnityInstallDir = new File(unityProjDir, "Packages/${pkgInstallDirName}")
+
+        File nugetPackageDir
+
+        if (isUpmPackage) {
+            def (packageFolder, testPkgJson) = fakeUPMPaketPackage("test", unityProjDir)
+            nugetPackageDir = packageFolder
+        } else {
+            nugetPackageDir = fakePaketPackage("test")
+        }
+
+        new File(unityProjDir, "Packages").mkdirs()
+        def manifestJson = new File(unityProjDir, "Packages/manifest.json")
+        manifestJson.createNewFile()
+
+        and:
+        buildFile << """
+            paketUnity {
+                paketUpmPackageEnabled = true
+                ${overrides ?
+                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+                ""
+        }
+            }
+        """
+
+        when:
+        runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+        // delete deps
+        def dependencies = new File(projectDir, "paket.dependencies")
+        def lockFile = new File(projectDir, "paket.lock")
+        dependencies.text = "source https://nuget.org/api/v2"
+        lockFile.text = ""
+        nugetPackageDir.deleteDir()
+
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.success
+        !pktUnityInstallDir.exists()
+
+
+        where:
+        packageType            | isUpmPackage   | overrides
+        "upm-enabled"          | true           | null
+        "non-upm"              | false          | null
+        "non-upm-overridden"   | false          | ["name": "com.custom.name"]
+    }
+
+    def "#deleteVerb #packageType package on non-incremental delete"() {
+        given:
+        def unityProjDir = new File(projectDir, "unity")
+        new File(unityProjDir, "Assets").mkdirs()
+        setupPaketProject("Wooga.TestDependency", "unity")
+
+        def installedUnityPackageDir = new File(unityProjDir, "Packages/${packageId}")
+        installedUnityPackageDir.mkdirs()
+        def installedUnityPackageFile = new File(installedUnityPackageDir, isUpmPackage ? "package.json" : "some.file")
+        installedUnityPackageFile.text = "{}"
+
+        and:
+        buildFile << """
+            paketUnity {
+                paketUpmPackageEnabled = true
+                preInstalledUpmPackages = ["${preinstalledPackage}"]
+            }
+            // force non-incremental build
+            tasks.named('${PaketUnityPlugin.INSTALL_TASK_NAME}').configure {
+                outputs.upToDateWhen { false }
+            }
+        """
+        when:
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+        then:
+        result.success
+        if (doesDelete) {
+            !installedUnityPackageDir.exists()
+            !installedUnityPackageFile.exists()
+        } else {
+            installedUnityPackageDir.exists()
+            installedUnityPackageFile.exists()
+        }
+
+        where:
+        deleteVerb          | packageType           | doesDelete  | packageId                      | preinstalledPackage            | isUpmPackage
+        "Does NOT delete"   | "non-upm-package"     | false       | "com.wooga.do-not-delete-me"   | ""                             | false
+        "Does NOT delete"   | "preinstalled"        | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"   | true
+        "Deletes"           | "upm-package"         | true        | "com.wooga.delete-me"          | ""                             | true
+    }
+
+    def "Shared paket and unity install-dir install"() {
+        given:
+        def unityProjDir = projectDir
+        new File(unityProjDir, "Assets").mkdirs()
+
+        if (isUpmPackage) {
+            fakeUPMPaketPackage("test", unityProjDir, new File(projectDir, "Packages"))
+        } else {
+            fakePaketPackage("test", projectDir, new File(projectDir, "Packages"), projectDir)
+        }
+
+        def pkgInstallDirName = isUpmPackage ? "com.something.test" : (overrides?.get('name') ?: "com.wooga.nuget.test")
+        def pktUnityInstallDir = new File(unityProjDir, "Packages/${pkgInstallDirName}")
+
+        new File(unityProjDir, "Packages").mkdirs()
+        def manifestJson = new File(unityProjDir, "Packages/manifest.json")
+        manifestJson.createNewFile()
+
+        and:
+        buildFile << """
+            paketUnity {
+                paketUpmPackageEnabled = true
+                ${overrides ?
+                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+                ""
+        }
+            }
+        """
+
+        when:
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+
+        then:
+        result.success
+        def pkgJsonFile = new File(pktUnityInstallDir, "package.json")
+
+        pkgJsonFile.file
+        manifestJson.file
+
+        def pkgJson = new JsonSlurper().parse(pkgJsonFile) as Map<String, Object>
+        pkgJson['name'] == pkgInstallDirName
+
+        pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [].toSet())
+
+        where:
+        packageType           | source              | isUpmPackage      | overrides
+        "upm-enabled"          | "package-json"     | true              | null
+        "non-upm"              | "generated"        | false             | null
+        "non-upm"              | "overridden"       | false             | ["name": "com.custom.name"]
+    }
+
+    def "Shared paket and unity packages folder #deleteVerb #packageType package on non-incremental delete"() {
+        given:
+        def unityProjDir = projectDir
+        new File(unityProjDir, "Assets").mkdirs()
+        def dependencyFile = setupPaketProject("Wooga.TestDependency", "")
+
+        def installedUnityPackageDir = new File(unityProjDir, "Packages/${packageId}")
+        installedUnityPackageDir.mkdirs()
+        def installedUnityPackageFile = new File(installedUnityPackageDir, isUpmPackage ? "package.json" : "some.file")
+        installedUnityPackageFile.text = "{}"
+
+        and:
+        buildFile << """
+            paketUnity {
+                paketUpmPackageEnabled = true
+                preInstalledUpmPackages = ["${preinstalledPackage}"]
+            }
+            // force non-incremental build
+            tasks.named('${PaketUnityPlugin.INSTALL_TASK_NAME}').configure {
+                outputs.upToDateWhen { false }
+            }
+        """
+        when:
+        def result = runTasks(PaketUnityPlugin.INSTALL_TASK_NAME)
+        then:
+        result.success
+        if (doesDelete) {
+            !installedUnityPackageDir.exists()
+            !installedUnityPackageFile.exists()
+        } else {
+            installedUnityPackageDir.exists()
+            installedUnityPackageFile.exists()
+        }
+
+        dependencyFile.exists()
+
+        where:
+        deleteVerb          | packageType           | doesDelete  | packageId                      | preinstalledPackage            | isUpmPackage
+        "Does NOT delete"   | "non-upm-package"     | false       | "com.wooga.do-not-delete-me"   | ""                             | false
+        "Does NOT delete"   | "preinstalled"        | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"   | true
+        "Deletes"           | "upm-package"         | true        | "com.wooga.delete-me"          | ""                             | true
+
+    }
+
+    private File setupPaketProject(dependencyName, unityProjectName) {
 
         def dependencies = createFile("paket.dependencies")
         dependencies << """
@@ -335,12 +578,14 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         def lockFile = createFile("paket.lock")
         lockFile << """${dependencyName}""".stripIndent()
 
-        def references = createFile("${unityProjectName}/paket.unity3d.references")
+        def references = createFile("${(!unityProjectName?.isEmpty()) ? unityProjectName + "/" : ""}paket.unity3d.references")
         references << """
         ${dependencyName}
         """.stripIndent()
 
-        createFile("packages/${dependencyName}/content/${dependencyName}.cs")
+        def packagesName = unityProjectName?.isEmpty() ? "Packages" : "packages";
+
+        return createFile("${packagesName}/${dependencyName}/content/${dependencyName}.cs")
     }
 
     private void setupWrappedUpmPaketProject(dependencyName, unityProjectName) {
