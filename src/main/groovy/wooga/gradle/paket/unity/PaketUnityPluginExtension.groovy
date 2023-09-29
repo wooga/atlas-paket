@@ -18,6 +18,7 @@
 package wooga.gradle.paket.unity
 
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Provider
 import wooga.gradle.paket.base.PaketPluginExtension
 import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 
@@ -76,5 +77,16 @@ interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackag
      * Sets list of pre-installed upm package id's, that should not be modified by the PaketUnityInstall task
      * @param preInstalledPackages
      */
-    void setPreInstalledUpmPackages(List<String> preInstalledPackages);
+    void setPreInstalledUpmPackages(List<String> preInstalledPackages)
+
+    /**
+     * Sets list of pre-installed upm package id's, that should not be modified by the PaketUnityInstall task
+     * @param preInstalledPackages
+     */
+    void setPreInstalledUpmPackages(Provider<List<String>> value)
+
+    /**
+     * @return A list of pre-installed upm package id's, that should not be modified by the PaketUnityInstall task
+     */
+    Provider<List<String>> getPreInstalledUpmPackagesProvider()
 }
