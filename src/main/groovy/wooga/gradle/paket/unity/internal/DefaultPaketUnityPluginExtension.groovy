@@ -19,6 +19,8 @@ package wooga.gradle.paket.unity.internal
 
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
 import wooga.gradle.paket.base.internal.DefaultPaketPluginExtension
 import wooga.gradle.paket.unity.PaketUnityPluginExtension
@@ -33,11 +35,11 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
     protected Boolean includeAssemblyDefinitions = false
-    protected List<String> preInstalledUpmPackages
+    protected ListProperty<String> preInstalledUpmPackages
 
     DefaultPaketUnityPluginExtension(Project project,final PaketDependencyHandler dependencyHandler) {
         super(project, dependencyHandler)
-        assemblyDefinitionFileStrategy
+        preInstalledUpmPackages = project.objects.listProperty(String)
     }
 
     @Override
@@ -78,15 +80,24 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     }
 
     @Override
-    List<String> getPreInstalledUpmPackages()
-    {
-        preInstalledUpmPackages
+    List<String> getPreInstalledUpmPackages() {
+        preInstalledUpmPackages.getOrElse([])
     }
 
     @Override
-    void setPreInstalledUpmPackages(List<String> value)
-    {
-        preInstalledUpmPackages = value
+    void setPreInstalledUpmPackages(List<String> value) {
+        preInstalledUpmPackages.set(value)
     }
+
+    @Override
+    void setPreInstalledUpmPackages(Provider<List<String>> value) {
+        preInstalledUpmPackages.set(value)
+    }
+
+    @Override
+    Provider<List<String>> getPreInstalledUpmPackagesProvider() {
+        preInstalledUpmPackages
+    }
+
 
 }
