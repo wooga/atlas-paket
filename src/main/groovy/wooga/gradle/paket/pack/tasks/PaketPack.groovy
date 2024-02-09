@@ -26,6 +26,7 @@ import java.util.concurrent.Callable
 
 /**
  * A task to invoke {@code paket pack} command with given {@code paket.template} file.
+ * Create NuGet packages from paket.template files.
  * <p>
  * Example:
  * <pre>

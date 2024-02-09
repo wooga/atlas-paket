@@ -59,6 +59,16 @@ class PaketDependenciesSpec extends Specification {
         http http://www.fssnip.net/1n decrypt.fs
     """.stripIndent()
 
+
+    static String NETSTANDARD_2_CONTENT = """
+source https://nuget.org/api/v2
+nuget NSubstitute == 1.9.2
+framework: netstandard2.0
+
+nuget Wooga.TestSupport >= 3.4.0
+nuget Wooga.SbsSchurle >= 0.1.1
+    """.stripIndent()
+
     @Shared
     File dependenciesFile = File.createTempFile("paket", ".dependencies")
 
@@ -131,14 +141,16 @@ class PaketDependenciesSpec extends Specification {
 
         then:
         def frameworks = dependencies.frameworks
-        frameworks.size() == 2
-        frameworks.contains("net35")
-        frameworks.contains("net40")
+        frameworks.size() == expected.size()
+        expected.forEach({
+            frameworks.contains(it)
+        })
 
         where:
-        objectType | content
-        "String"   | DEPENDENCIES_CONTENT
-        "File"     | dependenciesFile << DEPENDENCIES_CONTENT
+        objectType | expected           | content
+        "String"   | ["net35", "net40"] | DEPENDENCIES_CONTENT
+        "File"     | ["net35", "net40"] | dependenciesFile << DEPENDENCIES_CONTENT
+        "String"   | ["netstandard2.0"] | NETSTANDARD_2_CONTENT
     }
 
     @Unroll

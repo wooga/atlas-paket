@@ -25,6 +25,8 @@ import wooga.gradle.paket.internal.PaketCommand
 
 /**
  * A task to invoke {@code paket restore} command.
+ * Download the computed dependency graph.
+ * Note that this fails with an error if the `paket.lock` file does not exist.
  */
 class PaketRestore extends AbstractPaketTask {
 

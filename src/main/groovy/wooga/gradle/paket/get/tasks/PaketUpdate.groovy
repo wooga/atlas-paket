@@ -24,6 +24,8 @@ import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 /**
  * A task to invoke {@code paket update} command.
+ * Update dependencies to their latest version.
+ * If you do not specify a package, then all packages from paket.dependencies are updated.
  */
 class PaketUpdate extends AbstractPaketTask {
 

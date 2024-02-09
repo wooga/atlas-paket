@@ -17,10 +17,9 @@
 
 package wooga.gradle.paket.base.utils.internal
 
-class PaketDependencies implements wooga.gradle.paket.base.utils.PaketDependencies{
+import wooga.gradle.paket.unity.PaketUnityPluginConventions
 
-    final private List<String> DEFAULT_FRAMEWORKS = ["net11", "net20", "net35", "unity", "net35-unity full v3.5", "net35-unity subset v3.5"]
-    // 4.6 -> ["net462", "net461", "net46", "net452", "net451", "net45", "net403", "net40", "net4"]
+class PaketDependencies implements wooga.gradle.paket.base.utils.PaketDependencies {
 
     PaketDependencies(File dependenciesFile) {
         this(dependenciesFile.text)
@@ -65,6 +64,6 @@ class PaketDependencies implements wooga.gradle.paket.base.utils.PaketDependenci
     }
 
     List<String> getFrameworks() {
-        frameworks ?: DEFAULT_FRAMEWORKS
+        frameworks ?: PaketUnityPluginConventions.defaultFrameworks
     }
 }
