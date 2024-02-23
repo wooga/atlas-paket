@@ -21,7 +21,8 @@ import wooga.gradle.paket.internal.PaketCommand
 import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 /**
- * A task to invoke {@code paket install} command.
+ * A task to invoke {@code paket install} command, which
+ * Compute dependency graph, download dependencies and update projects.
  */
 class PaketInstall extends AbstractPaketTask {
 

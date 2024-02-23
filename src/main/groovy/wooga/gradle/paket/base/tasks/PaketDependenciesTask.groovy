@@ -34,6 +34,9 @@ import wooga.gradle.paket.base.repository.NugetArtifactRepository
 
 import java.nio.file.Path
 
+/***
+ * This task generates a `paket.dependencies` file.
+ */
 class PaketDependenciesTask extends DefaultTask {
 
     protected final PaketDependencyConfigurationContainer configurationContainer

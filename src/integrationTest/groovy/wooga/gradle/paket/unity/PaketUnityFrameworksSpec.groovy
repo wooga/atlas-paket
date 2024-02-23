@@ -32,8 +32,8 @@ class PaketUnityFrameworksSpec extends IntegrationSpec {
         """.stripIndent()
     }
 
-    @Unroll("task:paketUnityInstall wf")
-    def "task:paketUnityInstall with frameworks:#includeFrameworks"() {
+    @Unroll("install #includeFrameworks")
+    def "paket install"() {
         given: "a dependency file with json.net"
         def dependenciesFile = createFile("paket.dependencies")
         dependenciesFile << """
@@ -65,6 +65,7 @@ class PaketUnityFrameworksSpec extends IntegrationSpec {
         includeFrameworks           | excludedFrameworks | dependency        | dependencyVersion
         ["net20"]                   | ["net35", "net46"] | "Newtonsoft.Json" | "11.0.1"
         ["net20", "net35", "net45"] | ["net46"]          | "Newtonsoft.Json" | "11.0.1"
+        ["netstandard2.0"]          | ["net20"]          | "NSubstitute"     | "5.1.0"
 
         frameworksString = includeFrameworks ? "framework: ${includeFrameworks.join(",")}" : ""
     }

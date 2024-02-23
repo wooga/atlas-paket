@@ -26,6 +26,7 @@ import java.util.concurrent.Callable
 
 /**
  * A task to invoke {@code paket push} command with given {@code .nupgk} file.
+ * Push a NuGet package.
  * <p>
  * Example:
  * <pre>

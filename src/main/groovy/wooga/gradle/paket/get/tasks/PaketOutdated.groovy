@@ -22,6 +22,7 @@ import wooga.gradle.paket.base.tasks.internal.AbstractPaketTask
 
 /**
  * A task to invoke {@code paket outdated} command.
+ * Find dependencies that have newer versions available.
  */
 class PaketOutdated extends AbstractPaketTask {
 
