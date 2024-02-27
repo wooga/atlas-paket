@@ -9,8 +9,12 @@ import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 import java.nio.file.Files
 import java.nio.file.Path
 
-class NugetToUpmPackageIdCache
-{
+/**
+ * Contains a cache of identifiers of Unity packages
+ * that are generated from nuget then converted into UPM.
+ */
+class NugetToUpmPackageIdCache {
+
     static final String PACKAGE_JSON = "package.json"
     static final String NAME = "name"
     static final String DISPLAY_NAME = "displayName"
@@ -20,13 +24,19 @@ class NugetToUpmPackageIdCache
     final File outputDirectory
     final MapProperty<String, Map<String, Object>> paketUpmPackageManifests
 
-    Map<String, String> nugetToUPMPackageIdCache = [:] as Map<String,String>
+    Map<String, String> nugetToUPMPackageIdCache = [:] as Map<String, String>
+    String defaultNamespace = "com.wooga.nuget"
 
-    NugetToUpmPackageIdCache(Project project, FileCollection inputs, File outputDirectory, MapProperty<String, Map<String, Object>> packageManifests) {
+    NugetToUpmPackageIdCache(Project project,
+                             FileCollection inputs,
+                             File outputDirectory,
+                             MapProperty<String, Map<String, Object>> packageManifests,
+                             String namespace) {
         this.project = project
         this.inputFiles = inputs
         this.outputDirectory = outputDirectory
         this.paketUpmPackageManifests = packageManifests
+        this.defaultNamespace ?= namespace
 
         populateCacheFromInputFiles()
         populateCacheFromOutputDirectory()
@@ -36,8 +46,7 @@ class NugetToUpmPackageIdCache
         nugetToUPMPackageIdCache[nugetId] ?: generateUpmId(nugetId)
     }
 
-    boolean containsKey(String nugetId)
-    {
+    boolean containsKey(String nugetId) {
         nugetToUPMPackageIdCache.containsKey(nugetId)
     }
 
@@ -46,8 +55,8 @@ class NugetToUpmPackageIdCache
     }
 
     private String generateUpmId(String paketId) {
-        def pkgJsonOverrides = paketUpmPackageManifests.getting(paketId)?.getOrElse([:])
-        pkgJsonOverrides[NAME] ?: "com.wooga.nuget.${paketId.toLowerCase()}"
+        def manifestOverrides = paketUpmPackageManifests.getting(paketId)?.getOrElse([:])
+        manifestOverrides[NAME] ?: "${defaultNamespace}.${paketId.toLowerCase()}"
     }
 
     private Path getAbsolutePath(String directory) {
@@ -115,6 +124,20 @@ class NugetToUpmPackageIdCache
             if (it.name == PACKAGE_JSON) map[it.relativePath.segments[0]] = it.file
         }
         return map
+    }
+
+    // TODO: Parse the version?
+     Map<String, Object> generateManifest(String nugetId, Map<String, Object> overrides = [:]) {
+
+        def upmmId = getUpmId(nugetId)
+
+        Map<String, Object> base = [
+            name: upmmId,
+            displayName: nugetId,
+            version: "0.0.0"
+        ]
+        base.putAll(overrides)
+        return base
     }
 
 }

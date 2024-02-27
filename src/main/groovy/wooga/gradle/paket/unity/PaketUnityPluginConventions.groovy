@@ -23,4 +23,9 @@ class PaketUnityPluginConventions {
       * Default NET frameworks that are to be installed onto the target directory
       */
      static final List<String> defaultFrameworks = ["net11", "net20", "net35", "net45", "netstandard2.0"]
+
+     /**
+      * Default namespace used for generated packages
+      */
+     static PropertyLookup defaultNamespace = new PropertyLookup("PAKET_UNITY_DEFAULT_NAMESPACE", "paketUnity.defaultNamespace","com.wooga.nuget")
 }
