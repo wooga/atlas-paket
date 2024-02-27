@@ -17,12 +17,16 @@
 
 package wooga.gradle.paket.unity
 
+import groovy.json.JsonSlurper
 import nebula.test.IntegrationSpec
 import spock.lang.Unroll
+import wooga.gradle.paket.FrameworkRestriction
+import wooga.gradle.paket.PaketIntegrationSpec
 import wooga.gradle.paket.PaketPlugin
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
 import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 
-class PaketUnityFrameworksSpec extends IntegrationSpec {
+class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
 
     def setup() {
         buildFile << """
@@ -93,6 +97,51 @@ class PaketUnityFrameworksSpec extends IntegrationSpec {
         where:
         dependency     | dependencyVersion | expectedDLL
         "BouncyCastle" | "1.8.4"           | "BouncyCastle.Crypto.dll"
+    }
+
+    @Unroll
+    def "cpd #upmId"() {
+
+        given: "a generated unity project"
+        def unityProjDir = new File(projectDir, "unity")
+        new File(unityProjDir, "Assets").mkdirs()
+        new File(unityProjDir, "Packages").mkdirs()
+        def manifestJson = new File(unityProjDir, "Packages/manifest.json")
+        manifestJson.createNewFile()
+
+        and: "generated paket files"
+        def paketDeps = new PaketDependencies()
+            .withNugetSource()
+            .withDependency(nugetId, version)
+            .withFrameworks(FrameworkRestriction.NetStandard2)
+        generateDependenciesFile(paketDeps)
+        generateReferencesFile(paketDeps)
+
+        and: "a configured plugin"
+        appendToTask("paketUnity", "paketUpmPackageEnabled = true")
+        appendToTask("paketUnity", "includeAssemblyDefinitions = true")
+        if (namespace != null) {
+            appendToTask("paketUnity", "defaultNamespace = ${wrapValueBasedOnType(namespace, String)}")
+        }
+
+        when:
+        def result = runTasks("paketInstall")
+
+        then:
+        result.success
+        def packageDirectory = new File(unityProjDir, "Packages/${upmId}")
+        def packageManifestFile = new File(packageDirectory, "package.json")
+
+        packageManifestFile.file
+        manifestJson.file
+
+        def packageManifest = new JsonSlurper().parse(packageManifestFile) as Map<String, Object>
+        packageManifest['name'] == upmId
+
+        where:
+        nugetId       | version | namespace                      | upmId
+        "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
+        "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
     }
 
 }

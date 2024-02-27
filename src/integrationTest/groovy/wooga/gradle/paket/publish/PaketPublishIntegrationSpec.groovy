@@ -223,7 +223,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         and: "paket.dependencies and paket.lock file"
         createFile("paket.lock")
         createFile("paket.dependencies")
-        def escapedPath = escapedPath(localPath.absolutePath)
+        def escapedPath = osPath (localPath.absolutePath)
 
         and: "a build.gradle file with a local publish entry"
         buildFile.text = ""
@@ -264,13 +264,5 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}", "publish${repoName.capitalize()}", "publish"]
-    }
-
-    def escapedPath(String path) {
-        String osName = System.getProperty("os.name").toLowerCase()
-        if (osName.contains("windows")) {
-            return StringEscapeUtils.escapeJava(path)
-        }
-        path
     }
 }

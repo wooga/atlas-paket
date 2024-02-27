@@ -20,10 +20,10 @@ package wooga.gradle.paket.base
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import spock.lang.Shared
 import spock.lang.Unroll
-import wooga.gradle.paket.PaketIntegrationBaseSpec
+import wooga.gradle.paket.BootstrapPaketIntegrationSpec
 import wooga.gradle.paket.get.PaketGetPlugin
 
-class PaketBaseIntegrationSpec extends PaketIntegrationBaseSpec {
+class PaketBaseIntegrationSpec extends BootstrapPaketIntegrationSpec {
 
     def setupSpec() {
         System.setProperty("USE_DEPENDENCY_TEST", "NO")

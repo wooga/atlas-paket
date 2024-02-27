@@ -17,28 +17,24 @@
 
 package wooga.gradle.paket
 
-import nebula.test.functional.ExecutionResult
+import com.wooga.gradle.test.IntegrationSpec
 import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.StringEscapeUtils
 import org.junit.Rule
 import org.junit.contrib.java.lang.system.ProvideSystemProperty
 import spock.lang.Shared
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
+import wooga.gradle.paket.unity.internal.DefaultPaketUnityPluginExtension
 
-class IntegrationSpec extends nebula.test.IntegrationSpec{
+/**
+ * The base class for all tests in this test package
+ */
+class PaketIntegrationSpec extends IntegrationSpec {
 
     @Rule
     ProvideSystemProperty properties = new ProvideSystemProperty("ignoreDeprecations", "true")
 
     @Shared
     File cachedPaketDir
-
-    def escapedPath(String path) {
-        String osName = System.getProperty("os.name").toLowerCase()
-        if (osName.contains("windows")) {
-            return StringEscapeUtils.escapeJava(path)
-        }
-        path
-    }
 
     def convertToWindowsPath(String path) {
         new File(path).toString()
@@ -91,7 +87,15 @@ class IntegrationSpec extends nebula.test.IntegrationSpec{
         }
     }
 
-    Boolean outputContains(ExecutionResult result, String message) {
-        result.standardOutput.contains(message) || result.standardError.contains(message)
+    File generateDependenciesFile(PaketDependencies dependencies){
+        def file = createFile("paket.dependencies")
+        file << dependencies.toString()
+        file
+    }
+
+    File generateReferencesFile(PaketDependencies dependencies) {
+        def file = createFile(DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME)
+        file << dependencies.getNugetDependencies().join(System.lineSeparator())
+        file
     }
 }

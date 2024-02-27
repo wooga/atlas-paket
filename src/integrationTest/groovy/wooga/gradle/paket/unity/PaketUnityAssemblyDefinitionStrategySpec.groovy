@@ -25,7 +25,7 @@ import wooga.gradle.extensions.PaketUnity
 import wooga.gradle.extensions.PaketUnitySetup
 import wooga.gradle.paket.get.PaketGetPlugin
 
-class PaketUnityAssemblyDefinitionStrategySpec extends IntegrationSpec {
+class PaketUnityAssemblyDefinitionStrategySpec extends com.wooga.gradle.test.IntegrationSpec {
 
     @PaketDependency
     PaketDependencySetup _paketSetup

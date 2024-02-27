@@ -1,27 +1,10 @@
 package wooga.gradle.paket.unity.fixtures
 
-import nebula.test.IntegrationSpec
-
-import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.stream.Collectors
 
-class PaketFixtures implements PaketFixturesTrait {
-
-    private IntegrationSpec spec
-
-    PaketFixtures(IntegrationSpec spec) {
-        this.spec = spec
-    }
-
-    @Override
-    File getProjectDir() {
-        return spec.projectDir
-    }
-}
-
 trait PaketFixturesTrait {
+
     abstract File getProjectDir()
 
     File fakePaketPackage(String name,

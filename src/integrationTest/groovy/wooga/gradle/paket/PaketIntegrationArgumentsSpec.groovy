@@ -20,7 +20,7 @@ package wooga.gradle.paket
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 
-abstract class PaketIntegrationArgumentsSpec extends IntegrationSpec {
+abstract class PaketIntegrationArgumentsSpec extends PaketIntegrationSpec {
 
     abstract Class getTestPlugin()
     abstract List<String> getTestTasks()

@@ -18,11 +18,11 @@
 package wooga.gradle.paket.base.dependencies
 
 import spock.lang.Unroll
-import wooga.gradle.paket.IntegrationSpec
+import wooga.gradle.paket.PaketIntegrationSpec
 import wooga.gradle.paket.base.PaketBasePlugin
 import wooga.gradle.paket.get.PaketGetPlugin
 
-class PaketNugetDependenciesIntegrationSpec extends IntegrationSpec {
+class PaketNugetDependenciesIntegrationSpec extends PaketIntegrationSpec {
     def setup() {
         buildFile << """
             group = 'test'
@@ -234,8 +234,8 @@ class PaketNugetDependenciesIntegrationSpec extends IntegrationSpec {
 
         then:
         paketDependencies.exists()
-        paketDependencies.text.contains("source ${convertToWindowsPath('../path/to/source/one')}")
-        paketDependencies.text.contains("source ${convertToWindowsPath('../path/to/source/two')}")
+        paketDependencies.text.contains("source ${osPath('../path/to/source/one')}")
+        paketDependencies.text.contains("source ${osPath('../path/to/source/two')}")
 
         where:
 

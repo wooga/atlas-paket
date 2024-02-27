@@ -24,10 +24,11 @@ import wooga.gradle.extensions.PaketDependencyInterceptor
 import wooga.gradle.extensions.PaketDependencySetup
 import wooga.gradle.extensions.PaketUnity
 import wooga.gradle.extensions.PaketUnitySetup
+import wooga.gradle.paket.PaketIntegrationSpec
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
-class PaketUnityChangeSpec extends IntegrationSpec {
+class PaketUnityChangeSpec extends PaketIntegrationSpec {
 
     final static String STD_OUT_ALL_OUT_OF_DATE = "The input changes require a full rebuild for incremental task"
     final static String U = PaketDependencyInterceptor.localUPMWrapperPackagePrefix;
@@ -43,7 +44,6 @@ class PaketUnityChangeSpec extends IntegrationSpec {
 
     @PaketUnity(projectReferences = ["D3", "D4"])
     PaketUnitySetup unityProject3
-
 
     def setup() {
         buildFile << """

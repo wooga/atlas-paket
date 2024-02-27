@@ -22,7 +22,7 @@ class PaketUnityPluginConventions {
      /**
       * Default NET frameworks that are to be installed onto the target directory
       */
-     static final List<String> defaultFrameworks = ["net11", "net20", "net35", "net45", "netstandard2.0"]
+     static final List<String> defaultFrameworks = ["net20", "net35", "net45", "netstandard2.0"]
 
      /**
       * Default namespace used for generated packages

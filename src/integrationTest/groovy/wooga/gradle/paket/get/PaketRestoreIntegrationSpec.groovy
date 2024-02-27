@@ -20,9 +20,9 @@ package wooga.gradle.paket.get
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Unroll
-import wooga.gradle.paket.PaketIntegrationBaseSpec
+import wooga.gradle.paket.BootstrapPaketIntegrationSpec
 
-class PaketRestoreIntegrationSpec extends PaketIntegrationBaseSpec {
+class PaketRestoreIntegrationSpec extends BootstrapPaketIntegrationSpec {
 
     def setup() {
         buildFile << """

@@ -22,7 +22,7 @@ import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.paket.base.PaketBasePlugin
 
-abstract class PaketIntegrationBaseSpec extends IntegrationSpec {
+abstract class BootstrapPaketIntegrationSpec extends PaketIntegrationSpec {
 
     @Shared
     def bootstrapTestCases

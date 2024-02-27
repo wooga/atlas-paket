@@ -59,8 +59,9 @@ class PaketUPMWrapperReference {
         this(project.file("${getPackagesDirectory(project)}/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
     }
 
-    public static String getPackagesDirectory(Project project) {
-        // this will return "Packages" on case-INsensitive FS and the proper "packages" in case-senitive FS
+    static String getPackagesDirectory(Project project) {
+        // This will return "Packages" on case-insensitive file system
+        // and the proper "packages" in case-sensitive file system
         return project.file("packages").canonicalFile.name
     }
 
