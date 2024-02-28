@@ -93,8 +93,19 @@ class PaketIntegrationSpec extends IntegrationSpec {
         file
     }
 
-    File generateReferencesFile(PaketDependencies dependencies) {
-        def file = createFile(DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME)
+    File generateUnityProject(String name, boolean rooted) {
+        File unityProjDir = rooted ? projectDir : new File(projectDir, name)
+        new File(unityProjDir, "Assets").mkdirs()
+        new File(unityProjDir, "Packages").mkdirs()
+        def manifestJson = new File(unityProjDir, "Packages/manifest.json")
+        manifestJson.createNewFile()
+        unityProjDir
+    }
+
+    File generateReferencesFile(PaketDependencies dependencies, File baseDir = null) {
+        baseDir ?= projectDir
+        File file = new File(baseDir, DefaultPaketUnityPluginExtension.DEFAULT_PAKET_UNITY_REFERENCES_FILE_NAME)
+        file.createNewFile()
         file << dependencies.getNugetDependencies().join(System.lineSeparator())
         file
     }

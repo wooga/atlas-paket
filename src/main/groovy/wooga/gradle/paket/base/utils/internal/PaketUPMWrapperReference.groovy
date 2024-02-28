@@ -1,9 +1,9 @@
 package wooga.gradle.paket.base.utils.internal
 
+import com.wooga.gradle.PlatformUtils
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.Input
 
 /*
  * Copyright 2022 Wooga GmbH
@@ -56,14 +56,7 @@ class PaketUPMWrapperReference {
     }
 
     PaketUPMWrapperReference(String nugetPackage, Project project) {
-        this(project.file("${getPackagesDirectory(project)}/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+        this(project.file("packages/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
     }
-
-    static String getPackagesDirectory(Project project) {
-        // This will return "Packages" on case-insensitive file system
-        // and the proper "packages" in case-sensitive file system
-        return project.file("packages").canonicalFile.name
-    }
-
 }
 

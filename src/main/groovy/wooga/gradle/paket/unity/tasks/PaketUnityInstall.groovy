@@ -113,6 +113,20 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         new File(getReferencesFile().getParentFile(), "Assets/${getPaketOutputDirectoryName()}")
     }
 
+    @Internal
+    @Deprecated
+    String getPackagesDirectory() {
+        paketPackagesDirectory
+    }
+
+    /**
+     * @return The path to where paket extracts the downloaded packages
+     */
+    @Internal
+    String getPaketPackagesDirectory() {
+        new File(project.projectDir, "packages").canonicalPath
+    }
+
     /**
      * @return the files to install into the Unity3D project.
      */
@@ -165,15 +179,15 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
      * @return The files to be copied over from this package
      */
     Set<File> getFilesForPackage(String nuget) {
-        def packagesDirectory = getPackagesDirectory();
-        def fileTree = project.fileTree(dir: project.projectDir)
-        fileTree.include("${packagesDirectory}/${nuget}/content/**")
+        def packagesDirectory = getPaketPackagesDirectory();
+        def fileTree = project.fileTree(packagesDirectory)
+        fileTree.include("${nuget}/content/**")
 
         getFrameworks().each({
-            fileTree.include("${packagesDirectory}/${nuget}/lib/${it}/**")
+            fileTree.include("${nuget}/lib/${it}/**")
         })
 
-        fileTree.include("${packagesDirectory}/${nuget}/lib/*.dll")
+        fileTree.include("${nuget}/lib/*.dll")
 
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
@@ -184,11 +198,6 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
 
         def files = fileTree.files
         return files
-    }
-
-    @Input
-    String getPackagesDirectory() {
-        PaketUPMWrapperReference.getPackagesDirectory(project)
     }
 
     @TaskAction
@@ -215,7 +224,8 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
             @Override
             void execute(InputFileDetails outOfDate) {
                 if (inputFiles.contains(outOfDate.file)) {
-                    def outputPath = transformInputToOutputPath(outOfDate.file, project.file(getPackagesDirectory()))
+                    // Compose the path where the package file should be copied to
+                    def outputPath = transformInputToOutputPath(outOfDate.file, project.file(getPaketPackagesDirectory()))
                     logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
                     FileUtils.copyFile(outOfDate.file, outputPath)
                     assert outputPath.exists()
@@ -228,12 +238,14 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
             void execute(InputFileDetails removed) {
                 logger.info("remove: ${removed.file}")
                 removed.file.delete()
-                def outputPath = transformInputToOutputPath(removed.file, project.file(getPackagesDirectory()))
+
+                // Delete the files that were copied over from the paket packages
+                def outputPath = transformInputToOutputPath(removed.file, project.file(getPaketPackagesDirectory()))
                 outputPath.delete()
 
                 // delete generated package.jsons
                 if (isPaketUpmPackageEnabled().get()) {
-                    def relativePath = project.file(getPackagesDirectory()).toURI().relativize(removed.file.toURI()).getPath()
+                    def relativePath = project.file(getPaketPackagesDirectory()).toURI().relativize(removed.file.toURI()).getPath()
                     def paketId = relativePath.split("/").toList()[0]
                     def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), PACKAGE_JSON).toFile()
                     def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "${PACKAGE_JSON}.meta").toFile()
@@ -311,22 +323,28 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         emptyDirs.reverseEach { it.delete() }
     }
 
-    private File transformInputToOutputPath(File inputFile, File baseDirectory) {
-        def relativePath = baseDirectory.toURI().relativize(inputFile.toURI()).getPath()
-        def pathSegments = relativePath.split("/").toList()
-        // removes the intermediary paket "content" folder
+    /**
+     * @param inputFile A file from an extracted nuget package directory
+     * @param paketDirectory The base directory for the file. It it used to extract a relative folder structure.
+     * @return
+     */
+    private File transformInputToOutputPath(File inputFile, File paketDirectory) {
+        def relativePath = paketDirectory.toURI().relativize(inputFile.toURI()).path
+        def pathSegments = relativePath.split('/').toList()
+        // Remove the intermediary paket "content" folder
         pathSegments.remove(1)
 
         if (isPaketUpmPackageEnabled().get()) {
-            def paketId = pathSegments.remove(0)
+            def nugetId = pathSegments.remove(0)
             if (inputFile.name in [PACKAGE_JSON, "${PACKAGE_JSON}.meta"]) {
-                return Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), inputFile.name).toFile()
+                return Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(nugetId), inputFile.name).toFile()
             }
-            // replace the paketId with upmId
-            pathSegments.add(0, nugetToUpmCache.getUpmId(paketId))
+            // Replace the nugetId with upmId
+            pathSegments.add(0, nugetToUpmCache.getUpmId(nugetId))
             return new File(getOutputDirectory(), pathSegments.join(File.separator))
         }
 
-        return new File(getOutputDirectory(), pathSegments.join(File.separator))
+        def file = new File(getOutputDirectory(), pathSegments.join(File.separator))
+        return file
     }
 }

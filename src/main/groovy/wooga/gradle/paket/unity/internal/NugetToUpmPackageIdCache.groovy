@@ -25,18 +25,18 @@ class NugetToUpmPackageIdCache {
     final MapProperty<String, Map<String, Object>> paketUpmPackageManifests
 
     Map<String, String> nugetToUPMPackageIdCache = [:] as Map<String, String>
-    String defaultNamespace = "com.wooga.nuget"
+    final String defaultNamespace
 
     NugetToUpmPackageIdCache(Project project,
                              FileCollection inputs,
                              File outputDirectory,
                              MapProperty<String, Map<String, Object>> packageManifests,
-                             String namespace) {
+                             String namespace = "com.wooga.nuget") {
         this.project = project
         this.inputFiles = inputs
         this.outputDirectory = outputDirectory
         this.paketUpmPackageManifests = packageManifests
-        this.defaultNamespace ?= namespace
+        this.defaultNamespace = namespace
 
         populateCacheFromInputFiles()
         populateCacheFromOutputDirectory()
@@ -80,7 +80,7 @@ class NugetToUpmPackageIdCache {
     }
 
     private void populateCacheFromInputFiles() {
-        def packagesDirPath = getAbsolutePath(PaketUPMWrapperReference.getPackagesDirectory(project))
+        def packagesDirPath = getAbsolutePath("packages")
         def packageJsonMap = findPackageJsons(packagesDirPath)
 
         inputFiles.each {

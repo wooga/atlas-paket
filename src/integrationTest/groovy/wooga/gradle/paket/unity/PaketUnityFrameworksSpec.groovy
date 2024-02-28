@@ -99,23 +99,21 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
         "BouncyCastle" | "1.8.4"           | "BouncyCastle.Crypto.dll"
     }
 
+    // Yes, I had to do a shorthand because of Windows longpath exceptions.
     @Unroll
-    def "cpd #upmId"() {
+    def "cpd"() {
 
         given: "a generated unity project"
-        def unityProjDir = new File(projectDir, "unity")
-        new File(unityProjDir, "Assets").mkdirs()
-        new File(unityProjDir, "Packages").mkdirs()
-        def manifestJson = new File(unityProjDir, "Packages/manifest.json")
-        manifestJson.createNewFile()
+        def unityProjDir = generateUnityProject("unity", rooted)
 
         and: "generated paket files"
         def paketDeps = new PaketDependencies()
             .withNugetSource()
             .withDependency(nugetId, version)
             .withFrameworks(FrameworkRestriction.NetStandard2)
+
         generateDependenciesFile(paketDeps)
-        generateReferencesFile(paketDeps)
+        generateReferencesFile(paketDeps, unityProjDir)
 
         and: "a configured plugin"
         appendToTask("paketUnity", "paketUpmPackageEnabled = true")
@@ -133,15 +131,17 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
         def packageManifestFile = new File(packageDirectory, "package.json")
 
         packageManifestFile.file
-        manifestJson.file
 
         def packageManifest = new JsonSlurper().parse(packageManifestFile) as Map<String, Object>
         packageManifest['name'] == upmId
 
         where:
-        nugetId       | version | namespace                      | upmId
-        "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
-        "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
+        rooted | nugetId       | version | namespace                      | upmId
+        false  | "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
+        false  | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
+        true  | "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
+        true  | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
+        id = "${nugetId[0]}${version[0]}"
     }
 
 }
