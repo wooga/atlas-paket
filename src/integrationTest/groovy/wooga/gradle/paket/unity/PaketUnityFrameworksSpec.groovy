@@ -108,9 +108,9 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
 
         and: "generated paket files"
         def paketDeps = new PaketDependencies()
-            .withNugetSource()
-            .withDependency(nugetId, version)
-            .withFrameworks(FrameworkRestriction.NetStandard2)
+                .withNugetSource()
+                .withDependency(nugetId, version)
+                .withFrameworks(FrameworkRestriction.NetStandard2)
 
         generateDependenciesFile(paketDeps)
         generateReferencesFile(paketDeps, unityProjDir)
@@ -139,9 +139,8 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
         rooted | nugetId       | version | namespace                      | upmId
         false  | "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
         false  | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
-        true  | "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
-        true  | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
-        id = "${nugetId[0]}${version[0]}"
+        true   | "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
+        true   | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
     }
 
 }

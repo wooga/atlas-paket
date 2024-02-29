@@ -116,15 +116,19 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     @Internal
     @Deprecated
     String getPackagesDirectory() {
-        paketPackagesDirectory
+        return paketPackagesDirectory.canonicalPath
     }
 
     /**
      * @return The path to where paket extracts the downloaded packages
      */
     @Internal
-    String getPaketPackagesDirectory() {
-        new File(project.projectDir, "packages").canonicalPath
+    File getPaketPackagesDirectory() {
+        // The MacOS Java implementation resolves 'Packages' and 'packages' in separate, as if it was on a unix system.
+        // However, MacOS actually treat those two folders as the same, so we use .canonicalPath to make sure that we get the
+        // correct capitalization on the existing folder.
+        def normalizedPath = new File(project.projectDir, "packages").canonicalPath
+        return new File(normalizedPath)
     }
 
     /**
@@ -206,6 +210,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         if (isPaketUpmPackageEnabled().get()) {
             logger.info("Update Nuget2Upm PackageId Cache")
             nugetToUpmCache = new NugetToUpmPackageIdCache(project,
+                paketPackagesDirectory,
                 inputFiles,
                 outputDirectory,
                 paketUpmPackageManifests,
@@ -225,7 +230,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
             void execute(InputFileDetails outOfDate) {
                 if (inputFiles.contains(outOfDate.file)) {
                     // Compose the path where the package file should be copied to
-                    def outputPath = transformInputToOutputPath(outOfDate.file, project.file(getPaketPackagesDirectory()))
+                    def outputPath = transformInputToOutputPath(outOfDate.file, paketPackagesDirectory)
                     logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
                     FileUtils.copyFile(outOfDate.file, outputPath)
                     assert outputPath.exists()
@@ -240,12 +245,12 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 removed.file.delete()
 
                 // Delete the files that were copied over from the paket packages
-                def outputPath = transformInputToOutputPath(removed.file, project.file(getPaketPackagesDirectory()))
+                def outputPath = transformInputToOutputPath(removed.file, paketPackagesDirectory)
                 outputPath.delete()
 
                 // delete generated package.jsons
                 if (isPaketUpmPackageEnabled().get()) {
-                    def relativePath = project.file(getPaketPackagesDirectory()).toURI().relativize(removed.file.toURI()).getPath()
+                    def relativePath = paketPackagesDirectory.toURI().relativize(removed.file.toURI()).getPath()
                     def paketId = relativePath.split("/").toList()[0]
                     def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), PACKAGE_JSON).toFile()
                     def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "${PACKAGE_JSON}.meta").toFile()

@@ -1,5 +1,6 @@
 package wooga.gradle.paket.unity.internal
 
+import com.wooga.gradle.PlatformUtils
 import groovy.json.JsonSlurper
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -20,6 +21,7 @@ class NugetToUpmPackageIdCache {
     static final String DISPLAY_NAME = "displayName"
 
     final Project project
+    final File paketPackagesDirectory
     final FileCollection inputFiles
     final File outputDirectory
     final MapProperty<String, Map<String, Object>> paketUpmPackageManifests
@@ -28,11 +30,13 @@ class NugetToUpmPackageIdCache {
     final String defaultNamespace
 
     NugetToUpmPackageIdCache(Project project,
+            File paketPackagesDirectory,
                              FileCollection inputs,
                              File outputDirectory,
                              MapProperty<String, Map<String, Object>> packageManifests,
                              String namespace = "com.wooga.nuget") {
         this.project = project
+        this.paketPackagesDirectory = paketPackagesDirectory
         this.inputFiles = inputs
         this.outputDirectory = outputDirectory
         this.paketUpmPackageManifests = packageManifests
@@ -60,7 +64,7 @@ class NugetToUpmPackageIdCache {
     }
 
     private Path getAbsolutePath(String directory) {
-        project.file(directory).toPath().toAbsolutePath().normalize()
+        return project.file(directory).toPath().toAbsolutePath()
     }
 
     private Map<String, Path> findPackageJsons(Path dirPath) {
@@ -80,19 +84,21 @@ class NugetToUpmPackageIdCache {
     }
 
     private void populateCacheFromInputFiles() {
-        def packagesDirPath = getAbsolutePath("packages")
-        def packageJsonMap = findPackageJsons(packagesDirPath)
+
+        def paketPackagesDirPath = paketPackagesDirectory.toPath()
+          def packageJsonMap = findPackageJsons(paketPackagesDirPath)
 
         inputFiles.each {
-            def relativePath = packagesDirPath.relativize(getAbsolutePath(it.path))
-            def paketId = relativePath[0].toString()
+            def filePath = getAbsolutePath(it.path)
+            def relativeFilePath = paketPackagesDirPath.relativize(filePath)
+            def paketId = relativeFilePath[0].toString()
             if (!packageJsonMap.containsKey(paketId)) {
                 def upmName = generateUpmId(paketId)
                 nugetToUPMPackageIdCache[paketId] = upmName
             }
         }
         packageJsonMap.each { paketId, packagePath ->
-            updateCacheFromPackageJson(packagesDirPath.resolve(packagePath), paketId)
+            updateCacheFromPackageJson(paketPackagesDirPath.resolve(packagePath), paketId)
         }
     }
 
