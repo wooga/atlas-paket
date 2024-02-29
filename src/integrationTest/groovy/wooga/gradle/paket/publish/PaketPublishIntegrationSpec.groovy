@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.publish
 
-import groovy.json.StringEscapeUtils
+
 import org.jfrog.artifactory.client.Artifactory
 import org.jfrog.artifactory.client.ArtifactoryClientBuilder
 import org.jfrog.artifactory.client.model.RepoPath
@@ -33,7 +33,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     @Shared
     def version = "1.0.0"
 
-    def uniquPackagePostfix() {
+    static def uniquePackagePostfix() {
         String key = "TRAVIS_JOB_NUMBER"
         def env = System.getenv()
         if (env.containsKey(key)) {
@@ -43,7 +43,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     }
 
     @Shared
-    def packageID = "Wooga.Test" + uniquPackagePostfix()
+    def packageID = "Wooga.Test" + uniquePackagePostfix()
 
     @Shared
     def repoName = "integration"

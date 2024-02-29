@@ -1,11 +1,10 @@
 package wooga.gradle.paket.unity.internal
 
-import com.wooga.gradle.PlatformUtils
+
 import groovy.json.JsonSlurper
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.MapProperty
-import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -16,9 +15,9 @@ import java.nio.file.Path
  */
 class NugetToUpmPackageIdCache {
 
-    static final String PACKAGE_JSON = "package.json"
-    static final String NAME = "name"
-    static final String DISPLAY_NAME = "displayName"
+    static final String packageManifestFileName = "package.json"
+    static final String namePropertyKey = "name"
+    static final String displayNamePropertyKey = "displayName"
 
     final Project project
     final File paketPackagesDirectory
@@ -30,7 +29,7 @@ class NugetToUpmPackageIdCache {
     final String defaultNamespace
 
     NugetToUpmPackageIdCache(Project project,
-            File paketPackagesDirectory,
+                             File paketPackagesDirectory,
                              FileCollection inputs,
                              File outputDirectory,
                              MapProperty<String, Map<String, Object>> packageManifests,
@@ -60,7 +59,7 @@ class NugetToUpmPackageIdCache {
 
     private String generateUpmId(String paketId) {
         def manifestOverrides = paketUpmPackageManifests.getting(paketId)?.getOrElse([:])
-        manifestOverrides[NAME] ?: "${defaultNamespace}.${paketId.toLowerCase()}"
+        manifestOverrides[namePropertyKey] ?: "${defaultNamespace}.${paketId.toLowerCase()}"
     }
 
     private Path getAbsolutePath(String directory) {
@@ -70,7 +69,7 @@ class NugetToUpmPackageIdCache {
     private Map<String, Path> findPackageJsons(Path dirPath) {
         Map<String, Path> map = [:]
         inputFiles.each {
-            if (it.name == PACKAGE_JSON) {
+            if (it.name == packageManifestFileName) {
                 def relativePath = dirPath.relativize(getAbsolutePath(it.path))
                 def paketId = relativePath[0].toString()
                 if (isNewOrCloserJson(relativePath, map[paketId])) map[paketId] = relativePath
@@ -86,18 +85,18 @@ class NugetToUpmPackageIdCache {
     private void populateCacheFromInputFiles() {
 
         def paketPackagesDirPath = paketPackagesDirectory.toPath()
-          def packageJsonMap = findPackageJsons(paketPackagesDirPath)
+        def packageManifestMap = findPackageJsons(paketPackagesDirPath)
 
         inputFiles.each {
             def filePath = getAbsolutePath(it.path)
             def relativeFilePath = paketPackagesDirPath.relativize(filePath)
             def paketId = relativeFilePath[0].toString()
-            if (!packageJsonMap.containsKey(paketId)) {
+            if (!packageManifestMap.containsKey(paketId)) {
                 def upmName = generateUpmId(paketId)
                 nugetToUPMPackageIdCache[paketId] = upmName
             }
         }
-        packageJsonMap.each { paketId, packagePath ->
+        packageManifestMap.each { paketId, packagePath ->
             updateCacheFromPackageJson(paketPackagesDirPath.resolve(packagePath), paketId)
         }
     }
@@ -105,21 +104,21 @@ class NugetToUpmPackageIdCache {
     private void updateCacheFromPackageJson(Path packagePath, String paketId) {
         if (Files.exists(packagePath)) {
             try {
-                def pkgJsonMap = new JsonSlurper().parse(packagePath)
-                if (pkgJsonMap.containsKey(NAME)) nugetToUPMPackageIdCache[paketId] = pkgJsonMap[NAME]
+                def packageManifest = new JsonSlurper().parse(packagePath)
+                if (packageManifest.containsKey(namePropertyKey)) nugetToUPMPackageIdCache[paketId] = packageManifest[namePropertyKey]
             } catch (Exception e) {
-                project.logger.error("Failed to parse ${PACKAGE_JSON}", e)
+                project.logger.error("Failed to parse ${packageManifestFileName}", e)
             }
         }
     }
 
     private void populateCacheFromOutputDirectory() {
-        def outputPackageJsons = findOutputPackageJsons()
-        outputPackageJsons.each {
-            def pkgJsonMap = new JsonSlurper().parse(it.value)
-            if (pkgJsonMap.containsKey(NAME) && pkgJsonMap.containsKey(DISPLAY_NAME)) {
-                def paketId = pkgJsonMap[DISPLAY_NAME]
-                if (!nugetToUPMPackageIdCache.containsKey(paketId)) nugetToUPMPackageIdCache[paketId] = pkgJsonMap[NAME]
+        def outputPackageManifests = findOutputPackageJsons()
+        outputPackageManifests.each {
+            def packageManifestMap = new JsonSlurper().parse(it.value)
+            if (packageManifestMap.containsKey(namePropertyKey) && packageManifestMap.containsKey(displayNamePropertyKey)) {
+                def paketId = packageManifestMap[displayNamePropertyKey]
+                if (!nugetToUPMPackageIdCache.containsKey(paketId)) nugetToUPMPackageIdCache[paketId] = packageManifestMap[namePropertyKey]
             }
         }
     }
@@ -127,20 +126,20 @@ class NugetToUpmPackageIdCache {
     private LinkedHashMap<String, File> findOutputPackageJsons() {
         LinkedHashMap<String, File> map = [:]
         project.fileTree(outputDirectory).visit {
-            if (it.name == PACKAGE_JSON) map[it.relativePath.segments[0]] = it.file
+            if (it.name == packageManifestFileName) map[it.relativePath.segments[0]] = it.file
         }
         return map
     }
 
-    // TODO: Parse the version?
-     Map<String, Object> generateManifest(String nugetId, Map<String, Object> overrides = [:]) {
+    // TODO: Parse the version? Though it's not needed since these end up getting consumed as "Custom" packages by Unity
+    Map<String, Object> generateManifest(String nugetId, Map<String, Object> overrides = [:]) {
 
         def upmmId = getUpmId(nugetId)
 
         Map<String, Object> base = [
-            name: upmmId,
+            name       : upmmId,
             displayName: nugetId,
-            version: "0.0.0"
+            version    : "0.0.0"
         ]
         base.putAll(overrides)
         return base

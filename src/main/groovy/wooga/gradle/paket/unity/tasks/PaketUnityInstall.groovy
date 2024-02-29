@@ -106,11 +106,12 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     public final static String assemblyDefinitionFileExtension = "asmdef"
 
     /**
-     * @return the installation output directory
+     * @return The installation output directory
      */
     @OutputDirectory
     File getOutputDirectory() {
-        new File(getReferencesFile().getParentFile(), "Assets/${getPaketOutputDirectoryName()}")
+        // TODO: Update. How the heck does this work nowadays when the Unity project directory is at the root??
+        new File(referencesFile.parentFile, "Assets/${getPaketOutputDirectoryName()}")
     }
 
     @Internal
@@ -165,9 +166,9 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 def locks = new PaketLock(getLockFile())
                 def packages = []
 
-                locks.getAllDependencies(references.nugets).each { nuget ->
-                    if (!PaketUnwrapUPMPackages.isUPMWrapper(nuget, project) && nugetToUpmCache.containsKey(nuget)) {
-                        packages << [nuget, new File(outputDirectory, nugetToUpmCache.getUpmId(nuget))]
+                locks.getAllDependencies(references.nugets).each { nugetId ->
+                    if (!PaketUnwrapUPMPackages.isUPMWrapper(nugetId, project) && nugetToUpmCache.containsKey(nugetId)) {
+                        packages << [nugetId, new File(outputDirectory, nugetToUpmCache.getUpmId(nugetId))]
                     }
                 }
 
@@ -179,19 +180,19 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     }
 
     /**
-     * @param nuget The name of the package
-     * @return The files to be copied over from this package
+     * @param nugetId The name of the package
+     * @return The files to be copied over from the package with the given id
      */
-    Set<File> getFilesForPackage(String nuget) {
-        def packagesDirectory = getPaketPackagesDirectory();
+    Set<File> getFilesForPackage(String nugetId) {
+        def packagesDirectory = paketPackagesDirectory;
         def fileTree = project.fileTree(packagesDirectory)
-        fileTree.include("${nuget}/content/**")
+        fileTree.include("${nugetId}/content/**")
 
         getFrameworks().each({
-            fileTree.include("${nuget}/lib/${it}/**")
+            fileTree.include("${nugetId}/lib/${it}/**")
         })
 
-        fileTree.include("${nuget}/lib/*.dll")
+        fileTree.include("${nugetId}/lib/*.dll")
 
         fileTree.exclude("**/*.pdb")
         fileTree.exclude("**/Meta")
@@ -204,6 +205,11 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         return files
     }
 
+    /**
+     * Executes the copy of the packages downloaded by paket
+     * into the appropriate Unity project's package directory.
+     * @param inputs The input files
+     */
     @TaskAction
     protected performCopy(IncrementalTaskInputs inputs) {
         logger.quiet("include libs with frameworks: " + getFrameworks().join(", "))
@@ -248,7 +254,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 def outputPath = transformInputToOutputPath(removed.file, paketPackagesDirectory)
                 outputPath.delete()
 
-                // delete generated package.jsons
+                // Delete generated package.jsons
                 if (isPaketUpmPackageEnabled().get()) {
                     def relativePath = paketPackagesDirectory.toURI().relativize(removed.file.toURI()).getPath()
                     def paketId = relativePath.split("/").toList()[0]
@@ -291,7 +297,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     protected void cleanOutputDirectory() {
         def tree = project.fileTree(getOutputDirectory())
 
-        logger.info("delete files in directory: ${getOutputDirectory()}")
+        logger.info("Delete files in directory: ${getOutputDirectory()}")
 
         // If the strategy is manual, do not delete asmdefs
         if (getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
@@ -331,7 +337,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     /**
      * @param inputFile A file from an extracted nuget package directory
      * @param paketDirectory The base directory for the file. It it used to extract a relative folder structure.
-     * @return
+     * @return A file mapped to the output directory, which keeps the same relative directory structure
      */
     private File transformInputToOutputPath(File inputFile, File paketDirectory) {
         def relativePath = paketDirectory.toURI().relativize(inputFile.toURI()).path
