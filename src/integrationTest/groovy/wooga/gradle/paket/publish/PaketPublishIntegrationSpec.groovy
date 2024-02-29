@@ -71,7 +71,19 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     }
 
     def setupSpec() {
-        String artifactoryCredentials = System.getenv("artifactoryCredentials")
+        String username
+        String password
+
+        String artifactoryCredentials
+        def usr = System.getenv("ATLAS_READ_USR")
+        def pwd = System.getenv("ATLAS_READ_PSW")
+        if (usr && pwd) {
+            artifactoryCredentials = "${usr}:${pwd}"
+        }
+        else{
+            artifactoryCredentials = System.getenv("artifactoryCredentials")
+        }
+
         assert artifactoryCredentials
         def credentials = artifactoryCredentials.split(':')
         artifactory = ArtifactoryClientBuilder.create()
@@ -238,7 +250,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
                 repositories {
                     nuget {
                         name "$repoName"
-                        path "$escapedPath"
+                        path ${wrapValueBasedOnType(escapedPath, String)}
                     }
                 }
             }

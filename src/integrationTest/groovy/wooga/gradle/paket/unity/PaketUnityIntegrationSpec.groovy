@@ -474,6 +474,7 @@ class PaketUnityIntegrationSpec extends PaketIntegrationSpec implements PaketFix
         "Deletes"         | "upm-package"     | true       | "com.wooga.delete-me"        | ""                           | true
     }
 
+
     def "Shared paket and unity install-dir install"() {
         given:
         def unityProjDir = projectDir
@@ -509,7 +510,6 @@ class PaketUnityIntegrationSpec extends PaketIntegrationSpec implements PaketFix
         then:
         result.success
         def pkgJsonFile = new File(pktUnityInstallDir, "package.json")
-
         pkgJsonFile.file
         manifestJson.file
 
