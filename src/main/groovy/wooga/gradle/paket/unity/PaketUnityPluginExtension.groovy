@@ -36,7 +36,9 @@ interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackag
 
     /**
      * @return  the paket unity output directory name. Relative to `<unity_project>/Assets`
+     * @deprecated No longer used since the resolution of the package directory is done internally
      */
+    @Deprecated
     String getPaketOutputDirectoryName()
 
     /**

@@ -34,10 +34,8 @@ import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
  * Example:
  * <pre>
  * {@code
- *     plugins {
- *         id 'net.wooga.paket-unity' version '0.10.1'
- *     }
- * }
+ *     plugins {*         id 'net.wooga.paket-unity' version '0.10.1'
+ *}*}
  * </pre>
  */
 class PaketUnityPlugin implements Plugin<Project> {
@@ -46,8 +44,11 @@ class PaketUnityPlugin implements Plugin<Project> {
 
     static final String GROUP = "PaketUnity"
     static final String EXTENSION_NAME = 'paketUnity'
-    static final String INSTALL_TASK_NAME = "paketUnityInstall"
-    static final String UNWRAP_UPM_TASK_NAME = "paketUnityUnwrapUPMPackages"
+
+    static final String TASK_PREFIX = EXTENSION_NAME
+    static final String INSTALL_TASK_NAME = TASK_PREFIX + "Install"
+    static final String UNWRAP_UPM_TASK_NAME = TASK_PREFIX + "UnwrapUPMPackages"
+
     @Override
     void apply(Project project) {
         this.project = project
@@ -60,11 +61,26 @@ class PaketUnityPlugin implements Plugin<Project> {
         createPaketUnityInstallTasks(project, extension)
         createPaketUpmUnwrapTasks(project, extension)
 
-        project.tasks.matching({ it.name.startsWith("paketUnity")}).configureEach { task ->
+        // Set the task predicates
+        project.tasks.matching({ it.name.startsWith(TASK_PREFIX) }).configureEach { task ->
             task.onlyIf {
-                extension.getPaketReferencesFiles() && !extension.getPaketReferencesFiles().isEmpty() &&
-                        extension.getPaketDependenciesFile() && extension.getPaketDependenciesFile().exists() &&
-                        extension.getPaketLockFile() && extension.getPaketLockFile().exists()
+
+                if (!extension.paketReferencesFiles || extension.paketReferencesFiles.empty) {
+                    logger.warn("Will skip ${it.name} as there are no paket reference files were found in the project")
+                    return false
+                }
+
+                if (!extension.paketDependenciesFile || !extension.paketDependenciesFile.exists()) {
+                    logger.warn("Will skip ${it.name} as there are no paket dependencies files were found in the project")
+                    return false
+                }
+
+                if (!extension.paketLockFile || !extension.paketLockFile.exists()){
+                    logger.warn("Will skip ${it.name} as there are no paket lock files were found in the project")
+                    return false
+                }
+
+                return true
             }
         }
 
@@ -84,7 +100,6 @@ class PaketUnityPlugin implements Plugin<Project> {
             installProvider.configure { PaketUnityInstall t ->
                 t.group = GROUP
                 t.description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
-                t.conventionMapping.map("paketOutputDirectoryName", { extension.getPaketOutputDirectoryName() })
                 t.conventionMapping.map("includeAssemblyDefinitions", { extension.getIncludeAssemblyDefinitions() })
                 t.conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
                 t.conventionMapping.map("preInstalledUpmPackages", { extension.getPreInstalledUpmPackages() })
@@ -99,7 +114,7 @@ class PaketUnityPlugin implements Plugin<Project> {
         }
         def lifecycleTaskProvider = project.tasks.register(INSTALL_TASK_NAME)
 
-        lifecycleTaskProvider.configure {lifecycleTask ->
+        lifecycleTaskProvider.configure { lifecycleTask ->
             lifecycleTask.group = GROUP
             lifecycleTask.description = "Installs dependencies for all Unity3d projects"
             installProviders.each { installTaskProvider ->
@@ -122,7 +137,7 @@ class PaketUnityPlugin implements Plugin<Project> {
         }
         def lifecycleTaskProvider = project.tasks.register(UNWRAP_UPM_TASK_NAME)
 
-        lifecycleTaskProvider.configure {lifecycleTask ->
+        lifecycleTaskProvider.configure { lifecycleTask ->
             lifecycleTask.group = GROUP
             lifecycleTask.description = "Unwraps Wrapped UPM dependencies for all Unity3d projects"
             unwrapProviders.each { unwrapTaskProvider ->
@@ -145,10 +160,10 @@ class PaketUnityPlugin implements Plugin<Project> {
 
             project.tasks.withType(PaketUpdate).configureEach(configClosure)
 
-            [paketInstall, paketRestore].each {it.configure(configClosure) }
+            [paketInstall, paketRestore].each { it.configure(configClosure) }
 
-            project.tasks.withType(PaketUnityInstall).configureEach{ t -> t.finalizedBy(paketUpmUnwrap)}
-            paketUnityInstall.configure{t -> t.finalizedBy(paketUpmUnwrap)}
+            project.tasks.withType(PaketUnityInstall).configureEach { t -> t.finalizedBy(paketUpmUnwrap) }
+            paketUnityInstall.configure { t -> t.finalizedBy(paketUpmUnwrap) }
 
         }
     }

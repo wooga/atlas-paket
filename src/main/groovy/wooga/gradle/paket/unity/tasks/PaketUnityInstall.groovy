@@ -17,18 +17,15 @@
 
 package wooga.gradle.paket.unity.tasks
 
-
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
-import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
 import wooga.gradle.paket.base.utils.internal.PaketLock
-import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.unity.PaketUpmPackageSpec
@@ -53,32 +50,13 @@ import java.nio.file.Paths
  *}*}
  * </pre>
  */
-class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
-    static final String PACKAGE_JSON = "package.json"
-
-    /**
-     * @return the path to a {@code paket.unity3d.references} file
-     */
-    @InputFile
-    File referencesFile
-
-    /**
-     * @return the path to a {@code paket.lock} file
-     */
-    @InputFile
-    File lockFile
+class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackageSpec {
 
     /**
      * @return a list of .NET framework identifiers.
      */
     @Input
     List<String> frameworks
-
-    /**
-     * The name of the output directory with the unity projects {@code Assets} folder.
-     */
-    @Input
-    String paketOutputDirectoryName
 
     /**
      * Whether assembly definition files (.asmdef) should be included during installation
@@ -93,6 +71,9 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     @Optional
     List<String> preInstalledUpmPackages
 
+    /**
+     * Informs how to handle assembly definition files during installation
+     */
     @Input
     AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
 
@@ -103,57 +84,37 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     @Internal
     NugetToUpmPackageIdCache nugetToUpmCache
 
-    public final static String assemblyDefinitionFileExtension = "asmdef"
-
-    /**
-     * @return The installation output directory
-     */
-    @OutputDirectory
-    File getOutputDirectory() {
-        // TODO: Update. How the heck does this work nowadays when the Unity project directory is at the root??
-        new File(referencesFile.parentFile, "Assets/${getPaketOutputDirectoryName()}")
-    }
-
-    @Internal
-    @Deprecated
-    String getPackagesDirectory() {
-        return paketPackagesDirectory.canonicalPath
-    }
-
-    /**
-     * @return The path to where paket extracts the downloaded packages
-     */
-    @Internal
-    File getPaketPackagesDirectory() {
-        // The MacOS Java implementation resolves 'Packages' and 'packages' in separate, as if it was on a unix system.
-        // However, MacOS actually treat those two folders as the same, so we use .canonicalPath to make sure that we get the
-        // correct capitalization on the existing folder.
-        def normalizedPath = new File(project.projectDir, "packages").canonicalPath
-        return new File(normalizedPath)
-    }
-
     /**
      * @return the files to install into the Unity3D project.
      */
     @InputFiles
     FileCollection getInputFiles() {
-        Set<File> files = []
-        def references = new PaketUnityReferences(getReferencesFile())
+        collectInputFiles(nugetId -> {
 
-        if (!getLockFile().exists()) {
-            return null
-        }
-
-        def locks = new PaketLock(getLockFile())
-        def dependencies = locks.getAllDependencies(references.nugets)
-        dependencies.each { nuget ->
-            if (!PaketUnwrapUPMPackages.isUPMWrapper(nuget, project)) {
-                def depFiles = getFilesForPackage(nuget)
-                files << depFiles
+            if (isUPMWrapper(nugetId)){
+                return new HashSet<File>()
             }
-        }
 
-        project.files(files)
+            def packagesDirectory = paketPackagesDirectory;
+            def fileTree = project.fileTree(packagesDirectory)
+            fileTree.include("${nugetId}/content/**")
+
+            getFrameworks().each({
+                fileTree.include("${nugetId}/lib/${it}/**")
+            })
+
+            fileTree.include("${nugetId}/lib/*.dll")
+
+            fileTree.exclude("**/*.pdb")
+            fileTree.exclude("**/Meta")
+
+            if (!getIncludeAssemblyDefinitions()) {
+                fileTree.exclude("**/*.${assemblyDefinitionFileExtension}")
+            }
+
+            def files = fileTree.files
+            return files
+        })
     }
 
     PaketUnityInstall() {
@@ -161,13 +122,13 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         group = PaketUnityPlugin.GROUP
 
         this.doLast {
-            if (isPaketUpmPackageEnabled().get()) {
-                def references = new PaketUnityReferences(getReferencesFile())
-                def locks = new PaketLock(getLockFile())
+            if (paketUpmPackageEnabled.get()) {
+                def references = new PaketUnityReferences(referencesFile)
+                def locks = new PaketLock(lockFile)
                 def packages = []
 
                 locks.getAllDependencies(references.nugets).each { nugetId ->
-                    if (!PaketUnwrapUPMPackages.isUPMWrapper(nugetId, project) && nugetToUpmCache.containsKey(nugetId)) {
+                    if (!isUPMWrapper(nugetId) && nugetToUpmCache.containsKey(nugetId)) {
                         packages << [nugetId, new File(outputDirectory, nugetToUpmCache.getUpmId(nugetId))]
                     }
                 }
@@ -180,41 +141,16 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     }
 
     /**
-     * @param nugetId The name of the package
-     * @return The files to be copied over from the package with the given id
-     */
-    Set<File> getFilesForPackage(String nugetId) {
-        def packagesDirectory = paketPackagesDirectory;
-        def fileTree = project.fileTree(packagesDirectory)
-        fileTree.include("${nugetId}/content/**")
-
-        getFrameworks().each({
-            fileTree.include("${nugetId}/lib/${it}/**")
-        })
-
-        fileTree.include("${nugetId}/lib/*.dll")
-
-        fileTree.exclude("**/*.pdb")
-        fileTree.exclude("**/Meta")
-
-        if (!getIncludeAssemblyDefinitions()) {
-            fileTree.exclude("**/*.${assemblyDefinitionFileExtension}")
-        }
-
-        def files = fileTree.files
-        return files
-    }
-
-    /**
      * Executes the copy of the packages downloaded by paket
      * into the appropriate Unity project's package directory.
      * @param inputs The input files
      */
     @TaskAction
     protected performCopy(IncrementalTaskInputs inputs) {
-        logger.quiet("include libs with frameworks: " + getFrameworks().join(", "))
-        if (isPaketUpmPackageEnabled().get()) {
-            logger.info("Update Nuget2Upm PackageId Cache")
+        logger.quiet("> Now performing copy of packages from paket to Unity project. Will include libs with frameworks: " + getFrameworks().join(", "))
+
+        if (paketUpmPackageEnabled.get()) {
+            logger.info("> Will setup paket packages alongside the UPM packages")
             nugetToUpmCache = new NugetToUpmPackageIdCache(project,
                 paketPackagesDirectory,
                 inputFiles,
@@ -237,7 +173,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 if (inputFiles.contains(outOfDate.file)) {
                     // Compose the path where the package file should be copied to
                     def outputPath = transformInputToOutputPath(outOfDate.file, paketPackagesDirectory)
-                    logger.info("${outOfDate.added ? "install" : "update"}: ${outputPath}")
+                    logger.info("${outOfDate.added ? "+ INSTALL" : "+= UPDATE"}: ${outputPath}")
                     FileUtils.copyFile(outOfDate.file, outputPath)
                     assert outputPath.exists()
                 }
@@ -247,7 +183,7 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
         inputs.removed(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails removed) {
-                logger.info("remove: ${removed.file}")
+                logger.info("- REMOVED: ${removed.file}")
                 removed.file.delete()
 
                 // Delete the files that were copied over from the paket packages
@@ -255,11 +191,11 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
                 outputPath.delete()
 
                 // Delete generated package.jsons
-                if (isPaketUpmPackageEnabled().get()) {
+                if (paketUpmPackageEnabled.get()) {
                     def relativePath = paketPackagesDirectory.toURI().relativize(removed.file.toURI()).getPath()
                     def paketId = relativePath.split("/").toList()[0]
-                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), PACKAGE_JSON).toFile()
-                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "${PACKAGE_JSON}.meta").toFile()
+                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), packageManifestFileName).toFile()
+                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "${packageManifestFileName}.meta").toFile()
                     if (packageJson.exists()) packageJson.delete()
                     if (packageJsonMeta.exists()) packageJsonMeta.delete()
                 }
@@ -295,19 +231,19 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
     }
 
     protected void cleanOutputDirectory() {
-        def tree = project.fileTree(getOutputDirectory())
 
-        logger.info("Delete files in directory: ${getOutputDirectory()}")
+        def tree = project.fileTree(outputDirectory)
+        logger.info("> Now cleaning output directory: ${outputDirectory}")
 
         // If the strategy is manual, do not delete asmdefs
-        if (getAssemblyDefinitionFileStrategy() == AssemblyDefinitionFileStrategy.manual) {
+        if (assemblyDefinitionFileStrategy == AssemblyDefinitionFileStrategy.manual) {
             tree.exclude("**/*.asmdef")
             tree.exclude("**/*.asmdef.meta")
         }
         if (isPaketUpmPackageEnabled().get()) {
             def upmPackageDirs = []
             project.file(getOutputDirectory()).eachDir {
-                if (!(it.name in preInstalledUpmPackages) && new File(it, PACKAGE_JSON).exists()) {
+                if (!(it.name in preInstalledUpmPackages) && new File(it, packageManifestFileName).exists()) {
                     upmPackageDirs << it
                 }
             }
@@ -340,22 +276,32 @@ class PaketUnityInstall extends ConventionTask implements PaketUpmPackageSpec {
      * @return A file mapped to the output directory, which keeps the same relative directory structure
      */
     private File transformInputToOutputPath(File inputFile, File paketDirectory) {
+
+        // We get the relative file structure from where the file was in the paket directory
+        inputFile = new File(inputFile.canonicalPath)
         def relativePath = paketDirectory.toURI().relativize(inputFile.toURI()).path
+
+        //  Also remove the intermediary paket "content" folder
         def pathSegments = relativePath.split('/').toList()
-        // Remove the intermediary paket "content" folder
         pathSegments.remove(1)
 
-        if (isPaketUpmPackageEnabled().get()) {
+        if (paketUpmPackageEnabled.get()) {
             def nugetId = pathSegments.remove(0)
-            if (inputFile.name in [PACKAGE_JSON, "${PACKAGE_JSON}.meta"]) {
-                return Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(nugetId), inputFile.name).toFile()
+            if (inputFile.name in [packageManifestFileName, "${packageManifestFileName}.meta"]) {
+                return Paths.get(outputDirectory.absolutePath, nugetToUpmCache.getUpmId(nugetId), inputFile.name).toFile()
             }
             // Replace the nugetId with upmId
             pathSegments.add(0, nugetToUpmCache.getUpmId(nugetId))
-            return new File(getOutputDirectory(), pathSegments.join(File.separator))
+            return new File(outputDirectory, pathSegments.join(File.separator))
         }
 
-        def file = new File(getOutputDirectory(), pathSegments.join(File.separator))
+        def file = new File(outputDirectory, pathSegments.join(File.separator))
         return file
+    }
+
+    @Internal
+    @Deprecated
+    String getPackagesDirectory() {
+        return paketPackagesDirectory.canonicalPath
     }
 }
