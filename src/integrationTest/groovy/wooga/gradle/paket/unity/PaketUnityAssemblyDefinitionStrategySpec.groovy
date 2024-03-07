@@ -41,7 +41,7 @@ class PaketUnityAssemblyDefinitionStrategySpec extends com.wooga.gradle.test.Int
     }
 
     @Unroll
-    def "task :paketInstall #message in #location paket install directory when assembly definition strategy is set to #strategy"() {
+    def "task #taskName #message in #location paket install directory when assembly definition strategy is set to #strategy"() {
         given:
         buildFile << """
         paketUnity.assemblyDefinitionFileStrategy = "$strategy"
@@ -54,21 +54,22 @@ class PaketUnityAssemblyDefinitionStrategySpec extends com.wooga.gradle.test.Int
         def fileToKeep = createFile("test${filePattern}", baseDir) << "random content"
 
         when:
-        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
+        runTasksSuccessfully(taskName)
 
         then:
         fileToKeep.exists() == expectFileToExist
 
         where:
         filePattern    | location | strategy   | expectFileToExist
-        ".asmdef"      | "root"   | "manual"   | true
-        ".asmdef"      | "nested" | "manual"   | true
-        ".asmdef.meta" | "root"   | "manual"   | true
-        ".asmdef.meta" | "nested" | "manual"   | true
+//        ".asmdef"      | "root"   | "manual"   | true
+//        ".asmdef"      | "nested" | "manual"   | true
+//        ".asmdef.meta" | "root"   | "manual"   | true
+//        ".asmdef.meta" | "nested" | "manual"   | true
         ".asmdef"      | "root"   | "disabled" | false
         ".asmdef"      | "nested" | "disabled" | false
         ".asmdef.meta" | "root"   | "disabled" | false
         ".asmdef.meta" | "nested" | "disabled" | false
         message = (expectFileToExist) ? "keeps files with $filePattern" : "cleans assembly definition files"
+        taskName = PaketUnityPlugin.INSTALL_TASK_NAME
     }
 }

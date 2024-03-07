@@ -46,7 +46,6 @@ import java.nio.file.Paths
  *     task unityInstall(type:wooga.gradle.paket.unity.tasks.PaketUnityInstall) {*         referencesFile = file('paket.unity3D.references')
  *         lockFile = file('../paket.lock')
  *         frameworks = ["net11", "net20", "net35"]
- *         paketOutputDirectoryName = "PaketUnity3D"
  *}*}
  * </pre>
  */
@@ -162,7 +161,7 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
         }
 
         if (!inputs.incremental) {
-            if (getOutputDirectory().exists()) {
+            if (outputDirectory.exists()) {
                 cleanOutputDirectory()
             }
         }
@@ -193,11 +192,11 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
                 // Delete generated package.jsons
                 if (paketUpmPackageEnabled.get()) {
                     def relativePath = paketPackagesDirectory.toURI().relativize(removed.file.toURI()).getPath()
-                    def paketId = relativePath.split("/").toList()[0]
-                    def packageJson = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), packageManifestFileName).toFile()
-                    def packageJsonMeta = Paths.get(getOutputDirectory().absolutePath, nugetToUpmCache.getUpmId(paketId), "${packageManifestFileName}.meta").toFile()
-                    if (packageJson.exists()) packageJson.delete()
-                    if (packageJsonMeta.exists()) packageJsonMeta.delete()
+                    def nugetId = relativePath.split("/").toList()[0]
+                    def packageManifestFile = Paths.get(outputDirectory.absolutePath, nugetToUpmCache.getUpmId(nugetId), packageManifestFileName).toFile()
+                    def packageManifestMetaFile = Paths.get(outputDirectory.absolutePath, nugetToUpmCache.getUpmId(nugetId), "${packageManifestFileName}.meta").toFile()
+                    if (packageManifestFile.exists()) packageManifestFile.delete()
+                    if (packageManifestMetaFile.exists()) packageManifestMetaFile.delete()
                 }
 
                 File parent = outputPath.parentFile
@@ -240,9 +239,10 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
             tree.exclude("**/*.asmdef")
             tree.exclude("**/*.asmdef.meta")
         }
-        if (isPaketUpmPackageEnabled().get()) {
+
+        if (paketUpmPackageEnabled.get()) {
             def upmPackageDirs = []
-            project.file(getOutputDirectory()).eachDir {
+            project.file(outputDirectory).eachDir {
                 if (!(it.name in preInstalledUpmPackages) && new File(it, packageManifestFileName).exists()) {
                     upmPackageDirs << it
                 }
@@ -252,8 +252,9 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
             project.delete(tree)
         }
 
+        // Remove remaining empty directories
         def emptyDirs = []
-        project.fileTree(getOutputDirectory()).visit(new FileVisitor() {
+        project.fileTree(outputDirectory).visit(new FileVisitor() {
             @Override
             void visitDir(FileVisitDetails dirDetails) {
                 File f = dirDetails.file

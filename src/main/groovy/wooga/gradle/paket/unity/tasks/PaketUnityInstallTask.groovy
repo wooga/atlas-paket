@@ -34,8 +34,12 @@ abstract class PaketUnityInstallTask extends ConventionTask {
     @OutputDirectory
     @Internal
     File getOutputDirectory() {
-        new File(getReferencesFile().getParentFile(), "Packages")
+        // This changes depending on the convention
+        new File(referencesFile.parentFile, "Packages")
+        //new File(referencesFile.parentFile, "Assets/${legacyUnityPaketDirectoryName}")
     }
+
+    static final String legacyUnityPaketDirectoryName = "Paket.Unity3D"
 
     /**
      * @return The path to where paket originally installs (extracts) the downloaded packages

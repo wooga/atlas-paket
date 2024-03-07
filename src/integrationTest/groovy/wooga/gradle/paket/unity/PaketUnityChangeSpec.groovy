@@ -54,7 +54,7 @@ class PaketUnityChangeSpec extends PaketIntegrationSpec {
     }
 
     @Unroll
-    def "task :paketUnityInstall when #message was up to date #wasUpToDate"() {
+    def "task paketUnityInstall when #message was up to date #wasUpToDate"() {
         given: "a root project with a unity project"
 
         and: "paket dependency file"
@@ -117,7 +117,7 @@ class PaketUnityChangeSpec extends PaketIntegrationSpec {
     }
 
     @Unroll
-    def "task :paketUnityUnwrapUPMPackages when #message was up to date #wasUpToDate"() {
+    def "task paketUnityUnwrapUPMPackages when #message was up to date #wasUpToDate"() {
         given: "a root project with a unity project"
 
         and: "paket dependency file"

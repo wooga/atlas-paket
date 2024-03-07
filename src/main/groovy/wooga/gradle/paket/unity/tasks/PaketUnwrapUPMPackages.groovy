@@ -103,7 +103,7 @@ class PaketUnwrapUPMPackages extends PaketUnityInstallTask {
 
 
     private PaketUPMWrapperReference[] getWrappedUPMPackages() {
-        def references = new PaketUnityReferences(getReferencesFile())
+        def references = new PaketUnityReferences(referencesFile)
 
         if (!getLockFile().exists()) {
             return null

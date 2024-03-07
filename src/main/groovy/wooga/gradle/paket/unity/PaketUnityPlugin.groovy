@@ -94,8 +94,10 @@ class PaketUnityPlugin implements Plugin<Project> {
     }
 
     private static void createPaketUnityInstallTasks(final Project project, final PaketUnityPluginExtension extension) {
+        // Create an install task for EACH paket.unity3d.references file
         def installProviders = extension.paketReferencesFiles.files.collect { referenceFile ->
             def taskName = INSTALL_TASK_NAME + referenceFile.parentFile.name
+
             def installProvider = project.tasks.register(taskName, PaketUnityInstall)
             installProvider.configure { PaketUnityInstall t ->
                 t.group = GROUP
