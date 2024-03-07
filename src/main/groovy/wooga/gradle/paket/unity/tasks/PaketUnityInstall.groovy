@@ -48,7 +48,7 @@ import java.nio.file.Paths
  *}*}
  * </pre>
  */
-class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackageSpec {
+class PaketUnityInstall extends AbstractPaketUnityTask implements PaketUpmPackageSpec {
 
     /**
      * @return a list of .NET framework identifiers.
@@ -156,7 +156,7 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
                 inputFiles,
                 outputDirectory,
                 paketUpmPackageManifests,
-                defaultNamespace.get())
+                defaultUpmNamespace.get())
 
             nugetToUpmCache.dumpCacheToLog()
         }

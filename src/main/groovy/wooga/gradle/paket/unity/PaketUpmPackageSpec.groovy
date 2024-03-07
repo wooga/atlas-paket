@@ -35,15 +35,15 @@ trait PaketUpmPackageSpec implements BaseSpec {
      */
     @Input
     @Optional
-    Property<String> getDefaultNamespace() {
-        defaultNamespace
+    Property<String> getDefaultUpmNamespace() {
+        defaultUpmNamespace
     }
 
-    void setDefaultNamespace(String value) {
-        defaultNamespace.set(value)
+    void setDefaultUpmNamespace(String value) {
+        defaultUpmNamespace.set(value)
     }
 
-    private Property<String> defaultNamespace = objects.property(String)
+    private Property<String> defaultUpmNamespace = objects.property(String)
 
     /**
      *

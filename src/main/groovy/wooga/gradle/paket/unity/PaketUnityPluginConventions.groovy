@@ -22,5 +22,5 @@ class PaketUnityPluginConventions {
      /**
       * Default namespace used for generated packages
       */
-     static PropertyLookup defaultNamespace = new PropertyLookup("PAKET_UNITY_DEFAULT_NAMESPACE", "paketUnity.defaultNamespace","com.wooga.nuget")
+     static PropertyLookup defaultUpmNamespace = new PropertyLookup("PAKET_UNITY_DEFAULT_UPM_NAMESPACE", "paketUnity.defaulUpmNamespace","com.wooga.nuget")
 }

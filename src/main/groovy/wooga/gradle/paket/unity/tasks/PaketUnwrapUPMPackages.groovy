@@ -44,7 +44,7 @@ import wooga.gradle.paket.unity.PaketUnityPlugin
  *}*}
  * </pre>
  */
-class PaketUnwrapUPMPackages extends PaketUnityInstallTask {
+class PaketUnwrapUPMPackages extends AbstractPaketUnityTask {
 
     /**
      * @return the paket.upm.wrapper.reference's of the wrapper packages to unwrap into the Unity3D/Packages project.

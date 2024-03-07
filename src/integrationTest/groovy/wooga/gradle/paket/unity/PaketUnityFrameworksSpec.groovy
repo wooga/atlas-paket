@@ -119,7 +119,7 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
         appendToTask("paketUnity", "paketUpmPackageEnabled = true")
         appendToTask("paketUnity", "includeAssemblyDefinitions = true")
         if (namespace != null) {
-            appendToTask("paketUnity", "defaultNamespace = ${wrapValueBasedOnType(namespace, String)}")
+            appendToTask("paketUnity", "defaultUpmNamespace = ${wrapValueBasedOnType(namespace, String)}")
         }
 
         when:

@@ -10,10 +10,11 @@ import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 
 import java.util.function.Function
+
 /**
  * A task that installs packages onto an Unity Project
  */
-abstract class PaketUnityInstallTask extends ConventionTask {
+abstract class AbstractPaketUnityTask extends ConventionTask {
 
     /**
      * @return the path to a {@code paket.unity3d.references} file
