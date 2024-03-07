@@ -6,11 +6,6 @@ import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 class PaketUnityPluginConventions {
 
      /**
-      * Default strategy for handling the assembly definition files
-      */
-     static final AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy = AssemblyDefinitionFileStrategy.disabled
-
-     /**
       * Whetehr to enable upm package support
       */
      static final PropertyLookup paketUpmPackageEnabled = new PropertyLookup(

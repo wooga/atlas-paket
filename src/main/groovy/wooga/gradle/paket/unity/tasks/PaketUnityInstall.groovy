@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Wooga GmbH
+ * Copyright 2018-2024 Wooga GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import wooga.gradle.paket.base.utils.internal.PaketLock
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.unity.PaketUpmPackageSpec
-import wooga.gradle.paket.unity.internal.AssemblyDefinitionFileStrategy
 import wooga.gradle.paket.unity.internal.NugetToUpmPackageIdCache
 import wooga.gradle.paket.unity.internal.UPMPackageDirectory
 
@@ -71,17 +70,19 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
     List<String> preInstalledUpmPackages
 
     /**
-     * Informs how to handle assembly definition files during installation
-     */
-    @Input
-    AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
-
-    /**
      * We need this cache, since the mapping from nuget to upm package Id exists only in the package.json of a package from the paket packages cache
      * since this can get deleted, we need to look inside the not-yet-deleted unity upm package and deduce the nuget & paket Id from there.
      */
     @Internal
     NugetToUpmPackageIdCache nugetToUpmCache
+
+    @Override
+    File getOutputDirectory() {
+        if (paketUpmPackageEnabled.get()){
+            return new File(referencesFile.parentFile, "Packages")
+        }
+        new File(referencesFile.parentFile, "Assets/Paket.Unity3D")
+    }
 
     /**
      * @return the files to install into the Unity3D project.
@@ -166,12 +167,13 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
             }
         }
 
+        // INSTALL/UPDATE
         inputs.outOfDate(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails outOfDate) {
                 if (inputFiles.contains(outOfDate.file)) {
                     // Compose the path where the package file should be copied to
-                    def outputPath = transformInputToOutputPath(outOfDate.file, paketPackagesDirectory)
+                    def outputPath = transformInputToOutputPath(outOfDate.file)
                     logger.info("${outOfDate.added ? "+ INSTALL" : "+= UPDATE"}: ${outputPath}")
                     FileUtils.copyFile(outOfDate.file, outputPath)
                     assert outputPath.exists()
@@ -179,6 +181,7 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
             }
         })
 
+        // REMOVE
         inputs.removed(new Action<InputFileDetails>() {
             @Override
             void execute(InputFileDetails removed) {
@@ -186,7 +189,7 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
                 removed.file.delete()
 
                 // Delete the files that were copied over from the paket packages
-                def outputPath = transformInputToOutputPath(removed.file, paketPackagesDirectory)
+                def outputPath = transformInputToOutputPath(removed.file)
                 outputPath.delete()
 
                 // Delete generated package.jsons
@@ -229,17 +232,17 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
         }
     }
 
+    /**
+     * Cleans the output directory of both output package files
+     * and potentially assembly definition files
+     */
     protected void cleanOutputDirectory() {
 
-        def tree = project.fileTree(outputDirectory)
-        logger.info("> Now cleaning output directory: ${outputDirectory}")
+        // THIS IS A PROBLEM IF THE PACKAGES DIRECTORY IS BOTH
+        // FOR PAKET AND UNITY PROJECT PACKAGES.
+        logger.info("> Now cleaning output directories")
 
-        // If the strategy is manual, do not delete asmdefs
-        if (assemblyDefinitionFileStrategy == AssemblyDefinitionFileStrategy.manual) {
-            tree.exclude("**/*.asmdef")
-            tree.exclude("**/*.asmdef.meta")
-        }
-
+        // UPM MODE: If we installed paket packages onto the unity packages' directory
         if (paketUpmPackageEnabled.get()) {
             def upmPackageDirs = []
             project.file(outputDirectory).eachDir {
@@ -248,11 +251,13 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
                 }
             }
             upmPackageDirs.each { it.deleteDir() }
-        } else {
-            project.delete(tree)
+        }
+        // PAKET-ONLY LEGACY MODE: Delete the paket directory
+        else {
+            def tree = project.fileTree(outputDirectory)
+            project.delete(tree.files)
         }
 
-        // Remove remaining empty directories
         def emptyDirs = []
         project.fileTree(outputDirectory).visit(new FileVisitor() {
             @Override
@@ -276,11 +281,11 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
      * @param paketDirectory The base directory for the file. It it used to extract a relative folder structure.
      * @return A file mapped to the output directory, which keeps the same relative directory structure
      */
-    private File transformInputToOutputPath(File inputFile, File paketDirectory) {
+    private File transformInputToOutputPath(File inputFile) {
 
         // We get the relative file structure from where the file was in the paket directory
         inputFile = new File(inputFile.canonicalPath)
-        def relativePath = paketDirectory.toURI().relativize(inputFile.toURI()).path
+        def relativePath = paketPackagesDirectory.toURI().relativize(inputFile.toURI()).path
 
         //  Also remove the intermediary paket "content" folder
         def pathSegments = relativePath.split('/').toList()
@@ -298,11 +303,5 @@ class PaketUnityInstall extends PaketUnityInstallTask implements PaketUpmPackage
 
         def file = new File(outputDirectory, pathSegments.join(File.separator))
         return file
-    }
-
-    @Internal
-    @Deprecated
-    String getPackagesDirectory() {
-        return paketPackagesDirectory.canonicalPath
     }
 }

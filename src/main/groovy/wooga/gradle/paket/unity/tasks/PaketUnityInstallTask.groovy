@@ -10,7 +10,6 @@ import wooga.gradle.paket.base.utils.internal.PaketUPMWrapperReference
 import wooga.gradle.paket.base.utils.internal.PaketUnityReferences
 
 import java.util.function.Function
-
 /**
  * A task that installs packages onto an Unity Project
  */
@@ -29,17 +28,12 @@ abstract class PaketUnityInstallTask extends ConventionTask {
     File lockFile
 
     /**
-     * @return The directory where Unity packages should be located
+     * @return The directory where Unity packages installed by this task
+     * should be located
      */
     @OutputDirectory
     @Internal
-    File getOutputDirectory() {
-        // This changes depending on the convention
-        new File(referencesFile.parentFile, "Packages")
-        //new File(referencesFile.parentFile, "Assets/${legacyUnityPaketDirectoryName}")
-    }
-
-    static final String legacyUnityPaketDirectoryName = "Paket.Unity3D"
+    abstract File getOutputDirectory()
 
     /**
      * @return The path to where paket originally installs (extracts) the downloaded packages
@@ -52,16 +46,6 @@ abstract class PaketUnityInstallTask extends ConventionTask {
         def normalizedPath = new File(project.projectDir, "packages").canonicalPath
         return new File(normalizedPath)
     }
-
-    /**
-     * Each UPM package has a manifest file with metadata about the package's contents
-     */
-    static final String packageManifestFileName = "package.json"
-
-    /**
-     * The extension used by Unity's assembly definition files
-     */
-    final static String assemblyDefinitionFileExtension = "asmdef"
 
     /**
      * @param packageName The name of the package
@@ -90,4 +74,14 @@ abstract class PaketUnityInstallTask extends ConventionTask {
 
         project.files(files)
     }
+
+    /**
+     * Each UPM package has a manifest file with metadata about the package's contents
+     */
+    static final String packageManifestFileName = "package.json"
+
+    /**
+     * The extension used by Unity's assembly definition files
+     */
+    final static String assemblyDefinitionFileExtension = "asmdef"
 }

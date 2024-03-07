@@ -1,32 +1,10 @@
-/*
- * Copyright 2018 Wooga GmbH
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package wooga.gradle.paket.unity
 
-import nebula.test.IntegrationSpec
+
 import spock.lang.Unroll
-import wooga.gradle.extensions.PaketDependency
-import wooga.gradle.extensions.PaketDependencyInterceptor
-import wooga.gradle.extensions.PaketDependencySetup
-import wooga.gradle.extensions.PaketUnity
-import wooga.gradle.extensions.PaketUnitySetup
+import wooga.gradle.extensions.*
 import wooga.gradle.paket.PaketIntegrationSpec
 import wooga.gradle.paket.get.PaketGetPlugin
-import wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages
 
 class PaketUnityChangeSpec extends PaketIntegrationSpec {
 
@@ -79,7 +57,7 @@ class PaketUnityChangeSpec extends PaketIntegrationSpec {
         unityProject1.projectReferencesFile.exists()
 
         appliedReferencesAfterUpdate.every { ref ->
-            new File(unityProject1.installDirectory, ref as String).exists()
+            new File(unityProject1.installDirectory, ref).exists()
         }
 
         where:
@@ -411,32 +389,6 @@ class PaketUnityChangeSpec extends PaketIntegrationSpec {
 
         out1.exists()
         out2.exists()
-    }
-
-    @Unroll
-    def "task :paketInstall keeps files with #filePattern in #location paket install directory when strategy is #strategy"() {
-        given: "a file matching the file pattern"
-        def baseDir = (location == "root") ? unityProject1.installDirectory : new File(unityProject1.installDirectory, "some/nested/directory")
-        baseDir.mkdirs()
-        def fileToKeep = createFile("test${filePattern}", baseDir) << "random content"
-
-        and: "the assembly file definition strategy set to manual"
-        buildFile << """
-        paketUnity.assemblyDefinitionFileStrategy = "$strategy"
-        """.stripIndent()
-
-        when:
-        runTasksSuccessfully(PaketUnityPlugin.INSTALL_TASK_NAME)
-
-        then:
-        fileToKeep.exists()
-
-        where:
-        filePattern    | location | strategy
-        ".asmdef"      | "root"   | "manual"
-        ".asmdef"      | "nested" | "manual"
-        ".asmdef.meta" | "root"   | "manual"
-        ".asmdef.meta" | "nested" | "manual"
     }
 
     def "task :paketInstall deletes empty directories"() {

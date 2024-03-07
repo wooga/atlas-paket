@@ -58,6 +58,11 @@ class PaketUnwrapUPMPackages extends PaketUnityInstallTask {
         })
     }
 
+    @Override
+    File getOutputDirectory() {
+        return new File(referencesFile.parentFile, "Packages")
+    }
+
     PaketUnwrapUPMPackages() {
         description = 'Unwraps wrapped UPM into paket dependencies into unity projects as local UPM Overrides'
         group = PaketUnityPlugin.GROUP
@@ -78,8 +83,8 @@ class PaketUnwrapUPMPackages extends PaketUnityInstallTask {
                         cleanLocalUpmOverride(upmWrapperRef)
 
                         upmWrapperRef.upmPackageURL.startsWith("http")
-                            ? new DownloadAndUnpackTar(upmWrapperRef, getOutputDirectory()).exec(project)
-                            : new UnwrapUpm(upmWrapperRef, getOutputDirectory()).exec(project)
+                            ? new DownloadAndUnpackTar(upmWrapperRef, outputDirectory).exec(project)
+                            : new UnwrapUpm(upmWrapperRef, outputDirectory).exec(project)
                     }
                 }
             }
@@ -105,12 +110,12 @@ class PaketUnwrapUPMPackages extends PaketUnityInstallTask {
     private PaketUPMWrapperReference[] getWrappedUPMPackages() {
         def references = new PaketUnityReferences(referencesFile)
 
-        if (!getLockFile().exists()) {
+        if (!lockFile.exists()) {
             return null
         }
 
         Set<PaketUPMWrapperReference> packages = []
-        def locks = new PaketLock(getLockFile())
+        def locks = new PaketLock(lockFile)
         def dependencies = locks.getAllDependencies(references.nugets)
         dependencies.each { nugetId ->
             def upmPackage = new PaketUPMWrapperReference(paketPackagesDirectory, nugetId)
@@ -149,4 +154,6 @@ class PaketUnwrapUPMPackages extends PaketUnityInstallTask {
 
         matchingPackageOverrideDirs.reverseEach { it.deleteDir() }
     }
+
+
 }

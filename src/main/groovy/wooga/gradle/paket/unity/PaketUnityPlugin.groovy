@@ -88,27 +88,25 @@ class PaketUnityPlugin implements Plugin<Project> {
     }
 
     private static void configureExtension(DefaultPaketUnityPluginExtension extension, Project project) {
-        extension.assemblyDefinitionFileStrategy = PaketUnityPluginConventions.assemblyDefinitionFileStrategy
         extension.paketUpmPackageEnabled.convention(PaketUnityPluginConventions.paketUpmPackageEnabled.getBooleanValueProvider(project))
         extension.defaultNamespace.convention(PaketUnityPluginConventions.defaultNamespace.getStringValueProvider(project))
     }
 
     private static void createPaketUnityInstallTasks(final Project project, final PaketUnityPluginExtension extension) {
-        // Create an install task for EACH paket.unity3d.references file
-        def installProviders = extension.paketReferencesFiles.files.collect { referenceFile ->
-            def taskName = INSTALL_TASK_NAME + referenceFile.parentFile.name
 
+        // Create an install task for EACH paket.unity3d.references file
+        def installProviders = extension.paketReferencesFiles.files.collect { referencesFile ->
+            def taskName = INSTALL_TASK_NAME + referencesFile.parentFile.name
             def installProvider = project.tasks.register(taskName, PaketUnityInstall)
             installProvider.configure { PaketUnityInstall t ->
                 t.group = GROUP
-                t.description = "Installs dependencies for Unity3d project ${referenceFile.parentFile.name} "
+                t.description = "Installs dependencies for Unity3d project ${referencesFile.parentFile.name} "
                 t.conventionMapping.map("includeAssemblyDefinitions", { extension.getIncludeAssemblyDefinitions() })
-                t.conventionMapping.map("assemblyDefinitionFileStrategy", { extension.getAssemblyDefinitionFileStrategy() })
                 t.conventionMapping.map("preInstalledUpmPackages", { extension.getPreInstalledUpmPackages() })
                 t.frameworks = extension.getPaketDependencies().getFrameworks()
                 t.lockFile = extension.getPaketLockFile()
                 t.defaultNamespace.convention(extension.defaultNamespace)
-                t.referencesFile = referenceFile
+                t.referencesFile = referencesFile
                 t.paketUpmPackageEnabled.convention(extension.paketUpmPackageEnabled)
                 t.paketUpmPackageManifests.convention(extension.paketUpmPackageManifests)
             }

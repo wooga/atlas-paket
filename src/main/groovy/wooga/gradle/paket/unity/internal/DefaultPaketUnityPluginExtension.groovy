@@ -32,7 +32,6 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
     //This path is relative to the <unityProject>/Assets dir
     public static final String UNITY_PACKAGES_DIRECTORY = "../Packages"
 
-    protected AssemblyDefinitionFileStrategy assemblyDefinitionFileStrategy
     protected String customPaketOutputDirectory
     protected Boolean includeAssemblyDefinitions = false
     protected ListProperty<String> preInstalledUpmPackages
@@ -57,16 +56,6 @@ class DefaultPaketUnityPluginExtension extends DefaultPaketPluginExtension imple
 
     void setPaketOutputDirectoryName(String directory) {
         customPaketOutputDirectory = directory
-    }
-
-    @Override
-    AssemblyDefinitionFileStrategy getAssemblyDefinitionFileStrategy() {
-        return assemblyDefinitionFileStrategy
-    }
-
-    @Override
-    void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy) {
-        assemblyDefinitionFileStrategy = strategy
     }
 
     @Override
