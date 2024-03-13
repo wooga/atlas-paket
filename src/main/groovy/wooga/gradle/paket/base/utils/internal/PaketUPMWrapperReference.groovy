@@ -1,10 +1,8 @@
 package wooga.gradle.paket.base.utils.internal
 
-import org.gradle.api.Project
+
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.Input
-
 /*
  * Copyright 2022 Wooga GmbH
  *
@@ -22,6 +20,9 @@ import org.gradle.api.tasks.Input
  *
  */
 
+/**
+ * ???
+ */
 class PaketUPMWrapperReference {
     public String upmPackageNameUnversioned
     public String upmPackageName
@@ -33,7 +34,7 @@ class PaketUPMWrapperReference {
     public final static String upmWrapperReferenceFile = "paket.upm.wrapper.reference"
     static Logger logger = Logging.getLogger(PaketUPMWrapperReference)
 
-    public static boolean IsReferenceFile(File file) {
+    static boolean IsReferenceFile(File file) {
         return file.name == upmWrapperReferenceFile
     }
 
@@ -55,14 +56,8 @@ class PaketUPMWrapperReference {
         }
     }
 
-    PaketUPMWrapperReference(String nugetPackage, Project project) {
-        this(project.file("${getPackagesDirectory(project)}/${nugetPackage}/lib/${upmWrapperReferenceFile}"))
+    PaketUPMWrapperReference(File paketDirectory, String nugetPackage) {
+        this(new File(paketDirectory, "${nugetPackage}/lib/${upmWrapperReferenceFile}"))
     }
-
-    public static String getPackagesDirectory(Project project) {
-        // this will return "Packages" on case-INsensitive FS and the proper "packages" in case-senitive FS
-        return project.file("packages").canonicalFile.name
-    }
-
 }
 

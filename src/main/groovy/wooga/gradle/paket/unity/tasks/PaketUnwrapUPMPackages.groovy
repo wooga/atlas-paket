@@ -17,16 +17,12 @@
 
 package wooga.gradle.paket.unity.tasks
 
-import groovy.transform.Internal
+
 import org.gradle.api.Action
-import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
-import org.gradle.api.internal.ConventionTask
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.api.tasks.incremental.InputFileDetails
@@ -43,62 +39,28 @@ import wooga.gradle.paket.unity.PaketUnityPlugin
  * Example:
  * <pre>
  * {@code
- *     task unwrapUpmPackages(type:wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages) {
- *         referencesFile = file('paket.unity3D.references')
+ *     task unwrapUpmPackages(type:wooga.gradle.paket.unity.tasks.PaketUnwrapUPMPackages) {*         referencesFile = file('paket.unity3D.references')
  *         lockFile = file('../paket.lock')
- *     }
- * }
+ *}*}
  * </pre>
  */
-class PaketUnwrapUPMPackages extends ConventionTask {
-
-    /**
-     * @return the path to a {@code paket.unity3d.references} file
-     */
-    @InputFile
-    File referencesFile
-
-    /**
-     * @return the path to a {@code paket.lock} file
-     */
-    @InputFile
-    File lockFile
-
-    /**
-     * @return the installation output directory
-     */
-    @OutputDirectory
-    @Internal
-    File getOutputDirectory() {
-        new File(getReferencesFile().getParentFile(), "Packages")
-    }
+class PaketUnwrapUPMPackages extends AbstractPaketUnityTask {
 
     /**
      * @return the paket.upm.wrapper.reference's of the wrapper packages to unwrap into the Unity3D/Packages project.
      */
     @InputFiles
     FileCollection getInputFiles() {
-        Set<File> files = []
-        def references = new PaketUnityReferences(getReferencesFile())
-
-        if (!getLockFile().exists()) {
-            return null
-        }
-
-        def locks = new PaketLock(getLockFile())
-        def dependencies = locks.getAllDependencies(references.nugets)
-        dependencies.each { nuget ->
-            def depFiles = getFilesForPackage(nuget)
-            files << depFiles
-        }
-
-        project.files(files)
+        collectInputFiles(nugetId -> {
+            if (isUPMWrapper(nugetId)) {
+                return [new PaketUPMWrapperReference(paketPackagesDirectory, nugetId).file] as Set<File>
+            }
+        })
     }
 
-    Set<File> getFilesForPackage(String nuget) {
-        if (isUPMWrapper(nuget, project)) {
-            return [new PaketUPMWrapperReference(nuget, project).file] as Set<File>
-        }
+    @Override
+    File getOutputDirectory() {
+        return new File(referencesFile.parentFile, "Packages")
     }
 
     PaketUnwrapUPMPackages() {
@@ -121,8 +83,8 @@ class PaketUnwrapUPMPackages extends ConventionTask {
                         cleanLocalUpmOverride(upmWrapperRef)
 
                         upmWrapperRef.upmPackageURL.startsWith("http")
-                                ? new DownloadAndUnpackTar(upmWrapperRef, getOutputDirectory()).exec(project)
-                                : new UnwrapUpm(upmWrapperRef, getOutputDirectory()).exec(project)
+                            ? new DownloadAndUnpackTar(upmWrapperRef, outputDirectory).exec(project)
+                            : new UnwrapUpm(upmWrapperRef, outputDirectory).exec(project)
                     }
                 }
             }
@@ -144,22 +106,19 @@ class PaketUnwrapUPMPackages extends ConventionTask {
         })
     }
 
-    public static boolean isUPMWrapper(String packageName, Project project) {
-        return (new PaketUPMWrapperReference(packageName, project)).exists
-    }
 
     private PaketUPMWrapperReference[] getWrappedUPMPackages() {
-        def references = new PaketUnityReferences(getReferencesFile())
+        def references = new PaketUnityReferences(referencesFile)
 
-        if (!getLockFile().exists()) {
+        if (!lockFile.exists()) {
             return null
         }
 
         Set<PaketUPMWrapperReference> packages = []
-        def locks = new PaketLock(getLockFile())
+        def locks = new PaketLock(lockFile)
         def dependencies = locks.getAllDependencies(references.nugets)
-        dependencies.each { nuget ->
-            def upmPackage = new PaketUPMWrapperReference(nuget, project)
+        dependencies.each { nugetId ->
+            def upmPackage = new PaketUPMWrapperReference(paketPackagesDirectory, nugetId)
             if (upmPackage.exists) {
                 packages << upmPackage
             }
@@ -195,4 +154,6 @@ class PaketUnwrapUPMPackages extends ConventionTask {
 
         matchingPackageOverrideDirs.reverseEach { it.deleteDir() }
     }
+
+
 }

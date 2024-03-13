@@ -169,4 +169,21 @@ nuget Wooga.SbsSchurle >= 0.1.1
         def frameworks = dependencies.frameworks
         frameworks.contains("net35")
     }
+
+    @Unroll
+    def "Generate dependencies content"(){
+
+        when:
+        def expected = new PaketDependencies()
+        expected.withNugetSource()
+        expected.withFrameworks("netstandard2.0")
+        expected.withDependency("NSubstitute", "== 5.1.0")
+
+        then:
+        def text = expected.toString()
+        def actual = new PaketDependencies(text)
+        expected.frameworks == actual.frameworks
+        expected.sources  == actual.sources
+        expected.nugetDependencies  == actual.nugetDependencies
+    }
 }

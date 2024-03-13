@@ -17,7 +17,7 @@
 
 package wooga.gradle.paket.publish
 
-import groovy.json.StringEscapeUtils
+
 import org.jfrog.artifactory.client.Artifactory
 import org.jfrog.artifactory.client.ArtifactoryClientBuilder
 import org.jfrog.artifactory.client.model.RepoPath
@@ -33,7 +33,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     @Shared
     def version = "1.0.0"
 
-    def uniquPackagePostfix() {
+    static def uniquePackagePostfix() {
         String key = "TRAVIS_JOB_NUMBER"
         def env = System.getenv()
         if (env.containsKey(key)) {
@@ -43,7 +43,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     }
 
     @Shared
-    def packageID = "Wooga.Test" + uniquPackagePostfix()
+    def packageID = "Wooga.Test" + uniquePackagePostfix()
 
     @Shared
     def repoName = "integration"
@@ -71,7 +71,19 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
     }
 
     def setupSpec() {
-        String artifactoryCredentials = System.getenv("artifactoryCredentials")
+        String username
+        String password
+
+        String artifactoryCredentials
+        def usr = System.getenv("ATLAS_READ_USR")
+        def pwd = System.getenv("ATLAS_READ_PSW")
+        if (usr && pwd) {
+            artifactoryCredentials = "${usr}:${pwd}"
+        }
+        else{
+            artifactoryCredentials = System.getenv("artifactoryCredentials")
+        }
+
         assert artifactoryCredentials
         def credentials = artifactoryCredentials.split(':')
         artifactory = ArtifactoryClientBuilder.create()
@@ -223,7 +235,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
         and: "paket.dependencies and paket.lock file"
         createFile("paket.lock")
         createFile("paket.dependencies")
-        def escapedPath = escapedPath(localPath.absolutePath)
+        def escapedPath = osPath (localPath.absolutePath)
 
         and: "a build.gradle file with a local publish entry"
         buildFile.text = ""
@@ -238,7 +250,7 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
                 repositories {
                     nuget {
                         name "$repoName"
-                        path "$escapedPath"
+                        path ${wrapValueBasedOnType(escapedPath, String)}
                     }
                 }
             }
@@ -264,13 +276,5 @@ class PaketPublishIntegrationSpec extends PaketIntegrationDependencyFileSpec {
 
         where:
         taskToRun << ["publish-${packageIdToName(packageID)}", "publish${repoName.capitalize()}-${packageIdToName(packageID)}", "publish${repoName.capitalize()}", "publish"]
-    }
-
-    def escapedPath(String path) {
-        String osName = System.getProperty("os.name").toLowerCase()
-        if (osName.contains("windows")) {
-            return StringEscapeUtils.escapeJava(path)
-        }
-        path
     }
 }

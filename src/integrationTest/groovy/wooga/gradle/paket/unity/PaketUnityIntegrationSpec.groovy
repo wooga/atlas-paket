@@ -19,16 +19,18 @@ package wooga.gradle.paket.unity
 
 import com.wooga.gradle.test.PropertyUtils
 import groovy.json.JsonSlurper
-import nebula.test.IntegrationSpec
 import nebula.test.functional.ExecutionResult
 import spock.lang.Shared
 import spock.lang.Unroll
 import wooga.gradle.extensions.PaketDependencyInterceptor
+import wooga.gradle.paket.FrameworkRestriction
+import wooga.gradle.paket.PaketIntegrationSpec
+import wooga.gradle.paket.base.utils.internal.PaketDependencies
 import wooga.gradle.paket.get.PaketGetPlugin
 import wooga.gradle.paket.unity.fixtures.PaketFixturesTrait
 import wooga.gradle.paket.unity.tasks.PaketUnityInstall
 
-class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixturesTrait {
+class PaketUnityIntegrationSpec extends PaketIntegrationSpec implements PaketFixturesTrait {
 
     def setup() {
         buildFile << """
@@ -293,8 +295,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             paketUnity {
                 paketUpmPackageEnabled = $paketUpmPackageEnabled
                 ${overrides ?
-                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
-                ""
+            "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+            ""
         }
             }
         """
@@ -347,8 +349,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             paketUnity {
                 paketUpmPackageEnabled = true
                 ${overrides ?
-                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
-                ""
+            "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+            ""
         }
             }
         """
@@ -369,10 +371,10 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [].toSet())
 
         where:
-        packageType           | source              | isUpmPackage      | overrides
-        "upm-enabled"          | "package-json"     | true              | null
-        "non-upm"              | "generated"        | false             | null
-        "non-upm"              | "overridden"       | false             | ["name": "com.custom.name"]
+        packageType   | source         | isUpmPackage | overrides
+        "upm-enabled" | "package-json" | true         | null
+        "non-upm"     | "generated"    | false        | null
+        "non-upm"     | "overridden"   | false        | ["name": "com.custom.name"]
     }
 
     def "Paket-installed #packageType packages get deleted"() {
@@ -402,8 +404,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             paketUnity {
                 paketUpmPackageEnabled = true
                 ${overrides ?
-                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
-                ""
+            "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+            ""
         }
             }
         """
@@ -425,10 +427,10 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
 
 
         where:
-        packageType            | isUpmPackage   | overrides
-        "upm-enabled"          | true           | null
-        "non-upm"              | false          | null
-        "non-upm-overridden"   | false          | ["name": "com.custom.name"]
+        packageType          | isUpmPackage | overrides
+        "upm-enabled"        | true         | null
+        "non-upm"            | false        | null
+        "non-upm-overridden" | false        | ["name": "com.custom.name"]
     }
 
     def "#deleteVerb #packageType package on non-incremental delete"() {
@@ -466,11 +468,12 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         }
 
         where:
-        deleteVerb          | packageType           | doesDelete  | packageId                      | preinstalledPackage            | isUpmPackage
-        "Does NOT delete"   | "non-upm-package"     | false       | "com.wooga.do-not-delete-me"   | ""                             | false
-        "Does NOT delete"   | "preinstalled"        | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"   | true
-        "Deletes"           | "upm-package"         | true        | "com.wooga.delete-me"          | ""                             | true
+        deleteVerb        | packageType       | doesDelete | packageId                    | preinstalledPackage          | isUpmPackage
+        "Does NOT delete" | "non-upm-package" | false      | "com.wooga.do-not-delete-me" | ""                           | false
+        "Does NOT delete" | "preinstalled"    | false      | "com.wooga.do-not-delete-me" | "com.wooga.do-not-delete-me" | true
+        "Deletes"         | "upm-package"     | true       | "com.wooga.delete-me"        | ""                           | true
     }
+
 
     def "Shared paket and unity install-dir install"() {
         given:
@@ -495,8 +498,8 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
             paketUnity {
                 paketUpmPackageEnabled = true
                 ${overrides ?
-                "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
-                ""
+            "paketUpmPackageManifests = ['test': ${PropertyUtils.wrapValueBasedOnType(overrides, Map)}]" :
+            ""
         }
             }
         """
@@ -507,7 +510,6 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         then:
         result.success
         def pkgJsonFile = new File(pktUnityInstallDir, "package.json")
-
         pkgJsonFile.file
         manifestJson.file
 
@@ -517,10 +519,10 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         pkgJson.entrySet().containsAll(overrides?.entrySet() ?: [].toSet())
 
         where:
-        packageType           | source              | isUpmPackage      | overrides
-        "upm-enabled"          | "package-json"     | true              | null
-        "non-upm"              | "generated"        | false             | null
-        "non-upm"              | "overridden"       | false             | ["name": "com.custom.name"]
+        packageType   | source         | isUpmPackage | overrides
+        "upm-enabled" | "package-json" | true         | null
+        "non-upm"     | "generated"    | false        | null
+        "non-upm"     | "overridden"   | false        | ["name": "com.custom.name"]
     }
 
     def "Shared paket and unity packages folder #deleteVerb #packageType package on non-incremental delete"() {
@@ -560,10 +562,10 @@ class PaketUnityIntegrationSpec extends IntegrationSpec implements PaketFixtures
         dependencyFile.exists()
 
         where:
-        deleteVerb          | packageType           | doesDelete  | packageId                      | preinstalledPackage            | isUpmPackage
-        "Does NOT delete"   | "non-upm-package"     | false       | "com.wooga.do-not-delete-me"   | ""                             | false
-        "Does NOT delete"   | "preinstalled"        | false       | "com.wooga.do-not-delete-me"   | "com.wooga.do-not-delete-me"   | true
-        "Deletes"           | "upm-package"         | true        | "com.wooga.delete-me"          | ""                             | true
+        deleteVerb        | packageType       | doesDelete | packageId                    | preinstalledPackage          | isUpmPackage
+        "Does NOT delete" | "non-upm-package" | false      | "com.wooga.do-not-delete-me" | ""                           | false
+        "Does NOT delete" | "preinstalled"    | false      | "com.wooga.do-not-delete-me" | "com.wooga.do-not-delete-me" | true
+        "Deletes"         | "upm-package"     | true       | "com.wooga.delete-me"        | ""                           | true
 
     }
 

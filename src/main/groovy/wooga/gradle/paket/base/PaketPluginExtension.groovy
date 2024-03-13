@@ -18,7 +18,7 @@
 package wooga.gradle.paket.base
 
 import wooga.gradle.paket.base.dependencies.PaketDependencyHandler
-import wooga.gradle.paket.base.utils.PaketDependencies
+import wooga.gradle.paket.base.utils.PaketDependenciesSpec
 
 /**
  * Base extension point for paket plugins.
@@ -191,12 +191,12 @@ interface PaketPluginExtension {
     File getPaketLockFile()
 
     /**
-     * Returns the content of {@code paket.dependencies} parsed as {@link PaketDependencies} object.
+     * Returns the content of {@code paket.dependencies} parsed as {@link PaketDependenciesSpec} object.
      *
      * @return  the parsed {@code paket.dependencies} file
-     * @see     PaketDependencies
+     * @see     PaketDependenciesSpec
      */
-    PaketDependencies getPaketDependencies()
+    PaketDependenciesSpec getPaketDependencies()
 
     PaketDependencyHandler getDependencyHandler()
 }

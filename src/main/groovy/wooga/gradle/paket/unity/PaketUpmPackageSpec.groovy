@@ -9,8 +9,6 @@ import org.gradle.api.tasks.Optional
 
 trait PaketUpmPackageSpec implements BaseSpec {
 
-    private final MapProperty<String, Map<String, Object>> paketUpmPackageManifests = objects.mapProperty(String, Map)
-
     /**
      * Map [<paket_package_name>: <upm_manifest_contents>] that overrides the contents of generated package.json files in UPM package mode.
      */
@@ -19,6 +17,8 @@ trait PaketUpmPackageSpec implements BaseSpec {
     MapProperty<String, Map<String, Object>> getPaketUpmPackageManifests() {
         return paketUpmPackageManifests
     }
+
+    private final MapProperty<String, Map<String, Object>> paketUpmPackageManifests = objects.mapProperty(String, Map)
 
     void setPaketUpmPackageManifests(Map paketUpmPackages) {
         this.paketUpmPackageManifests.set(paketUpmPackages)
@@ -29,7 +29,21 @@ trait PaketUpmPackageSpec implements BaseSpec {
     }
 
 
-    private final Property<Boolean> paketUpmPackageEnabled = objects.property(Boolean)
+    /**
+     * @return The default namespace when UPM packages are generated from paket.
+     * The default can be found in {@link PaketUnityPluginConventions}
+     */
+    @Input
+    @Optional
+    Property<String> getDefaultUpmNamespace() {
+        defaultUpmNamespace
+    }
+
+    void setDefaultUpmNamespace(String value) {
+        defaultUpmNamespace.set(value)
+    }
+
+    private Property<String> defaultUpmNamespace = objects.property(String)
 
     /**
      *
@@ -44,6 +58,8 @@ trait PaketUpmPackageSpec implements BaseSpec {
     void enablePaketUpmPackages() {
         paketUpmPackageEnabled.set(true)
     }
+
+    private final Property<Boolean> paketUpmPackageEnabled = objects.property(Boolean)
 
     /**
      * Enables/Disables "UPM package mode" for paket. See {@code PaketUpmPackageSpec::enablePaketUpmPackages} for more details.

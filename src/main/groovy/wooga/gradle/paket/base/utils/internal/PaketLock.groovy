@@ -35,7 +35,10 @@ class PaketLock {
 
     enum LineType {
 
-        TYPE(0), REMOTE(1), NAME(2), DEPENDENCY(3)
+        TYPE(0),
+        REMOTE(1),
+        NAME(2),
+        DEPENDENCY(3)
 
         private final int value
 

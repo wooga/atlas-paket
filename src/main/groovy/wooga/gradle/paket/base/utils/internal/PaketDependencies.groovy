@@ -17,35 +17,58 @@
 
 package wooga.gradle.paket.base.utils.internal
 
+import wooga.gradle.paket.FrameworkRestriction
+import wooga.gradle.paket.base.utils.PaketDependenciesSpec
 import wooga.gradle.paket.unity.PaketUnityPluginConventions
 
-class PaketDependencies implements wooga.gradle.paket.base.utils.PaketDependencies {
+/**
+ * Object representation of a `paket.dependencies` file.
+ * https://fsprojects.github.io/Paket/dependencies-file.html
+ */
+class PaketDependencies implements PaketDependenciesSpec {
 
     PaketDependencies(File dependenciesFile) {
         this(dependenciesFile.text)
     }
 
-    private List<String> nugets
-    private List<String> dependencySources
-    private List<String> frameworks
+    private Set<PaketDependencyDeclaration> dependencies = []
+    private Set<String> sources = []
+    private List<String> frameworks = []
+
+    Set<String> getSources() {
+        sources
+    }
+
+    Set<String> getNugetDependencies() {
+        dependencies.collect({it.name})
+    }
+
+    List<String> getFrameworks() {
+        if (frameworks == null ||  frameworks.empty){
+            return PaketUnityPluginConventions.defaultFrameworks
+        }
+        frameworks
+    }
 
     PaketDependencies(String dependenciesContent) {
-        nugets = []
-        dependencySources = []
 
         dependenciesContent.eachLine { line ->
             def matcher
             if ((matcher = line =~ /^\s*([\w:]+)\s([\w\/:.(, )+]+)(.*)$/)) {
 
+                // First component
                 def key = matcher[0][1].toString()
+                // Second component
                 def value = matcher[0][2].toString().trim()
 
                 switch (key) {
                     case "nuget":
-                        nugets << value
+                        // Third component
+                        def rule = matcher[0][3].toString().trim()
+                        dependencies.add(new PaketDependencyDeclaration(value, rule, "nuget"))
                         break
                     case "source":
-                        dependencySources << value
+                        sources.add(value)
                         break
                     case "framework:":
                         frameworks = value.split(",").collect { it.trim() }
@@ -55,15 +78,72 @@ class PaketDependencies implements wooga.gradle.paket.base.utils.PaketDependenci
         }
     }
 
-    Set<String> getSources() {
-        dependencySources
+    PaketDependencies(){
     }
 
-    Set<String> getNugetDependencies() {
-        nugets
+    @Override
+    String toString() {
+        def builder = new StringJoiner(System.lineSeparator())
+
+        sources.forEach({
+            builder.add("source ${it}")
+        })
+
+        if (!frameworks.empty){
+            builder.add("framework: ${frameworks.join(',')}")
+        }
+
+        dependencies.forEach({
+            builder.add("${it.source} ${it.name} ${it.rule}")
+        })
+
+        builder.toString().trim()
     }
 
-    List<String> getFrameworks() {
-        frameworks ?: PaketUnityPluginConventions.defaultFrameworks
+    PaketDependencies withSource(String name) {
+        sources.add(name)
+        this
+    }
+
+    PaketDependencies withNugetSource(int version = 2) {
+        withSource("https://nuget.org/api/v${version}")
+    }
+
+    PaketDependencies withDependency(String name, String rule, String source = "nuget") {
+        dependencies.add(new PaketDependencyDeclaration(name, rule, source))
+        this
+    }
+
+    PaketDependencies withFrameworks(String... names) {
+        frameworks.addAll(names)
+        this
+    }
+
+    PaketDependencies withFrameworks(FrameworkRestriction... values) {
+        frameworks.addAll(values.collect({it.label}))
+        this
+    }
+
+    List<String> getReferences(){
+
+    }
+
+
+
+
+}
+
+/**
+ * A declaration for a paket dependency, in a `paket.dependencies` file.
+ * Such as {@code nuget Pancakes > 1.0}.
+ */
+class PaketDependencyDeclaration {
+    String source
+    String name
+    String rule
+    PaketDependencyDeclaration(String name, String rule, String source) {
+        this.name = name
+        this.rule = rule
+        this.source = source
     }
 }

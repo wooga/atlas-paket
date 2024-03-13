@@ -36,7 +36,9 @@ interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackag
 
     /**
      * @return  the paket unity output directory name. Relative to `<unity_project>/Assets`
+     * @deprecated No longer used since the resolution of the package directory is done internally
      */
+    @Deprecated
     String getPaketOutputDirectoryName()
 
     /**
@@ -44,18 +46,6 @@ interface PaketUnityPluginExtension extends PaketPluginExtension, PaketUpmPackag
      * @param directory name of the output directory
      */
     void setPaketOutputDirectoryName(String directory)
-
-    /**
-     * @return the assembly definition file strategy
-     */
-    AssemblyDefinitionFileStrategy getAssemblyDefinitionFileStrategy()
-
-    /**
-     * Sets the assembly definition strategy to be used during install.
-     *
-     * @param strategy the strategy to be used
-     */
-    void setAssemblyDefinitionFileStrategy(AssemblyDefinitionFileStrategy strategy)
 
     /**
      * Sets whether assembly definition files should be included during installation
