@@ -18,6 +18,7 @@
 package wooga.gradle.paket.unity.tasks
 
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileVisitDetails
@@ -31,6 +32,7 @@ import wooga.gradle.paket.unity.PaketUnityPlugin
 import wooga.gradle.paket.unity.PaketUpmPackageSpec
 import wooga.gradle.paket.unity.internal.NugetToUpmPackageIdCache
 import wooga.gradle.paket.unity.internal.UPMPackageDirectory
+import wooga.gradle.paket.unity.internal.UnityDllMetaFile
 
 import java.nio.file.Paths
 
@@ -173,10 +175,19 @@ class PaketUnityInstall extends AbstractPaketUnityTask implements PaketUpmPackag
             void execute(InputFileDetails outOfDate) {
                 if (inputFiles.contains(outOfDate.file)) {
                     // Compose the path where the package file should be copied to
-                    def outputPath = transformInputToOutputPath(outOfDate.file)
-                    logger.info("${outOfDate.added ? "+ INSTALL" : "+= UPDATE"}: ${outputPath}")
-                    FileUtils.copyFile(outOfDate.file, outputPath)
-                    assert outputPath.exists()
+                    def outputFile = transformInputToOutputPath(outOfDate.file)
+                    logger.info("${outOfDate.added ? "+ INSTALL" : "+= UPDATE"}: ${outputFile}")
+                    FileUtils.copyFile(outOfDate.file, outputFile)
+                    assert outputFile.exists()
+
+                    // If the file copied was a DLL...
+                    if (generateMetaFiles.get()) {
+                        def extension = FilenameUtils.getExtension(outputFile.name)
+                        if (extension == "dll") {
+                            def metaFile = UnityDllMetaFile.generate(outputFile)
+                            assert metaFile.exists()
+                        }
+                    }
                 }
             }
         })

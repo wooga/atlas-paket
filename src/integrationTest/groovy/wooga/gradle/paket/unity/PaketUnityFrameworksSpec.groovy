@@ -108,9 +108,9 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
 
         and: "generated paket files"
         def paketDeps = new PaketDependencies()
-                .withNugetSource()
-                .withDependency(nugetId, version)
-                .withFrameworks(FrameworkRestriction.NetStandard2)
+            .withNugetSource()
+            .withDependency(nugetId, version)
+            .withFrameworks(framework)
 
         generateDependenciesFile(paketDeps)
         generateReferencesFile(paketDeps, unityProjDir)
@@ -128,12 +128,19 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
         then:
         result.success
         def packageDirectory = new File(unityProjDir, "Packages/${upmId}")
+        packageDirectory.exists()
+
         def packageManifestFile = new File(packageDirectory, "package.json")
-
         packageManifestFile.file
-
         def packageManifest = new JsonSlurper().parse(packageManifestFile) as Map<String, Object>
         packageManifest['name'] == upmId
+
+        def libraryDirectory = new File(packageDirectory, framework.label)
+        libraryDirectory.exists()
+        def dll = new File(libraryDirectory, "${nugetId}.dll")
+        dll.exists()
+        def metaFile = new File(libraryDirectory, "${nugetId}.dll.meta")
+        metaFile.exists()
 
         where:
         rooted | nugetId       | version | namespace                      | upmId
@@ -141,6 +148,7 @@ class PaketUnityFrameworksSpec extends PaketIntegrationSpec {
         false  | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
         true   | "NSubstitute" | "5.1.0" | null                           | "com.wooga.nuget.nsubstitute"
         true   | "NSubstitute" | "5.1.0" | "com.wooga.nuget.netstandard2" | "com.wooga.nuget.netstandard2.nsubstitute"
+        framework = FrameworkRestriction.NetStandard2
     }
 
 }
