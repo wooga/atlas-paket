@@ -46,6 +46,21 @@ trait PaketUpmPackageSpec implements BaseSpec {
     private Property<String> defaultUpmNamespace = objects.property(String)
 
     /**
+     * @return Whether meta files for DLLs should be generated during installation
+     */
+    @Input
+    @Optional
+    Property<Boolean> getGenerateMetaFiles(){
+        generateMetaFiles
+    }
+
+    void setGenerateMetaFiles(Boolean value) {
+        generateMetaFiles.set(value)
+    }
+
+    private final Property<Boolean> generateMetaFiles = objects.property(Boolean)
+
+    /**
      *
      * Enables "UPM package mode" for paket. This mode searches for a folder with a 'package.json' in the paket project,
      * and installs the package in the 'Packages' folder, using the discovered folder as root.

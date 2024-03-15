@@ -90,6 +90,7 @@ class PaketUnityPlugin implements Plugin<Project> {
     private static void configureExtension(DefaultPaketUnityPluginExtension extension, Project project) {
         extension.paketUpmPackageEnabled.convention(PaketUnityPluginConventions.paketUpmPackageEnabled.getBooleanValueProvider(project))
         extension.defaultUpmNamespace.convention(PaketUnityPluginConventions.defaultUpmNamespace.getStringValueProvider(project))
+        extension.generateMetaFiles.convention(extension.paketUpmPackageEnabled)
     }
 
     private static void createPaketUnityInstallTasks(final Project project, final PaketUnityPluginExtension extension) {
@@ -106,6 +107,7 @@ class PaketUnityPlugin implements Plugin<Project> {
                 t.frameworks = extension.getPaketDependencies().getFrameworks()
                 t.lockFile = extension.getPaketLockFile()
                 t.defaultUpmNamespace.convention(extension.defaultUpmNamespace)
+                t.generateMetaFiles.convention(extension.generateMetaFiles)
                 t.referencesFile = referencesFile
                 t.paketUpmPackageEnabled.convention(extension.paketUpmPackageEnabled)
                 t.paketUpmPackageManifests.convention(extension.paketUpmPackageManifests)
